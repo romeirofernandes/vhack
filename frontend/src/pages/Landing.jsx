@@ -14,8 +14,8 @@ const Landing = () => {
           <Navbar />
           <Hero />
           <Features />
-          {/* <Testimonials />
-          <CTA />
+          <Testimonials />
+          {/* <CTA />
           <Footer /> */}
         </div>
       </div>
