@@ -1,11 +1,25 @@
 import React from "react";
+import Navbar from "../components/landing/Navbar";
+import Hero from "../components/landing/Hero";
+import Features from "../components/landing/Features";
+import CTA from "../components/landing/CTA";
+import Footer from "../components/landing/Footer";
+import Testimonials from "../components/landing/Testimonials";
 
 const Landing = () => {
   return (
-    <>
-      <h1 className="font-bold text-4xl text-center">Welcome to the Landing Page</h1>
-      <p>This is the landing page of our application.</p>
-    </>
+    <div className="min-h-screen bg-zinc-950 text-white dark">
+      <div className="relative">
+        <div className="max-w-5xl mx-auto relative">
+          <Navbar />
+          {/* <Hero />
+          <Features />
+          <Testimonials />
+          <CTA />
+          <Footer /> */}
+        </div>
+      </div>
+    </div>
   );
 };
 
