@@ -13,8 +13,8 @@ const Landing = () => {
         <div className="max-w-5xl mx-auto relative">
           <Navbar />
           <Hero />
-          {/* <Features />
-          <Testimonials />
+          <Features />
+          {/* <Testimonials />
           <CTA />
           <Footer /> */}
         </div>
