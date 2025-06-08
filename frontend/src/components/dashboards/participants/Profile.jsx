@@ -27,9 +27,9 @@ import {
   MdSettings,
   MdVisibility,
   MdNotifications,
-  MdEmail,
 } from "react-icons/md";
-import { FaGithub, FaLinkedin, FaTwitter, FaGlobe } from "react-icons/fa";
+import { FaGithub, FaLinkedin, FaGlobe } from "react-icons/fa";
+import { Search, X } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 
 const Profile = () => {
@@ -120,7 +120,7 @@ const Profile = () => {
 
       const data = await response.json();
       if (data.success) {
-        fetchProfile(); // Refresh profile data
+        fetchProfile();
         setSuccess("Achievement added successfully!");
         setTimeout(() => setSuccess(""), 3000);
       } else {
@@ -147,7 +147,7 @@ const Profile = () => {
 
       const data = await response.json();
       if (data.success) {
-        fetchProfile(); // Refresh profile data
+        fetchProfile();
         setSuccess("Achievement removed successfully!");
         setTimeout(() => setSuccess(""), 3000);
       } else {
@@ -163,14 +163,6 @@ const Profile = () => {
     setEditedData({ ...editedData, [field]: value });
   };
 
-  const handleArrayFieldChange = (field, value) => {
-    const array = value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean);
-    setEditedData({ ...editedData, [field]: array });
-  };
-
   const tabs = [
     { id: "basic", label: "Basic Info", icon: MdPerson },
     { id: "professional", label: "Professional", icon: MdWork },
@@ -181,43 +173,49 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/20 border-t-white"></div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="h-[calc(100vh-120px)] flex flex-col space-y-4">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between pb-4 border-b border-white/10 flex-shrink-0">
         <div>
-          <h1 className="text-3xl font-bold text-white">Profile</h1>
-          <p className="text-white/70">Manage your profile information</p>
+          <h1 className="text-2xl font-semibold text-white">Profile</h1>
+          <p className="text-white/60 text-sm">
+            Manage your profile information
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <Badge
             variant={profileData?.profileCompleted ? "default" : "destructive"}
-            className="text-sm"
+            className={`text-xs px-3 py-1 ${
+              profileData?.profileCompleted
+                ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/50"
+                : "bg-amber-950/60 text-amber-400 border-amber-800/50"
+            }`}
           >
             {profileData?.profileCompleted ? "Complete" : "Incomplete"}
           </Badge>
           {!isEditing ? (
             <Button
               onClick={() => setIsEditing(true)}
-              className="bg-white text-zinc-950 hover:bg-white/90"
+              className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
             >
               <MdEdit className="w-4 h-4 mr-2" />
-              Edit Profile
+              Edit
             </Button>
           ) : (
             <div className="flex gap-2">
               <Button
                 onClick={saveProfile}
                 disabled={saving}
-                className="bg-green-600 text-white hover:bg-green-700"
+                className="bg-emerald-700 hover:bg-emerald-600 h-9 px-4 text-sm"
               >
-                <MdSave className="w-4 h-4 mr-2" />
+                <MdSave className="w-4 h-4 mr-1" />
                 {saving ? "Saving..." : "Save"}
               </Button>
               <Button
@@ -226,9 +224,9 @@ const Profile = () => {
                   setEditedData(profileData?.profile || {});
                 }}
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-white/20 text-white hover:bg-white/5 h-9 px-4 text-sm"
               >
-                <MdCancel className="w-4 h-4 mr-2" />
+                <MdCancel className="w-4 h-4 mr-1" />
                 Cancel
               </Button>
             </div>
@@ -236,265 +234,163 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Alerts */}
-      {error && (
-        <Alert className="bg-red-900/20 border-red-800/50">
-          <AlertDescription className="text-red-200">{error}</AlertDescription>
-        </Alert>
+      {/* Compact Alerts */}
+      {(error || success) && (
+        <div className="space-y-2 flex-shrink-0">
+          {error && (
+            <Alert className="bg-red-950/40 border-red-800/50 py-2">
+              <AlertDescription className="text-red-300 text-sm">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
+          {success && (
+            <Alert className="bg-emerald-950/40 border-emerald-800/50 py-2">
+              <AlertDescription className="text-emerald-300 text-sm">
+                {success}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
       )}
 
-      {success && (
-        <Alert className="bg-green-900/20 border-green-800/50">
-          <AlertDescription className="text-green-200">
-            {success}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-white/5 p-1 rounded-lg">
+      {/* Compact Tabs */}
+      <div className="flex space-x-1 bg-white/5 p-1 rounded-lg flex-shrink-0">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-all ${
+            className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-all text-sm ${
               activeTab === tab.id
-                ? "bg-white text-zinc-950"
+                ? "bg-white text-zinc-950 font-medium"
                 : "text-white/70 hover:text-white hover:bg-white/10"
             }`}
           >
             <tab.icon className="w-4 h-4" />
-            <span className="text-sm font-medium">{tab.label}</span>
+            <span>{tab.label}</span>
           </button>
         ))}
       </div>
 
-      {/* Tab Content */}
-      <motion.div
-        key={activeTab}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        {activeTab === "basic" && (
-          <BasicInfoTab
-            data={editedData}
-            isEditing={isEditing}
-            onChange={handleInputChange}
-          />
-        )}
-        {activeTab === "professional" && (
-          <ProfessionalTab
-            data={editedData}
-            isEditing={isEditing}
-            onChange={handleInputChange}
-            onArrayChange={handleArrayFieldChange}
-          />
-        )}
-        {activeTab === "education" && (
-          <EducationTab
-            data={editedData}
-            isEditing={isEditing}
-            onChange={handleInputChange}
-          />
-        )}
-        {activeTab === "achievements" && (
-          <AchievementsTab
-            achievements={profileData?.profile?.achievements || []}
-            onAdd={addAchievement}
-            onRemove={removeAchievement}
-          />
-        )}
-        {activeTab === "settings" && (
-          <SettingsTab profileData={profileData} onUpdate={fetchProfile} />
-        )}
-      </motion.div>
+      {/* Content Area - No Scrollbars */}
+      <div className="flex-1 min-h-0">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="h-full"
+        >
+          {activeTab === "basic" && (
+            <BasicInfoTab
+              data={editedData}
+              isEditing={isEditing}
+              onChange={handleInputChange}
+            />
+          )}
+          {activeTab === "professional" && (
+            <ProfessionalTab
+              data={editedData}
+              isEditing={isEditing}
+              onChange={handleInputChange}
+            />
+          )}
+          {activeTab === "education" && (
+            <EducationTab
+              data={editedData}
+              isEditing={isEditing}
+              onChange={handleInputChange}
+            />
+          )}
+          {activeTab === "achievements" && (
+            <AchievementsTab
+              achievements={profileData?.profile?.achievements || []}
+              onAdd={addAchievement}
+              onRemove={removeAchievement}
+            />
+          )}
+          {activeTab === "settings" && (
+            <SettingsTab profileData={profileData} onUpdate={fetchProfile} />
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 };
 
 // Basic Info Tab Component
 const BasicInfoTab = ({ data, isEditing, onChange }) => (
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
     <Card className="bg-white/5 border-white/10">
-      <CardHeader>
-        <CardTitle className="text-white">Personal Information</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-white text-lg">
+          Personal Information
+        </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label className="text-white/80">First Name</Label>
+            <Label className="text-white/80 text-sm">First Name</Label>
             {isEditing ? (
               <Input
                 value={data.firstName || ""}
                 onChange={(e) => onChange("firstName", e.target.value)}
-                className="bg-white/5 border-white/20 text-white"
+                className="bg-white/5 border-white/20 text-white h-9 text-sm"
                 placeholder="Enter first name"
               />
             ) : (
-              <p className="text-white mt-1">{data.firstName || "Not set"}</p>
+              <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+                {data.firstName || (
+                  <span className="text-white/50">Not set</span>
+                )}
+              </p>
             )}
           </div>
           <div>
-            <Label className="text-white/80">Last Name</Label>
+            <Label className="text-white/80 text-sm">Last Name</Label>
             {isEditing ? (
               <Input
                 value={data.lastName || ""}
                 onChange={(e) => onChange("lastName", e.target.value)}
-                className="bg-white/5 border-white/20 text-white"
+                className="bg-white/5 border-white/20 text-white h-9 text-sm"
                 placeholder="Enter last name"
               />
             ) : (
-              <p className="text-white mt-1">{data.lastName || "Not set"}</p>
+              <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+                {data.lastName || (
+                  <span className="text-white/50">Not set</span>
+                )}
+              </p>
             )}
           </div>
         </div>
         <div>
-          <Label className="text-white/80">Bio</Label>
+          <Label className="text-white/80 text-sm">Bio</Label>
           {isEditing ? (
             <Textarea
               value={data.bio || ""}
               onChange={(e) => onChange("bio", e.target.value)}
-              className="bg-white/5 border-white/20 text-white"
+              className="bg-white/5 border-white/20 text-white text-sm h-20 resize-none"
               placeholder="Tell us about yourself..."
-              rows={3}
             />
           ) : (
-            <p className="text-white mt-1">{data.bio || "Not set"}</p>
+            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 h-20 overflow-hidden">
+              {data.bio || <span className="text-white/50">Not set</span>}
+            </p>
           )}
         </div>
         <div>
-          <Label className="text-white/80">Location</Label>
+          <Label className="text-white/80 text-sm">Location</Label>
           {isEditing ? (
             <Input
               value={data.location || ""}
               onChange={(e) => onChange("location", e.target.value)}
-              className="bg-white/5 border-white/20 text-white"
+              className="bg-white/5 border-white/20 text-white h-9 text-sm"
               placeholder="City, Country"
             />
           ) : (
-            <p className="text-white mt-1">{data.location || "Not set"}</p>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-
-    <Card className="bg-white/5 border-white/10">
-      <CardHeader>
-        <CardTitle className="text-white">Social Links</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-4">
-          <div>
-            <Label className="text-white/80 flex items-center gap-2">
-              <FaGithub className="w-4 h-4" />
-              GitHub
-            </Label>
-            {isEditing ? (
-              <Input
-                value={data.github || ""}
-                onChange={(e) => onChange("github", e.target.value)}
-                className="bg-white/5 border-white/20 text-white"
-                placeholder="https://github.com/username"
-              />
-            ) : (
-              <p className="text-white mt-1">{data.github || "Not set"}</p>
-            )}
-          </div>
-          <div>
-            <Label className="text-white/80 flex items-center gap-2">
-              <FaLinkedin className="w-4 h-4" />
-              LinkedIn
-            </Label>
-            {isEditing ? (
-              <Input
-                value={data.linkedin || ""}
-                onChange={(e) => onChange("linkedin", e.target.value)}
-                className="bg-white/5 border-white/20 text-white"
-                placeholder="https://linkedin.com/in/username"
-              />
-            ) : (
-              <p className="text-white mt-1">{data.linkedin || "Not set"}</p>
-            )}
-          </div>
-          <div>
-            <Label className="text-white/80 flex items-center gap-2">
-              <FaGlobe className="w-4 h-4" />
-              Portfolio
-            </Label>
-            {isEditing ? (
-              <Input
-                value={data.portfolio || ""}
-                onChange={(e) => onChange("portfolio", e.target.value)}
-                className="bg-white/5 border-white/20 text-white"
-                placeholder="https://yourportfolio.com"
-              />
-            ) : (
-              <p className="text-white mt-1">{data.portfolio || "Not set"}</p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-);
-
-// Professional Tab Component
-const ProfessionalTab = ({ data, isEditing, onChange, onArrayChange }) => (
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <Card className="bg-white/5 border-white/10">
-      <CardHeader>
-        <CardTitle className="text-white">Work Experience</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label className="text-white/80">Company</Label>
-          {isEditing ? (
-            <Input
-              value={data.company || ""}
-              onChange={(e) => onChange("company", e.target.value)}
-              className="bg-white/5 border-white/20 text-white"
-              placeholder="Company name"
-            />
-          ) : (
-            <p className="text-white mt-1">{data.company || "Not set"}</p>
-          )}
-        </div>
-        <div>
-          <Label className="text-white/80">Job Title</Label>
-          {isEditing ? (
-            <Input
-              value={data.jobTitle || ""}
-              onChange={(e) => onChange("jobTitle", e.target.value)}
-              className="bg-white/5 border-white/20 text-white"
-              placeholder="Your job title"
-            />
-          ) : (
-            <p className="text-white mt-1">{data.jobTitle || "Not set"}</p>
-          )}
-        </div>
-        <div>
-          <Label className="text-white/80">Experience Level</Label>
-          {isEditing ? (
-            <Select
-              value={data.experience || ""}
-              onValueChange={(value) => onChange("experience", value)}
-            >
-              <SelectTrigger className="bg-white/5 border-white/20 text-white">
-                <SelectValue placeholder="Select experience level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="student">Student</SelectItem>
-                <SelectItem value="entry">Entry Level (0-2 years)</SelectItem>
-                <SelectItem value="mid">Mid Level (2-5 years)</SelectItem>
-                <SelectItem value="senior">Senior (5+ years)</SelectItem>
-                <SelectItem value="lead">Lead/Manager</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          ) : (
-            <p className="text-white mt-1 capitalize">
-              {data.experience || "Not set"}
+            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+              {data.location || <span className="text-white/50">Not set</span>}
             </p>
           )}
         </div>
@@ -502,79 +398,95 @@ const ProfessionalTab = ({ data, isEditing, onChange, onArrayChange }) => (
     </Card>
 
     <Card className="bg-white/5 border-white/10">
-      <CardHeader>
-        <CardTitle className="text-white">Skills & Technologies</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-white text-lg">Social Links</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         <div>
-          <Label className="text-white/80">Programming Languages</Label>
+          <Label className="text-white/80 flex items-center gap-2 text-sm">
+            <FaGithub className="w-3 h-3" />
+            GitHub
+          </Label>
           {isEditing ? (
             <Input
-              value={data.programmingLanguages?.join(", ") || ""}
-              onChange={(e) =>
-                onArrayChange("programmingLanguages", e.target.value)
-              }
-              className="bg-white/5 border-white/20 text-white"
-              placeholder="JavaScript, Python, Java (comma separated)"
+              value={data.github || ""}
+              onChange={(e) => onChange("github", e.target.value)}
+              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              placeholder="https://github.com/username"
             />
           ) : (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {data.programmingLanguages?.map((lang, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="bg-blue-900/50 text-blue-200"
+            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+              {data.github ? (
+                <a
+                  href={data.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-400 hover:underline"
                 >
-                  {lang}
-                </Badge>
-              )) || <span className="text-white/50">Not set</span>}
-            </div>
+                  {data.github}
+                </a>
+              ) : (
+                <span className="text-white/50">Not set</span>
+              )}
+            </p>
           )}
         </div>
         <div>
-          <Label className="text-white/80">Frameworks & Tools</Label>
+          <Label className="text-white/80 flex items-center gap-2 text-sm">
+            <FaLinkedin className="w-3 h-3" />
+            LinkedIn
+          </Label>
           {isEditing ? (
             <Input
-              value={data.frameworks?.join(", ") || ""}
-              onChange={(e) => onArrayChange("frameworks", e.target.value)}
-              className="bg-white/5 border-white/20 text-white"
-              placeholder="React, Node.js, Docker (comma separated)"
+              value={data.linkedin || ""}
+              onChange={(e) => onChange("linkedin", e.target.value)}
+              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              placeholder="https://linkedin.com/in/username"
             />
           ) : (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {data.frameworks?.map((framework, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="bg-green-900/50 text-green-200"
+            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+              {data.linkedin ? (
+                <a
+                  href={data.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-400 hover:underline"
                 >
-                  {framework}
-                </Badge>
-              )) || <span className="text-white/50">Not set</span>}
-            </div>
+                  {data.linkedin}
+                </a>
+              ) : (
+                <span className="text-white/50">Not set</span>
+              )}
+            </p>
           )}
         </div>
         <div>
-          <Label className="text-white/80">Interests</Label>
+          <Label className="text-white/80 flex items-center gap-2 text-sm">
+            <FaGlobe className="w-3 h-3" />
+            Portfolio
+          </Label>
           {isEditing ? (
             <Input
-              value={data.interests?.join(", ") || ""}
-              onChange={(e) => onArrayChange("interests", e.target.value)}
-              className="bg-white/5 border-white/20 text-white"
-              placeholder="AI, Web Development, Mobile Apps (comma separated)"
+              value={data.portfolio || ""}
+              onChange={(e) => onChange("portfolio", e.target.value)}
+              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              placeholder="https://yourportfolio.com"
             />
           ) : (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {data.interests?.map((interest, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className="bg-purple-900/50 text-purple-200"
+            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+              {data.portfolio ? (
+                <a
+                  href={data.portfolio}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-400 hover:underline"
                 >
-                  {interest}
-                </Badge>
-              )) || <span className="text-white/50">Not set</span>}
-            </div>
+                  {data.portfolio}
+                </a>
+              ) : (
+                <span className="text-white/50">Not set</span>
+              )}
+            </p>
           )}
         </div>
       </CardContent>
@@ -582,20 +494,720 @@ const ProfessionalTab = ({ data, isEditing, onChange, onArrayChange }) => (
   </div>
 );
 
+// Professional Tab Component with Fixed Skill Management
+const ProfessionalTab = ({ data, isEditing, onChange }) => {
+  const [skillInputs, setSkillInputs] = useState({
+    programmingLanguages: "",
+    frameworks: "",
+    interests: "",
+  });
+  const [filteredSkills, setFilteredSkills] = useState({
+    programmingLanguages: [],
+    frameworks: [],
+    interests: [],
+  });
+  const [showDropdowns, setShowDropdowns] = useState({
+    programmingLanguages: false,
+    frameworks: false,
+    interests: false,
+  });
+
+  const skillSuggestions = {
+    programmingLanguages: [
+      "JavaScript",
+      "TypeScript",
+      "Python",
+      "Java",
+      "C++",
+      "C#",
+      "Go",
+      "Rust",
+      "Ruby",
+      "Swift",
+      "Kotlin",
+      "PHP",
+      "Dart",
+      "Scala",
+    ],
+    frameworks: [
+      "React",
+      "Vue.js",
+      "Angular",
+      "Next.js",
+      "Node.js",
+      "Express",
+      "Django",
+      "Flask",
+      "Spring Boot",
+      "Laravel",
+      "Ruby on Rails",
+      "FastAPI",
+    ],
+    interests: [
+      "AI/ML",
+      "Web Development",
+      "Mobile Development",
+      "Blockchain",
+      "Cloud Computing",
+      "DevOps",
+      "Cybersecurity",
+      "Game Development",
+      "IoT",
+      "Data Science",
+    ],
+  };
+
+  // Debounced search effect
+  useEffect(() => {
+    Object.keys(skillInputs).forEach((category) => {
+      const timer = setTimeout(() => {
+        if (skillInputs[category].trim()) {
+          const filtered = skillSuggestions[category]
+            .filter(
+              (skill) =>
+                skill
+                  .toLowerCase()
+                  .includes(skillInputs[category].toLowerCase()) &&
+                !(data[category] || []).includes(skill)
+            )
+            .slice(0, 6);
+          setFilteredSkills((prev) => ({ ...prev, [category]: filtered }));
+          setShowDropdowns((prev) => ({
+            ...prev,
+            [category]: filtered.length > 0,
+          }));
+        } else {
+          setFilteredSkills((prev) => ({ ...prev, [category]: [] }));
+          setShowDropdowns((prev) => ({ ...prev, [category]: false }));
+        }
+      }, 300);
+
+      return () => clearTimeout(timer);
+    });
+  }, [skillInputs, data]);
+
+  const addSkill = (category, skill) => {
+    const currentSkills = data[category] || [];
+    if (!currentSkills.includes(skill)) {
+      onChange(category, [...currentSkills, skill]);
+      setSkillInputs((prev) => ({ ...prev, [category]: "" }));
+      setShowDropdowns((prev) => ({ ...prev, [category]: false }));
+    }
+  };
+
+  const removeSkill = (category, skillToRemove) => {
+    const currentSkills = data[category] || [];
+    onChange(
+      category,
+      currentSkills.filter((skill) => skill !== skillToRemove)
+    );
+  };
+
+  const handleSkillInputChange = (category, value) => {
+    setSkillInputs((prev) => ({ ...prev, [category]: value }));
+  };
+
+  const handleSkillInputKeyDown = (category, e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (filteredSkills[category].length > 0) {
+        addSkill(category, filteredSkills[category][0]);
+      } else if (skillInputs[category].trim()) {
+        addSkill(category, skillInputs[category].trim());
+      }
+    } else if (e.key === "Escape") {
+      setShowDropdowns((prev) => ({ ...prev, [category]: false }));
+      setSkillInputs((prev) => ({ ...prev, [category]: "" }));
+    }
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
+      <Card className="bg-white/5 border-white/10">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-lg">Work Experience</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <Label className="text-white/80 text-sm">Company</Label>
+            {isEditing ? (
+              <Input
+                value={data.company || ""}
+                onChange={(e) => onChange("company", e.target.value)}
+                className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                placeholder="Company name"
+              />
+            ) : (
+              <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+                {data.company || <span className="text-white/50">Not set</span>}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label className="text-white/80 text-sm">Job Title</Label>
+            {isEditing ? (
+              <Input
+                value={data.jobTitle || ""}
+                onChange={(e) => onChange("jobTitle", e.target.value)}
+                className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                placeholder="Your job title"
+              />
+            ) : (
+              <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+                {data.jobTitle || (
+                  <span className="text-white/50">Not set</span>
+                )}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label className="text-white/80 text-sm">Experience Level</Label>
+            {isEditing ? (
+              <Select
+                value={data.experience || ""}
+                onValueChange={(value) => onChange("experience", value)}
+              >
+                <SelectTrigger className="bg-white/5 border-white/20 text-white h-9 text-sm">
+                  <SelectValue placeholder="Select experience level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="entry">Entry Level (0-2 years)</SelectItem>
+                  <SelectItem value="mid">Mid Level (2-5 years)</SelectItem>
+                  <SelectItem value="senior">Senior (5+ years)</SelectItem>
+                  <SelectItem value="lead">Lead/Manager</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            ) : (
+              <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 capitalize">
+                {data.experience || (
+                  <span className="text-white/50">Not set</span>
+                )}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-white/5 border-white/10">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-lg">
+            Skills & Technologies
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {/* Programming Languages */}
+          <div>
+            <Label className="text-white/80 text-sm">
+              Programming Languages
+            </Label>
+            {isEditing ? (
+              <div className="space-y-2">
+                {/* Selected Skills */}
+                {(data.programmingLanguages || []).length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {data.programmingLanguages.map((lang, index) => (
+                      <Badge
+                        key={index}
+                        className="bg-violet-950/60 text-violet-300 border-violet-800/50 text-xs px-2 py-0.5 cursor-pointer group"
+                        onClick={() =>
+                          removeSkill("programmingLanguages", lang)
+                        }
+                      >
+                        {lang}
+                        <X className="w-3 h-3 ml-1 group-hover:text-red-300" />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                {/* Input with Dropdown */}
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/40" />
+                    <Input
+                      value={skillInputs.programmingLanguages}
+                      onChange={(e) =>
+                        handleSkillInputChange(
+                          "programmingLanguages",
+                          e.target.value
+                        )
+                      }
+                      onKeyDown={(e) =>
+                        handleSkillInputKeyDown("programmingLanguages", e)
+                      }
+                      onFocus={() =>
+                        skillInputs.programmingLanguages &&
+                        setShowDropdowns((prev) => ({
+                          ...prev,
+                          programmingLanguages:
+                            filteredSkills.programmingLanguages.length > 0,
+                        }))
+                      }
+                      className="bg-white/5 border-white/20 text-white h-9 text-sm pl-7"
+                      placeholder="Search or add languages..."
+                    />
+                  </div>
+                  {showDropdowns.programmingLanguages && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/20 rounded-md shadow-lg z-10 max-h-32 overflow-y-auto">
+                      {filteredSkills.programmingLanguages.map((skill) => (
+                        <div
+                          key={skill}
+                          className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white text-sm border-b border-white/10 last:border-b-0"
+                          onClick={() =>
+                            addSkill("programmingLanguages", skill)
+                          }
+                        >
+                          {skill}
+                        </div>
+                      ))}
+                      {skillInputs.programmingLanguages &&
+                        !skillSuggestions.programmingLanguages.some(
+                          (skill) =>
+                            skill.toLowerCase() ===
+                            skillInputs.programmingLanguages.toLowerCase()
+                        ) && (
+                          <div
+                            className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white/80 text-sm italic"
+                            onClick={() =>
+                              addSkill(
+                                "programmingLanguages",
+                                skillInputs.programmingLanguages.trim()
+                              )
+                            }
+                          >
+                            Add "{skillInputs.programmingLanguages}"
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1 mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 min-h-[36px] items-center">
+                {(data.programmingLanguages || []).length > 0 ? (
+                  data.programmingLanguages.map((lang, index) => (
+                    <Badge
+                      key={index}
+                      className="bg-violet-950/60 text-violet-300 border-violet-800/50 text-xs px-2 py-0.5"
+                    >
+                      {lang}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-white/50 text-sm">Not set</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Frameworks & Tools */}
+          <div>
+            <Label className="text-white/80 text-sm">Frameworks & Tools</Label>
+            {isEditing ? (
+              <div className="space-y-2">
+                {(data.frameworks || []).length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {data.frameworks.map((framework, index) => (
+                      <Badge
+                        key={index}
+                        className="bg-emerald-950/60 text-emerald-300 border-emerald-800/50 text-xs px-2 py-0.5 cursor-pointer group"
+                        onClick={() => removeSkill("frameworks", framework)}
+                      >
+                        {framework}
+                        <X className="w-3 h-3 ml-1 group-hover:text-red-300" />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/40" />
+                    <Input
+                      value={skillInputs.frameworks}
+                      onChange={(e) =>
+                        handleSkillInputChange("frameworks", e.target.value)
+                      }
+                      onKeyDown={(e) =>
+                        handleSkillInputKeyDown("frameworks", e)
+                      }
+                      onFocus={() =>
+                        skillInputs.frameworks &&
+                        setShowDropdowns((prev) => ({
+                          ...prev,
+                          frameworks: filteredSkills.frameworks.length > 0,
+                        }))
+                      }
+                      className="bg-white/5 border-white/20 text-white h-9 text-sm pl-7"
+                      placeholder="Search or add frameworks..."
+                    />
+                  </div>
+                  {showDropdowns.frameworks && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/20 rounded-md shadow-lg z-10 max-h-32 overflow-y-auto">
+                      {filteredSkills.frameworks.map((skill) => (
+                        <div
+                          key={skill}
+                          className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white text-sm border-b border-white/10 last:border-b-0"
+                          onClick={() => addSkill("frameworks", skill)}
+                        >
+                          {skill}
+                        </div>
+                      ))}
+                      {skillInputs.frameworks &&
+                        !skillSuggestions.frameworks.some(
+                          (skill) =>
+                            skill.toLowerCase() ===
+                            skillInputs.frameworks.toLowerCase()
+                        ) && (
+                          <div
+                            className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white/80 text-sm italic"
+                            onClick={() =>
+                              addSkill(
+                                "frameworks",
+                                skillInputs.frameworks.trim()
+                              )
+                            }
+                          >
+                            Add "{skillInputs.frameworks}"
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1 mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 min-h-[36px] items-center">
+                {(data.frameworks || []).length > 0 ? (
+                  data.frameworks.map((framework, index) => (
+                    <Badge
+                      key={index}
+                      className="bg-emerald-950/60 text-emerald-300 border-emerald-800/50 text-xs px-2 py-0.5"
+                    >
+                      {framework}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-white/50 text-sm">Not set</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Interests */}
+          <div>
+            <Label className="text-white/80 text-sm">Interests</Label>
+            {isEditing ? (
+              <div className="space-y-2">
+                {(data.interests || []).length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {data.interests.map((interest, index) => (
+                      <Badge
+                        key={index}
+                        className="bg-indigo-950/60 text-indigo-300 border-indigo-800/50 text-xs px-2 py-0.5 cursor-pointer group"
+                        onClick={() => removeSkill("interests", interest)}
+                      >
+                        {interest}
+                        <X className="w-3 h-3 ml-1 group-hover:text-red-300" />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/40" />
+                    <Input
+                      value={skillInputs.interests}
+                      onChange={(e) =>
+                        handleSkillInputChange("interests", e.target.value)
+                      }
+                      onKeyDown={(e) => handleSkillInputKeyDown("interests", e)}
+                      onFocus={() =>
+                        skillInputs.interests &&
+                        setShowDropdowns((prev) => ({
+                          ...prev,
+                          interests: filteredSkills.interests.length > 0,
+                        }))
+                      }
+                      className="bg-white/5 border-white/20 text-white h-9 text-sm pl-7"
+                      placeholder="Search or add interests..."
+                    />
+                  </div>
+                  {showDropdowns.interests && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/20 rounded-md shadow-lg z-10 max-h-32 overflow-y-auto">
+                      {filteredSkills.interests.map((skill) => (
+                        <div
+                          key={skill}
+                          className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white text-sm border-b border-white/10 last:border-b-0"
+                          onClick={() => addSkill("interests", skill)}
+                        >
+                          {skill}
+                        </div>
+                      ))}
+                      {skillInputs.interests &&
+                        !skillSuggestions.interests.some(
+                          (skill) =>
+                            skill.toLowerCase() ===
+                            skillInputs.interests.toLowerCase()
+                        ) && (
+                          <div
+                            className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white/80 text-sm italic"
+                            onClick={() =>
+                              addSkill(
+                                "interests",
+                                skillInputs.interests.trim()
+                              )
+                            }
+                          >
+                            Add "{skillInputs.interests}"
+                          </div>
+                        )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1 mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 min-h-[36px] items-center">
+                {(data.interests || []).length > 0 ? (
+                  data.interests.map((interest, index) => (
+                    <Badge
+                      key={index}
+                      className="bg-indigo-950/60 text-indigo-300 border-indigo-800/50 text-xs px-2 py-0.5"
+                    >
+                      {interest}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-white/50 text-sm">Not set</span>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 // Education Tab Component
-const EducationTab = ({ data, isEditing, onChange }) => (
-  <Card className="bg-white/5 border-white/10">
-    <CardHeader>
-      <CardTitle className="text-white">Educational Background</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-white/70 text-center py-8">
-        Education management coming soon! You'll be able to add your degrees,
-        certifications, and academic achievements.
-      </p>
-    </CardContent>
-  </Card>
-);
+const EducationTab = ({ data, isEditing, onChange }) => {
+  const [education, setEducation] = useState(data.education || []);
+  const [newEducation, setNewEducation] = useState({
+    institution: "",
+    degree: "",
+    field: "",
+    startYear: "",
+    endYear: "",
+    current: false,
+  });
+  const [showAddForm, setShowAddForm] = useState(false);
+
+  const addEducation = () => {
+    if (newEducation.institution && newEducation.degree) {
+      const updatedEducation = [
+        ...education,
+        { ...newEducation, id: Date.now() },
+      ];
+      setEducation(updatedEducation);
+      onChange("education", updatedEducation);
+      setNewEducation({
+        institution: "",
+        degree: "",
+        field: "",
+        startYear: "",
+        endYear: "",
+        current: false,
+      });
+      setShowAddForm(false);
+    }
+  };
+
+  const removeEducation = (id) => {
+    const updatedEducation = education.filter((edu) => edu.id !== id);
+    setEducation(updatedEducation);
+    onChange("education", updatedEducation);
+  };
+
+  return (
+    <div className="space-y-4 h-full">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-medium text-white">
+          Educational Background
+        </h3>
+        {isEditing && (
+          <Button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
+          >
+            <MdAdd className="w-4 h-4 mr-1" />
+            Add Education
+          </Button>
+        )}
+      </div>
+
+      {showAddForm && (
+        <Card className="bg-white/5 border-white/10">
+          <CardContent className="pt-4">
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-white/80 text-sm">Institution</Label>
+                  <Input
+                    value={newEducation.institution}
+                    onChange={(e) =>
+                      setNewEducation({
+                        ...newEducation,
+                        institution: e.target.value,
+                      })
+                    }
+                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                    placeholder="University/School name"
+                  />
+                </div>
+                <div>
+                  <Label className="text-white/80 text-sm">Degree</Label>
+                  <Input
+                    value={newEducation.degree}
+                    onChange={(e) =>
+                      setNewEducation({
+                        ...newEducation,
+                        degree: e.target.value,
+                      })
+                    }
+                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                    placeholder="Bachelor's, Master's, etc."
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-white/80 text-sm">Field of Study</Label>
+                <Input
+                  value={newEducation.field}
+                  onChange={(e) =>
+                    setNewEducation({ ...newEducation, field: e.target.value })
+                  }
+                  className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                  placeholder="Computer Science, Engineering, etc."
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-white/80 text-sm">Start Year</Label>
+                  <Input
+                    type="number"
+                    value={newEducation.startYear}
+                    onChange={(e) =>
+                      setNewEducation({
+                        ...newEducation,
+                        startYear: e.target.value,
+                      })
+                    }
+                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                    placeholder="2020"
+                  />
+                </div>
+                <div>
+                  <Label className="text-white/80 text-sm">End Year</Label>
+                  <Input
+                    type="number"
+                    value={newEducation.endYear}
+                    onChange={(e) =>
+                      setNewEducation({
+                        ...newEducation,
+                        endYear: e.target.value,
+                      })
+                    }
+                    disabled={newEducation.current}
+                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                    placeholder="2024"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={newEducation.current}
+                  onChange={(e) =>
+                    setNewEducation({
+                      ...newEducation,
+                      current: e.target.checked,
+                      endYear: e.target.checked ? "" : newEducation.endYear,
+                    })
+                  }
+                  className="w-4 h-4"
+                />
+                <Label className="text-white/80 text-sm">
+                  Currently studying here
+                </Label>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  onClick={addEducation}
+                  className="bg-emerald-700 hover:bg-emerald-600 h-9 px-4 text-sm"
+                >
+                  Add Education
+                </Button>
+                <Button
+                  onClick={() => setShowAddForm(false)}
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/5 h-9 px-4 text-sm"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="space-y-3">
+        {education.map((edu) => (
+          <Card key={edu.id} className="bg-white/5 border-white/10">
+            <CardContent className="pt-3">
+              <div className="flex items-start justify-between mb-2">
+                <div>
+                  <h4 className="text-white font-medium text-sm">
+                    {edu.institution}
+                  </h4>
+                  <p className="text-white/70 text-xs">
+                    {edu.degree} {edu.field && `in ${edu.field}`}
+                  </p>
+                  <p className="text-white/50 text-xs">
+                    {edu.startYear} - {edu.current ? "Present" : edu.endYear}
+                  </p>
+                </div>
+                {isEditing && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeEducation(edu.id)}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-950/20 h-6 w-6 p-0"
+                  >
+                    <MdDelete className="w-3 h-3" />
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {education.length === 0 && !showAddForm && (
+        <div className="text-center py-12">
+          <MdSchool className="w-12 h-12 text-white/20 mx-auto mb-4" />
+          <p className="text-white/50 mb-4 text-sm">No education added yet</p>
+          {isEditing && (
+            <Button
+              onClick={() => setShowAddForm(true)}
+              className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
+            >
+              Add Your First Education
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Achievements Tab Component
 const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
@@ -620,25 +1232,25 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 h-full">
       <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold text-white">Your Achievements</h3>
+        <h3 className="text-lg font-medium text-white">Your Achievements</h3>
         <Button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="bg-white text-zinc-950 hover:bg-white/90"
+          className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
         >
-          <MdAdd className="w-4 h-4 mr-2" />
+          <MdAdd className="w-4 h-4 mr-1" />
           Add Achievement
         </Button>
       </div>
 
       {showAddForm && (
         <Card className="bg-white/5 border-white/10">
-          <CardContent className="pt-6">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="pt-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-white/80">Title</Label>
+                  <Label className="text-white/80 text-sm">Title</Label>
                   <Input
                     value={newAchievement.title}
                     onChange={(e) =>
@@ -647,20 +1259,20 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
                         title: e.target.value,
                       })
                     }
-                    className="bg-white/5 border-white/20 text-white"
+                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
                     placeholder="Achievement title"
                     required
                   />
                 </div>
                 <div>
-                  <Label className="text-white/80">Type</Label>
+                  <Label className="text-white/80 text-sm">Type</Label>
                   <Select
                     value={newAchievement.type}
                     onValueChange={(value) =>
                       setNewAchievement({ ...newAchievement, type: value })
                     }
                   >
-                    <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                    <SelectTrigger className="bg-white/5 border-white/20 text-white h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -675,7 +1287,7 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
                 </div>
               </div>
               <div>
-                <Label className="text-white/80">Description</Label>
+                <Label className="text-white/80 text-sm">Description</Label>
                 <Textarea
                   value={newAchievement.description}
                   onChange={(e) =>
@@ -684,13 +1296,13 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
                       description: e.target.value,
                     })
                   }
-                  className="bg-white/5 border-white/20 text-white"
+                  className="bg-white/5 border-white/20 text-white text-sm h-16 resize-none"
                   placeholder="Describe your achievement..."
                   required
                 />
               </div>
               <div>
-                <Label className="text-white/80">Date</Label>
+                <Label className="text-white/80 text-sm">Date</Label>
                 <Input
                   type="date"
                   value={newAchievement.date}
@@ -700,13 +1312,13 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
                       date: e.target.value,
                     })
                   }
-                  className="bg-white/5 border-white/20 text-white"
+                  className="bg-white/5 border-white/20 text-white h-9 text-sm"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 pt-2">
                 <Button
                   type="submit"
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-emerald-700 hover:bg-emerald-600 h-9 px-4 text-sm"
                 >
                   Add Achievement
                 </Button>
@@ -714,7 +1326,7 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
                   type="button"
                   onClick={() => setShowAddForm(false)}
                   variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10"
+                  className="border-white/20 text-white hover:bg-white/5 h-9 px-4 text-sm"
                 >
                   Cancel
                 </Button>
@@ -724,21 +1336,20 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {achievements.map((achievement) => (
           <Card key={achievement._id} className="bg-white/5 border-white/10">
-            <CardContent className="pt-4">
+            <CardContent className="pt-3">
               <div className="flex items-start justify-between mb-2">
                 <Badge
-                  variant="secondary"
-                  className={`${
+                  className={`text-xs px-2 py-1 ${
                     achievement.type === "hackathon"
-                      ? "bg-blue-900/50 text-blue-200"
+                      ? "bg-cyan-950/60 text-cyan-300 border-cyan-800/50"
                       : achievement.type === "certification"
-                      ? "bg-green-900/50 text-green-200"
+                      ? "bg-emerald-950/60 text-emerald-300 border-emerald-800/50"
                       : achievement.type === "award"
-                      ? "bg-yellow-900/50 text-yellow-200"
-                      : "bg-purple-900/50 text-purple-200"
+                      ? "bg-amber-950/60 text-amber-300 border-amber-800/50"
+                      : "bg-violet-950/60 text-violet-300 border-violet-800/50"
                   }`}
                 >
                   {achievement.type}
@@ -747,15 +1358,15 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
                   size="sm"
                   variant="ghost"
                   onClick={() => onRemove(achievement._id)}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                  className="text-red-400 hover:text-red-300 hover:bg-red-950/20 h-6 w-6 p-0"
                 >
-                  <MdDelete className="w-4 h-4" />
+                  <MdDelete className="w-3 h-3" />
                 </Button>
               </div>
-              <h4 className="text-white font-medium mb-2">
+              <h4 className="text-white font-medium mb-2 text-sm">
                 {achievement.title}
               </h4>
-              <p className="text-white/70 text-sm mb-2">
+              <p className="text-white/70 text-xs mb-2 leading-relaxed">
                 {achievement.description}
               </p>
               <p className="text-white/50 text-xs">
@@ -768,11 +1379,11 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
 
       {achievements.length === 0 && !showAddForm && (
         <div className="text-center py-12">
-          <MdStar className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <p className="text-white/50 mb-4">No achievements yet</p>
+          <MdStar className="w-12 h-12 text-white/20 mx-auto mb-4" />
+          <p className="text-white/50 mb-4 text-sm">No achievements yet</p>
           <Button
             onClick={() => setShowAddForm(true)}
-            className="bg-white text-zinc-950 hover:bg-white/90"
+            className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
           >
             Add Your First Achievement
           </Button>
@@ -784,19 +1395,19 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
 
 // Settings Tab Component
 const SettingsTab = ({ profileData, onUpdate }) => (
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
     <Card className="bg-white/5 border-white/10">
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <MdVisibility className="w-5 h-5" />
+      <CardHeader className="pb-3">
+        <CardTitle className="text-white flex items-center gap-2 text-lg">
+          <MdVisibility className="w-4 h-4" />
           Privacy Settings
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         <div>
-          <Label className="text-white/80">Profile Visibility</Label>
+          <Label className="text-white/80 text-sm">Profile Visibility</Label>
           <Select defaultValue="public">
-            <SelectTrigger className="bg-white/5 border-white/20 text-white">
+            <SelectTrigger className="bg-white/5 border-white/20 text-white h-9 text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -807,24 +1418,32 @@ const SettingsTab = ({ profileData, onUpdate }) => (
               <SelectItem value="private">Private</SelectItem>
             </SelectContent>
           </Select>
+          <p className="text-white/50 text-xs mt-1">
+            Control who can view your profile information
+          </p>
         </div>
       </CardContent>
     </Card>
 
     <Card className="bg-white/5 border-white/10">
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <MdNotifications className="w-5 h-5" />
+      <CardHeader className="pb-3">
+        <CardTitle className="text-white flex items-center gap-2 text-lg">
+          <MdNotifications className="w-4 h-4" />
           Notification Settings
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-white/80">Email Notifications</Label>
+          <div>
+            <Label className="text-white/80 text-sm">Email Notifications</Label>
+            <p className="text-white/50 text-xs mt-1">
+              Manage your email notification preferences
+            </p>
+          </div>
           <Button
             variant="outline"
             size="sm"
-            className="border-white/20 text-white hover:bg-white/10"
+            className="border-white/20 text-white hover:bg-white/5 hover:border-white/30 h-8 px-3 text-xs"
           >
             Configure
           </Button>
