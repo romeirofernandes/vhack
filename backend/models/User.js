@@ -1,67 +1,79 @@
 const mongoose = require("mongoose");
 
-const UserSchema = new mongoose.Schema({
-  firebaseUid: {
-    type: String,
-    required: true,
-    unique: true,
+const userSchema = new mongoose.Schema(
+  {
+    firebaseUID: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    displayName: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    role: {
+      type: String,
+      enum: ["participant", "judge", "organizer"],
+      required: true,
+    },
+    profileCompleted: {
+      type: Boolean,
+      default: false,
+    },
+    profile: {
+      firstName: String,
+      lastName: String,
+      bio: String,
+      location: String,
+      company: String,
+      jobTitle: String,
+      experience: String,
+      skills: [String], // Simple array of strings
+      education: [
+        {
+          institution: String,
+          degree: String,
+          field: String,
+          startYear: String,
+          endYear: String,
+          current: Boolean,
+          id: Number,
+        },
+      ],
+      socialLinks: {
+        github: String,
+        linkedin: String,
+        portfolio: String,
+        twitter: String,
+      },
+      achievements: [
+        {
+          title: String,
+          description: String,
+          type: String,
+          date: String,
+          id: Number,
+        },
+      ],
+      expertise: [String],
+      organization: String,
+      yearsOfExperience: String,
+      website: String,
+      position: String,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  displayName: {
-    type: String,
-    required: true,
-  },
-  photoURL: {
-    type: String,
-    default: null,
-  },
-  role: {
-    type: String,
-    enum: ["participant", "judge", "organizer"],
-    default: null,
-  },
-  profile: {
-    // For participants
-    skills: [String],
-    experience: String,
-    github: String,
-    linkedin: String,
-    portfolio: String,
-    bio: String,
+  {
+    timestamps: true,
+  }
+);
 
-    // For organizers
-    company: String,
-    position: String,
-    website: String,
-
-    // For judges
-    expertise: [String],
-    organization: String,
-    yearsOfExperience: Number,
-
-    // Common fields
-    firstName: String,
-    lastName: String,
-    location: String,
-    // ...other fields can be added as needed
-  },
-
-  profileCompleted: {
-    type: Boolean,
-    default: false,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
-
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.model("User", userSchema);

@@ -1,93 +1,94 @@
-const User = require("../models/User");
 const admin = require("../config/firebase-admin");
+const User = require("../models/User");
 
 const authController = {
   // Register method
   async register(req, res) {
-  try {
-    const { email, password, displayName } = req.body;
+    try {
+      const { email, password, displayName } = req.body;
 
-    // Create user in Firebase
-    const userRecord = await admin.auth().createUser({
-      email,
-      password,
-      displayName,
-    });
+      // Create user in Firebase
+      const userRecord = await admin.auth().createUser({
+        email,
+        password,
+        displayName,
+      });
 
-    // Create user in MongoDB
-    const user = new User({
-      firebaseUid: userRecord.uid,
-      email,
-      displayName,
-    });
+      // Create user in MongoDB
+      const user = new User({
+        firebaseUid: userRecord.uid,
+        email,
+        displayName,
+      });
 
-    await user.save();
+      await user.save();
 
-    // Create a custom token for immediate authentication
-    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+      // Create a custom token for immediate authentication
+      const customToken = await admin.auth().createCustomToken(userRecord.uid);
 
-    res.status(201).json({
-      success: true,
-      message: "User created successfully",
-      customToken, // Add this to allow immediate login
-      user: {
-        id: user._id,
-        email: user.email,
-        displayName: user.displayName,
-        role: user.role,
-      },
-    });
-  } catch (error) {
-    console.error("Registration error:", error);
-    res.status(400).json({
-      success: false,
-      error: error.message || "Registration failed",
-    });
-  }
-},
+      res.status(201).json({
+        success: true,
+        message: "User created successfully",
+        customToken, // Add this to allow immediate login
+        user: {
+          id: user._id,
+          email: user.email,
+          displayName: user.displayName,
+          role: user.role,
+        },
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(400).json({
+        success: false,
+        error: error.message || "Registration failed",
+      });
+    }
+  },
 
   // Login method
-async login(req, res) {
-  try {
-    const { idToken } = req.body;
+  async login(req, res) {
+    try {
+      const { idToken } = req.body;
 
-    // Verify Firebase token
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
+      // Verify Firebase token
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
 
-    // Find or create user in MongoDB
-    let user = await User.findOne({ firebaseUid: decodedToken.uid });
+      // Find or create user in MongoDB
+      let user = await User.findOne({ firebaseUid: decodedToken.uid });
 
-    if (!user) {
-      user = new User({
-        firebaseUid: decodedToken.uid,
-        email: decodedToken.email,
-        // Fix: Use email as fallback if name is not available
-        displayName: decodedToken.name || decodedToken.email.split('@')[0] || 'User',
-        photoURL: decodedToken.picture,
+      if (!user) {
+        user = new User({
+          firebaseUid: decodedToken.uid,
+          email: decodedToken.email,
+          // Fix: Use email as fallback if name is not available
+          displayName:
+            decodedToken.name || decodedToken.email.split("@")[0] || "User",
+          photoURL: decodedToken.picture,
+        });
+        await user.save();
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Login successful",
+        user: {
+          id: user._id,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          role: user.role,
+          profileCompleted: user.profileCompleted,
+        },
       });
-      await user.save();
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(401).json({
+        success: false,
+        error: "Authentication failed",
+      });
     }
-
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      user: {
-        id: user._id,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        role: user.role,
-        profileCompleted: user.profileCompleted,
-      },
-    });
-  } catch (error) {
-    console.error("Login error:", error);
-    res.status(401).json({
-      success: false,
-      error: "Authentication failed",
-    });
-  }
-},
+  },
 
   // Authenticate existing user
   async authenticate(req, res) {
@@ -167,7 +168,7 @@ async login(req, res) {
     }
   },
 
-  // Update profile method
+  // Update profile method (used by profile setup pages)
   async updateProfile(req, res) {
     try {
       const { profile } = req.body;
@@ -180,18 +181,56 @@ async login(req, res) {
         });
       }
 
+      console.log("Received profile data:", profile);
+
+      // Transform the profile data based on the structure
+      let transformedProfile = { ...profile };
+
+      // Handle social links - convert simple strings to socialLinks object
+      if (profile.github || profile.linkedin || profile.portfolio) {
+        transformedProfile.socialLinks = {
+          github: profile.github || "",
+          linkedin: profile.linkedin || "",
+          portfolio: profile.portfolio || "",
+          twitter: profile.twitter || "",
+        };
+
+        // Remove the individual fields
+        delete transformedProfile.github;
+        delete transformedProfile.linkedin;
+        delete transformedProfile.portfolio;
+        delete transformedProfile.twitter;
+      }
+
+      // For judges, merge expertise into skills
+      if (profile.expertise && Array.isArray(profile.expertise)) {
+        transformedProfile.skills = [
+          ...(profile.skills || []),
+          ...profile.expertise,
+        ];
+        delete transformedProfile.expertise;
+      }
+
+      // Ensure skills is an array of strings
+      if (
+        transformedProfile.skills &&
+        !Array.isArray(transformedProfile.skills)
+      ) {
+        transformedProfile.skills = [];
+      }
+
+      console.log("Transformed profile data:", transformedProfile);
+
       // Update user profile
       const user = await User.findByIdAndUpdate(
         userId,
         {
-          profile: profile,
+          profile: transformedProfile,
           profileCompleted: true,
           updatedAt: new Date(),
         },
-        { new: true }
-      ).select(
-        "displayName email role profile profileCompleted"
-      );
+        { new: true, runValidators: true }
+      ).select("displayName email role profile profileCompleted");
 
       if (!user) {
         return res.status(404).json({

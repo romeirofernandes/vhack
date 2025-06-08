@@ -24,140 +24,240 @@ import {
   MdWork,
   MdSchool,
   MdStar,
+  MdCode,
 } from "react-icons/md";
-import { FaGithub, FaLinkedin, FaGlobe } from "react-icons/fa";
+import { FaGithub, FaLinkedin, FaGlobe, FaTwitter } from "react-icons/fa";
 import { Search, X } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 
 const Profile = () => {
-  const [profileData, setProfileData] = useState(null);
+  const [profileData, setProfileData] = useState({
+    displayName: "",
+    firstName: "",
+    lastName: "",
+    bio: "",
+    location: "",
+    company: "",
+    jobTitle: "",
+    experience: "",
+    skills: [],
+    education: [],
+    socialLinks: {
+      github: "",
+      linkedin: "",
+      portfolio: "",
+      twitter: "",
+    },
+    achievements: [],
+  });
+
   const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [activeTab, setActiveTab] = useState("basic");
 
+  // Skills from database
+  const [availableSkills, setAvailableSkills] = useState([]);
+
   const { user } = useAuth();
 
   useEffect(() => {
     fetchProfile();
+    fetchAvailableSkills();
   }, []);
+
+  const fetchAvailableSkills = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/skills`);
+      const data = await response.json();
+      if (data.success) {
+        setAvailableSkills(data.skills);
+      }
+    } catch (error) {
+      console.error("Failed to fetch skills:", error);
+      // Fallback skills if API fails
+      setAvailableSkills([
+        "JavaScript",
+        "TypeScript",
+        "Python",
+        "React",
+        "Node.js",
+        "Express.js",
+        "MongoDB",
+        "PostgreSQL",
+        "Docker",
+        "AWS",
+        "Git",
+        "HTML",
+        "CSS",
+        "Tailwind",
+      ]);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
-      const idToken = await user.getIdToken();
+      setLoading(true);
+      const idToken = await user.getIdToken(true);
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/profile`, {
         headers: {
           Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
         },
       });
 
       const data = await response.json();
       if (data.success) {
-        setProfileData(data.data);
-        setEditedData(data.data.profile || {});
+        console.log("Fetched profile data:", data.data);
+
+        setProfileData({
+          displayName: data.data.displayName || "",
+          firstName: data.data.profile?.firstName || "",
+          lastName: data.data.profile?.lastName || "",
+          bio: data.data.profile?.bio || "",
+          location: data.data.profile?.location || "",
+          company: data.data.profile?.company || "",
+          jobTitle: data.data.profile?.jobTitle || "",
+          experience: data.data.profile?.experience || "",
+          skills: data.data.profile?.skills || [], // Simple array of strings
+          education: data.data.profile?.education || [],
+          socialLinks: {
+            github: data.data.profile?.socialLinks?.github || "",
+            linkedin: data.data.profile?.socialLinks?.linkedin || "",
+            portfolio: data.data.profile?.socialLinks?.portfolio || "",
+            twitter: data.data.profile?.socialLinks?.twitter || "",
+          },
+          achievements: data.data.profile?.achievements || [],
+        });
       } else {
         setError(data.error || "Failed to fetch profile");
       }
     } catch (error) {
       console.error("Profile fetch error:", error);
-      setError("Something went wrong. Please try again.");
+      setError("Failed to load profile data");
     } finally {
       setLoading(false);
     }
   };
 
   const saveProfile = async () => {
-    setSaving(true);
-    setError("");
     try {
-      const idToken = await user.getIdToken();
+      setSaving(true);
+      setError("");
+      setSuccess("");
+
+      const validEducation = profileData.education.filter(
+        (edu) => edu && edu.institution && edu.degree
+      );
+
+      const validAchievements = profileData.achievements.filter(
+        (achievement) =>
+          achievement && achievement.title && achievement.description
+      );
+
+      const dataToSave = {
+        ...profileData,
+        skills: profileData.skills || [],
+        education: validEducation,
+        achievements: validAchievements,
+      };
+
+      console.log("Saving profile data:", dataToSave);
+
+      const idToken = await user.getIdToken(true);
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${idToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(editedData),
+        body: JSON.stringify(dataToSave),
       });
 
       const data = await response.json();
+
       if (data.success) {
-        setProfileData({ ...profileData, ...data.data });
-        setIsEditing(false);
         setSuccess("Profile updated successfully!");
+        setIsEditing(false);
         setTimeout(() => setSuccess(""), 3000);
+        await fetchProfile();
       } else {
         setError(data.error || "Failed to update profile");
       }
     } catch (error) {
-      console.error("Profile update error:", error);
-      setError("Something went wrong. Please try again.");
+      console.error("Profile save error:", error);
+      setError("Failed to save profile");
     } finally {
       setSaving(false);
     }
   };
 
-  const addAchievement = async (achievement) => {
-    try {
-      const idToken = await user.getIdToken();
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/profile/achievements`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(achievement),
-        }
-      );
-
-      const data = await response.json();
-      if (data.success) {
-        fetchProfile();
-        setSuccess("Achievement added successfully!");
-        setTimeout(() => setSuccess(""), 3000);
-      } else {
-        setError(data.error || "Failed to add achievement");
-      }
-    } catch (error) {
-      console.error("Add achievement error:", error);
-      setError("Something went wrong. Please try again.");
-    }
-  };
-
-  const removeAchievement = async (achievementId) => {
-    try {
-      const idToken = await user.getIdToken();
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/profile/achievements/${achievementId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-      if (data.success) {
-        fetchProfile();
-        setSuccess("Achievement removed successfully!");
-        setTimeout(() => setSuccess(""), 3000);
-      } else {
-        setError(data.error || "Failed to remove achievement");
-      }
-    } catch (error) {
-      console.error("Remove achievement error:", error);
-      setError("Something went wrong. Please try again.");
-    }
-  };
-
   const handleInputChange = (field, value) => {
-    setEditedData({ ...editedData, [field]: value });
+    if (field.includes(".")) {
+      const [parent, child] = field.split(".");
+      setProfileData((prev) => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: value,
+        },
+      }));
+    } else {
+      setProfileData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
+  };
+
+  const addSkill = (skillName) => {
+    if (skillName.trim() && !profileData.skills.includes(skillName.trim())) {
+      setProfileData((prev) => ({
+        ...prev,
+        skills: [...prev.skills, skillName.trim()],
+      }));
+    }
+  };
+
+  const removeSkill = (index) => {
+    setProfileData((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addEducation = (education) => {
+    setProfileData((prev) => ({
+      ...prev,
+      education: [...prev.education, { ...education, id: Date.now() }],
+    }));
+  };
+
+  const removeEducation = (id) => {
+    setProfileData((prev) => ({
+      ...prev,
+      education: prev.education.filter((edu) => edu.id !== id),
+    }));
+  };
+
+  const addAchievement = (achievement) => {
+    setProfileData((prev) => ({
+      ...prev,
+      achievements: [...prev.achievements, { ...achievement, id: Date.now() }],
+    }));
+  };
+
+  const removeAchievement = (id) => {
+    setProfileData((prev) => ({
+      ...prev,
+      achievements: prev.achievements.filter(
+        (achievement) => achievement.id !== id
+      ),
+    }));
   };
 
   const tabs = [
@@ -177,7 +277,7 @@ const Profile = () => {
 
   return (
     <div className="h-[calc(100vh-120px)] flex flex-col space-y-4">
-      {/* Compact Header */}
+      {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-white/10 flex-shrink-0">
         <div>
           <h1 className="text-2xl font-semibold text-white">Profile</h1>
@@ -186,16 +286,6 @@ const Profile = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Badge
-            variant={profileData?.profileCompleted ? "default" : "destructive"}
-            className={`text-xs px-3 py-1 ${
-              profileData?.profileCompleted
-                ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/50"
-                : "bg-amber-950/60 text-amber-400 border-amber-800/50"
-            }`}
-          >
-            {profileData?.profileCompleted ? "Complete" : "Incomplete"}
-          </Badge>
           {!isEditing ? (
             <Button
               onClick={() => setIsEditing(true)}
@@ -209,7 +299,7 @@ const Profile = () => {
               <Button
                 onClick={saveProfile}
                 disabled={saving}
-                className="bg-emerald-700 hover:bg-emerald-600 h-9 px-4 text-sm"
+                className="bg-emerald-700 hover:bg-emerald-600 text-white h-9 px-4 text-sm"
               >
                 <MdSave className="w-4 h-4 mr-1" />
                 {saving ? "Saving..." : "Save"}
@@ -217,10 +307,10 @@ const Profile = () => {
               <Button
                 onClick={() => {
                   setIsEditing(false);
-                  setEditedData(profileData?.profile || {});
+                  fetchProfile(); // Reset data
                 }}
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/5 h-9 px-4 text-sm"
+                className="bg-transparent border-white/40 text-white hover:bg-white/10 hover:text-white hover:border-white/60 h-9 px-4 text-sm"
               >
                 <MdCancel className="w-4 h-4 mr-1" />
                 Cancel
@@ -230,7 +320,7 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Compact Alerts */}
+      {/* Alerts */}
       {(error || success) && (
         <div className="space-y-2 flex-shrink-0">
           {error && (
@@ -250,7 +340,7 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Centered Responsive Tab Bar */}
+      {/* Tab Navigation */}
       <div className="flex justify-center flex-shrink-0">
         <div className="flex space-x-1 bg-white/5 p-1 rounded-lg w-auto">
           {tabs.map((tab) => (
@@ -261,11 +351,7 @@ const Profile = () => {
                 activeTab === tab.id
                   ? "bg-white text-zinc-950 font-medium"
                   : "text-white/70 hover:text-white hover:bg-white/10"
-              } rounded-md
-              ${/* Mobile: icon only */ ""}
-              sm:space-x-2 sm:px-3 sm:py-2 px-3 py-2
-              ${/* Desktop: icon + label */ ""}
-              `}
+              } rounded-md sm:space-x-2 sm:px-3 sm:py-2 px-3 py-2`}
             >
               <tab.icon className="w-4 h-4" />
               <span className="hidden sm:inline text-sm">{tab.label}</span>
@@ -274,8 +360,8 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Content Area - No Scrollbars */}
-      <div className="flex-1 min-h-0">
+      {/* Content */}
+      <div className="flex-1 min-h-0 overflow-auto">
         <motion.div
           key={activeTab}
           initial={{ opacity: 0, y: 10 }}
@@ -285,30 +371,35 @@ const Profile = () => {
         >
           {activeTab === "basic" && (
             <BasicInfoTab
-              data={editedData}
+              data={profileData}
               isEditing={isEditing}
               onChange={handleInputChange}
             />
           )}
           {activeTab === "professional" && (
             <ProfessionalTab
-              data={editedData}
+              data={profileData}
               isEditing={isEditing}
               onChange={handleInputChange}
+              onAddSkill={addSkill}
+              onRemoveSkill={removeSkill}
+              availableSkills={availableSkills}
             />
           )}
           {activeTab === "education" && (
             <EducationTab
-              data={editedData}
+              data={profileData}
               isEditing={isEditing}
-              onChange={handleInputChange}
+              onAddEducation={addEducation}
+              onRemoveEducation={removeEducation}
             />
           )}
           {activeTab === "achievements" && (
             <AchievementsTab
-              achievements={profileData?.profile?.achievements || []}
-              onAdd={addAchievement}
-              onRemove={removeAchievement}
+              data={profileData}
+              isEditing={isEditing}
+              onAddAchievement={addAchievement}
+              onRemoveAchievement={removeAchievement}
             />
           )}
         </motion.div>
@@ -317,7 +408,7 @@ const Profile = () => {
   );
 };
 
-// Basic Info Tab Component (unchanged)
+// Basic Info Tab
 const BasicInfoTab = ({ data, isEditing, onChange }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
     <Card className="bg-white/5 border-white/10">
@@ -373,7 +464,7 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
               placeholder="Tell us about yourself..."
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 h-20 overflow-hidden">
+            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 h-20 overflow-auto">
               {data.bio || <span className="text-white/50">Not set</span>}
             </p>
           )}
@@ -408,21 +499,21 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
           </Label>
           {isEditing ? (
             <Input
-              value={data.github || ""}
-              onChange={(e) => onChange("github", e.target.value)}
+              value={data.socialLinks?.github || ""}
+              onChange={(e) => onChange("socialLinks.github", e.target.value)}
               className="bg-white/5 border-white/20 text-white h-9 text-sm"
               placeholder="https://github.com/username"
             />
           ) : (
             <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
-              {data.github ? (
+              {data.socialLinks?.github ? (
                 <a
-                  href={data.github}
+                  href={data.socialLinks.github}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sky-400 hover:underline"
                 >
-                  {data.github}
+                  {data.socialLinks.github}
                 </a>
               ) : (
                 <span className="text-white/50">Not set</span>
@@ -437,21 +528,21 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
           </Label>
           {isEditing ? (
             <Input
-              value={data.linkedin || ""}
-              onChange={(e) => onChange("linkedin", e.target.value)}
+              value={data.socialLinks?.linkedin || ""}
+              onChange={(e) => onChange("socialLinks.linkedin", e.target.value)}
               className="bg-white/5 border-white/20 text-white h-9 text-sm"
               placeholder="https://linkedin.com/in/username"
             />
           ) : (
             <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
-              {data.linkedin ? (
+              {data.socialLinks?.linkedin ? (
                 <a
-                  href={data.linkedin}
+                  href={data.socialLinks.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sky-400 hover:underline"
                 >
-                  {data.linkedin}
+                  {data.socialLinks.linkedin}
                 </a>
               ) : (
                 <span className="text-white/50">Not set</span>
@@ -466,21 +557,52 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
           </Label>
           {isEditing ? (
             <Input
-              value={data.portfolio || ""}
-              onChange={(e) => onChange("portfolio", e.target.value)}
+              value={data.socialLinks?.portfolio || ""}
+              onChange={(e) =>
+                onChange("socialLinks.portfolio", e.target.value)
+              }
               className="bg-white/5 border-white/20 text-white h-9 text-sm"
               placeholder="https://yourportfolio.com"
             />
           ) : (
             <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
-              {data.portfolio ? (
+              {data.socialLinks?.portfolio ? (
                 <a
-                  href={data.portfolio}
+                  href={data.socialLinks.portfolio}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sky-400 hover:underline"
                 >
-                  {data.portfolio}
+                  {data.socialLinks.portfolio}
+                </a>
+              ) : (
+                <span className="text-white/50">Not set</span>
+              )}
+            </p>
+          )}
+        </div>
+        <div>
+          <Label className="text-white/80 flex items-center gap-2 text-sm">
+            <FaTwitter className="w-3 h-3" />
+            Twitter
+          </Label>
+          {isEditing ? (
+            <Input
+              value={data.socialLinks?.twitter || ""}
+              onChange={(e) => onChange("socialLinks.twitter", e.target.value)}
+              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              placeholder="https://twitter.com/username"
+            />
+          ) : (
+            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+              {data.socialLinks?.twitter ? (
+                <a
+                  href={data.socialLinks.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-400 hover:underline"
+                >
+                  {data.socialLinks.twitter}
                 </a>
               ) : (
                 <span className="text-white/50">Not set</span>
@@ -493,130 +615,58 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
   </div>
 );
 
-// Professional Tab Component (unchanged from previous - with skill management)
-const ProfessionalTab = ({ data, isEditing, onChange }) => {
-  const [skillInputs, setSkillInputs] = useState({
-    programmingLanguages: "",
-    frameworks: "",
-    interests: "",
-  });
-  const [filteredSkills, setFilteredSkills] = useState({
-    programmingLanguages: [],
-    frameworks: [],
-    interests: [],
-  });
-  const [showDropdowns, setShowDropdowns] = useState({
-    programmingLanguages: false,
-    frameworks: false,
-    interests: false,
-  });
-
-  const skillSuggestions = {
-    programmingLanguages: [
-      "JavaScript",
-      "TypeScript",
-      "Python",
-      "Java",
-      "C++",
-      "C#",
-      "Go",
-      "Rust",
-      "Ruby",
-      "Swift",
-      "Kotlin",
-      "PHP",
-      "Dart",
-      "Scala",
-    ],
-    frameworks: [
-      "React",
-      "Vue.js",
-      "Angular",
-      "Next.js",
-      "Node.js",
-      "Express",
-      "Django",
-      "Flask",
-      "Spring Boot",
-      "Laravel",
-      "Ruby on Rails",
-      "FastAPI",
-    ],
-    interests: [
-      "AI/ML",
-      "Web Development",
-      "Mobile Development",
-      "Blockchain",
-      "Cloud Computing",
-      "DevOps",
-      "Cybersecurity",
-      "Game Development",
-      "IoT",
-      "Data Science",
-    ],
-  };
+// Professional Tab with debounced search
+const ProfessionalTab = ({
+  data,
+  isEditing,
+  onChange,
+  onAddSkill,
+  onRemoveSkill,
+  availableSkills,
+}) => {
+  const [newSkill, setNewSkill] = useState("");
+  const [filteredSkills, setFilteredSkills] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
 
   // Debounced search effect
   useEffect(() => {
-    Object.keys(skillInputs).forEach((category) => {
-      const timer = setTimeout(() => {
-        if (skillInputs[category].trim()) {
-          const filtered = skillSuggestions[category]
-            .filter(
-              (skill) =>
-                skill
-                  .toLowerCase()
-                  .includes(skillInputs[category].toLowerCase()) &&
-                !(data[category] || []).includes(skill)
-            )
-            .slice(0, 6);
-          setFilteredSkills((prev) => ({ ...prev, [category]: filtered }));
-          setShowDropdowns((prev) => ({
-            ...prev,
-            [category]: filtered.length > 0,
-          }));
-        } else {
-          setFilteredSkills((prev) => ({ ...prev, [category]: [] }));
-          setShowDropdowns((prev) => ({ ...prev, [category]: false }));
-        }
-      }, 300);
+    const timer = setTimeout(() => {
+      if (newSkill.trim()) {
+        const filtered = availableSkills
+          .filter(
+            (skill) =>
+              skill.toLowerCase().includes(newSkill.toLowerCase()) &&
+              !data.skills.includes(skill)
+          )
+          .slice(0, 8);
+        setFilteredSkills(filtered);
+        setShowDropdown(filtered.length > 0);
+      } else {
+        setFilteredSkills([]);
+        setShowDropdown(false);
+      }
+    }, 300);
 
-      return () => clearTimeout(timer);
-    });
-  }, [skillInputs, data]);
+    return () => clearTimeout(timer);
+  }, [newSkill, data.skills, availableSkills]);
 
-  const addSkill = (category, skill) => {
-    const currentSkills = data[category] || [];
-    if (!currentSkills.includes(skill)) {
-      onChange(category, [...currentSkills, skill]);
-      setSkillInputs((prev) => ({ ...prev, [category]: "" }));
-      setShowDropdowns((prev) => ({ ...prev, [category]: false }));
-    }
+  const handleAddSkill = (skill) => {
+    onAddSkill(skill);
+    setNewSkill("");
+    setShowDropdown(false);
   };
 
-  const removeSkill = (category, skillToRemove) => {
-    const currentSkills = data[category] || [];
-    onChange(
-      category,
-      currentSkills.filter((skill) => skill !== skillToRemove)
-    );
-  };
-
-  const handleSkillInputChange = (category, value) => {
-    setSkillInputs((prev) => ({ ...prev, [category]: value }));
-  };
-
-  const handleSkillInputKeyDown = (category, e) => {
+  const handleSkillInputKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (filteredSkills[category].length > 0) {
-        addSkill(category, filteredSkills[category][0]);
-      } else if (skillInputs[category].trim()) {
-        addSkill(category, skillInputs[category].trim());
+      if (filteredSkills.length > 0) {
+        handleAddSkill(filteredSkills[0]);
+      } else if (newSkill.trim()) {
+        handleAddSkill(newSkill.trim());
       }
     } else if (e.key === "Escape") {
-      setShowDropdowns((prev) => ({ ...prev, [category]: false }));
-      setSkillInputs((prev) => ({ ...prev, [category]: "" }));
+      setShowDropdown(false);
+      setNewSkill("");
     }
   };
 
@@ -669,13 +719,31 @@ const ProfessionalTab = ({ data, isEditing, onChange }) => {
                 <SelectTrigger className="bg-white/5 border-white/20 text-white h-9 text-sm">
                   <SelectValue placeholder="Select experience level" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="entry">Entry Level (0-2 years)</SelectItem>
-                  <SelectItem value="mid">Mid Level (2-5 years)</SelectItem>
-                  <SelectItem value="senior">Senior (5+ years)</SelectItem>
-                  <SelectItem value="lead">Lead/Manager</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                <SelectContent className="bg-zinc-900 border-white/20">
+                  <SelectItem
+                    value="beginner"
+                    className="text-white hover:bg-white/10"
+                  >
+                    Beginner (0-1 years)
+                  </SelectItem>
+                  <SelectItem
+                    value="intermediate"
+                    className="text-white hover:bg-white/10"
+                  >
+                    Intermediate (1-3 years)
+                  </SelectItem>
+                  <SelectItem
+                    value="advanced"
+                    className="text-white hover:bg-white/10"
+                  >
+                    Advanced (3-5 years)
+                  </SelectItem>
+                  <SelectItem
+                    value="expert"
+                    className="text-white hover:bg-white/10"
+                  >
+                    Expert (5+ years)
+                  </SelectItem>
                 </SelectContent>
               </Select>
             ) : (
@@ -691,303 +759,108 @@ const ProfessionalTab = ({ data, isEditing, onChange }) => {
 
       <Card className="bg-white/5 border-white/10">
         <CardHeader className="pb-3">
-          <CardTitle className="text-white text-lg">
-            Skills & Technologies
+          <CardTitle className="text-white text-lg flex items-center gap-2">
+            <MdCode className="w-5 h-5" />
+            Skills
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {/* Programming Languages */}
-          <div>
-            <Label className="text-white/80 text-sm">
-              Programming Languages
-            </Label>
-            {isEditing ? (
-              <div className="space-y-2">
-                {(data.programmingLanguages || []).length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {data.programmingLanguages.map((lang, index) => (
-                      <Badge
-                        key={index}
-                        className="bg-violet-950/60 text-violet-300 border-violet-800/50 text-xs px-2 py-0.5 cursor-pointer group"
-                        onClick={() =>
-                          removeSkill("programmingLanguages", lang)
-                        }
-                      >
-                        {lang}
-                        <X className="w-3 h-3 ml-1 group-hover:text-red-300" />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-                <div className="relative">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/40" />
-                    <Input
-                      value={skillInputs.programmingLanguages}
-                      onChange={(e) =>
-                        handleSkillInputChange(
-                          "programmingLanguages",
-                          e.target.value
-                        )
-                      }
-                      onKeyDown={(e) =>
-                        handleSkillInputKeyDown("programmingLanguages", e)
-                      }
-                      onFocus={() =>
-                        skillInputs.programmingLanguages &&
-                        setShowDropdowns((prev) => ({
-                          ...prev,
-                          programmingLanguages:
-                            filteredSkills.programmingLanguages.length > 0,
-                        }))
-                      }
-                      className="bg-white/5 border-white/20 text-white h-9 text-sm pl-7"
-                      placeholder="Search or add languages..."
-                    />
-                  </div>
-                  {showDropdowns.programmingLanguages && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/20 rounded-md shadow-lg z-10 max-h-32 overflow-y-auto">
-                      {filteredSkills.programmingLanguages.map((skill) => (
-                        <div
-                          key={skill}
-                          className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white text-sm border-b border-white/10 last:border-b-0"
-                          onClick={() =>
-                            addSkill("programmingLanguages", skill)
-                          }
-                        >
-                          {skill}
-                        </div>
-                      ))}
-                      {skillInputs.programmingLanguages &&
-                        !skillSuggestions.programmingLanguages.some(
-                          (skill) =>
-                            skill.toLowerCase() ===
-                            skillInputs.programmingLanguages.toLowerCase()
-                        ) && (
-                          <div
-                            className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white/80 text-sm italic"
-                            onClick={() =>
-                              addSkill(
-                                "programmingLanguages",
-                                skillInputs.programmingLanguages.trim()
-                              )
-                            }
-                          >
-                            Add "{skillInputs.programmingLanguages}"
-                          </div>
-                        )}
-                    </div>
-                  )}
+          {isEditing && (
+            <div className="relative">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/40" />
+                  <Input
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyDown={handleSkillInputKeyDown}
+                    onFocus={() =>
+                      newSkill && setShowDropdown(filteredSkills.length > 0)
+                    }
+                    className="bg-white/5 border-white/20 text-white h-9 text-sm pl-9"
+                    placeholder="Search or add skills..."
+                  />
                 </div>
+                <Button
+                  onClick={() =>
+                    newSkill.trim() && handleAddSkill(newSkill.trim())
+                  }
+                  className="bg-white/10 text-white border-white/20 hover:bg-white/20 h-9 px-3"
+                  variant="outline"
+                >
+                  <MdAdd className="w-4 h-4" />
+                </Button>
               </div>
-            ) : (
-              <div className="flex flex-wrap gap-1 mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 min-h-[36px] items-center">
-                {(data.programmingLanguages || []).length > 0 ? (
-                  data.programmingLanguages.map((lang, index) => (
-                    <Badge
-                      key={index}
-                      className="bg-violet-950/60 text-violet-300 border-violet-800/50 text-xs px-2 py-0.5"
+
+              {/* Dropdown */}
+              {showDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/20 rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+                  {filteredSkills.map((skill) => (
+                    <div
+                      key={skill}
+                      className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white border-b border-white/10 last:border-b-0"
+                      onClick={() => handleAddSkill(skill)}
                     >
-                      {lang}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-white/50 text-sm">Not set</span>
+                      {skill}
+                    </div>
+                  ))}
+                  {newSkill &&
+                    !availableSkills.some(
+                      (skill) => skill.toLowerCase() === newSkill.toLowerCase()
+                    ) && (
+                      <div
+                        className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white/80 border-b border-white/10 last:border-b-0 italic"
+                        onClick={() => handleAddSkill(newSkill.trim())}
+                      >
+                        Add "{newSkill}" as custom skill
+                      </div>
+                    )}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2 max-h-64 overflow-auto">
+            {data.skills?.map((skill, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
+              >
+                <span className="text-white text-sm">{skill}</span>
+                {isEditing && (
+                  <Button
+                    onClick={() => onRemoveSkill(index)}
+                    variant="outline"
+                    size="sm"
+                    className="border-red-800/50 text-red-400 hover:bg-red-900/20 hover:border-red-700/50 h-6 w-6 p-0"
+                  >
+                    <MdDelete className="w-3 h-3" />
+                  </Button>
                 )}
               </div>
-            )}
+            ))}
           </div>
 
-          {/* Frameworks & Tools */}
-          <div>
-            <Label className="text-white/80 text-sm">Frameworks & Tools</Label>
-            {isEditing ? (
-              <div className="space-y-2">
-                {(data.frameworks || []).length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {data.frameworks.map((framework, index) => (
-                      <Badge
-                        key={index}
-                        className="bg-emerald-950/60 text-emerald-300 border-emerald-800/50 text-xs px-2 py-0.5 cursor-pointer group"
-                        onClick={() => removeSkill("frameworks", framework)}
-                      >
-                        {framework}
-                        <X className="w-3 h-3 ml-1 group-hover:text-red-300" />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-                <div className="relative">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/40" />
-                    <Input
-                      value={skillInputs.frameworks}
-                      onChange={(e) =>
-                        handleSkillInputChange("frameworks", e.target.value)
-                      }
-                      onKeyDown={(e) =>
-                        handleSkillInputKeyDown("frameworks", e)
-                      }
-                      onFocus={() =>
-                        skillInputs.frameworks &&
-                        setShowDropdowns((prev) => ({
-                          ...prev,
-                          frameworks: filteredSkills.frameworks.length > 0,
-                        }))
-                      }
-                      className="bg-white/5 border-white/20 text-white h-9 text-sm pl-7"
-                      placeholder="Search or add frameworks..."
-                    />
-                  </div>
-                  {showDropdowns.frameworks && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/20 rounded-md shadow-lg z-10 max-h-32 overflow-y-auto">
-                      {filteredSkills.frameworks.map((skill) => (
-                        <div
-                          key={skill}
-                          className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white text-sm border-b border-white/10 last:border-b-0"
-                          onClick={() => addSkill("frameworks", skill)}
-                        >
-                          {skill}
-                        </div>
-                      ))}
-                      {skillInputs.frameworks &&
-                        !skillSuggestions.frameworks.some(
-                          (skill) =>
-                            skill.toLowerCase() ===
-                            skillInputs.frameworks.toLowerCase()
-                        ) && (
-                          <div
-                            className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white/80 text-sm italic"
-                            onClick={() =>
-                              addSkill(
-                                "frameworks",
-                                skillInputs.frameworks.trim()
-                              )
-                            }
-                          >
-                            Add "{skillInputs.frameworks}"
-                          </div>
-                        )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-1 mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 min-h-[36px] items-center">
-                {(data.frameworks || []).length > 0 ? (
-                  data.frameworks.map((framework, index) => (
-                    <Badge
-                      key={index}
-                      className="bg-emerald-950/60 text-emerald-300 border-emerald-800/50 text-xs px-2 py-0.5"
-                    >
-                      {framework}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-white/50 text-sm">Not set</span>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Interests */}
-          <div>
-            <Label className="text-white/80 text-sm">Interests</Label>
-            {isEditing ? (
-              <div className="space-y-2">
-                {(data.interests || []).length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {data.interests.map((interest, index) => (
-                      <Badge
-                        key={index}
-                        className="bg-indigo-950/60 text-indigo-300 border-indigo-800/50 text-xs px-2 py-0.5 cursor-pointer group"
-                        onClick={() => removeSkill("interests", interest)}
-                      >
-                        {interest}
-                        <X className="w-3 h-3 ml-1 group-hover:text-red-300" />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-                <div className="relative">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/40" />
-                    <Input
-                      value={skillInputs.interests}
-                      onChange={(e) =>
-                        handleSkillInputChange("interests", e.target.value)
-                      }
-                      onKeyDown={(e) => handleSkillInputKeyDown("interests", e)}
-                      onFocus={() =>
-                        skillInputs.interests &&
-                        setShowDropdowns((prev) => ({
-                          ...prev,
-                          interests: filteredSkills.interests.length > 0,
-                        }))
-                      }
-                      className="bg-white/5 border-white/20 text-white h-9 text-sm pl-7"
-                      placeholder="Search or add interests..."
-                    />
-                  </div>
-                  {showDropdowns.interests && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/20 rounded-md shadow-lg z-10 max-h-32 overflow-y-auto">
-                      {filteredSkills.interests.map((skill) => (
-                        <div
-                          key={skill}
-                          className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white text-sm border-b border-white/10 last:border-b-0"
-                          onClick={() => addSkill("interests", skill)}
-                        >
-                          {skill}
-                        </div>
-                      ))}
-                      {skillInputs.interests &&
-                        !skillSuggestions.interests.some(
-                          (skill) =>
-                            skill.toLowerCase() ===
-                            skillInputs.interests.toLowerCase()
-                        ) && (
-                          <div
-                            className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white/80 text-sm italic"
-                            onClick={() =>
-                              addSkill(
-                                "interests",
-                                skillInputs.interests.trim()
-                              )
-                            }
-                          >
-                            Add "{skillInputs.interests}"
-                          </div>
-                        )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-1 mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 min-h-[36px] items-center">
-                {(data.interests || []).length > 0 ? (
-                  data.interests.map((interest, index) => (
-                    <Badge
-                      key={index}
-                      className="bg-indigo-950/60 text-indigo-300 border-indigo-800/50 text-xs px-2 py-0.5"
-                    >
-                      {interest}
-                    </Badge>
-                  ))
-                ) : (
-                  <span className="text-white/50 text-sm">Not set</span>
-                )}
-              </div>
-            )}
-          </div>
+          {(!data.skills || data.skills.length === 0) && (
+            <div className="text-center py-8">
+              <MdCode className="w-8 h-8 text-white/20 mx-auto mb-2" />
+              <p className="text-white/50 text-sm">No skills added yet</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
   );
 };
 
-// Education Tab Component
-const EducationTab = ({ data, isEditing, onChange }) => {
-  const [education, setEducation] = useState(data.education || []);
+// Prettier Education Tab
+const EducationTab = ({
+  data,
+  isEditing,
+  onAddEducation,
+  onRemoveEducation,
+}) => {
+  const [showAddForm, setShowAddForm] = useState(false);
   const [newEducation, setNewEducation] = useState({
     institution: "",
     degree: "",
@@ -996,16 +869,10 @@ const EducationTab = ({ data, isEditing, onChange }) => {
     endYear: "",
     current: false,
   });
-  const [showAddForm, setShowAddForm] = useState(false);
 
-  const addEducation = () => {
+  const handleAddEducation = () => {
     if (newEducation.institution && newEducation.degree) {
-      const updatedEducation = [
-        ...education,
-        { ...newEducation, id: Date.now() },
-      ];
-      setEducation(updatedEducation);
-      onChange("education", updatedEducation);
+      onAddEducation(newEducation);
       setNewEducation({
         institution: "",
         degree: "",
@@ -1016,12 +883,6 @@ const EducationTab = ({ data, isEditing, onChange }) => {
       });
       setShowAddForm(false);
     }
-  };
-
-  const removeEducation = (id) => {
-    const updatedEducation = education.filter((edu) => edu.id !== id);
-    setEducation(updatedEducation);
-    onChange("education", updatedEducation);
   };
 
   return (
@@ -1042,12 +903,14 @@ const EducationTab = ({ data, isEditing, onChange }) => {
       </div>
 
       {showAddForm && (
-        <Card className="bg-white/5 border-white/10">
+        <Card className="bg-emerald-950/20 border-emerald-800/30">
           <CardContent className="pt-4">
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-white/80 text-sm">Institution</Label>
+                  <Label className="text-white/80 text-sm font-medium">
+                    Institution *
+                  </Label>
                   <Input
                     value={newEducation.institution}
                     onChange={(e) =>
@@ -1056,12 +919,14 @@ const EducationTab = ({ data, isEditing, onChange }) => {
                         institution: e.target.value,
                       })
                     }
-                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                    className="bg-white/10 border-white/30 text-white h-10 text-sm mt-1"
                     placeholder="University/School name"
                   />
                 </div>
                 <div>
-                  <Label className="text-white/80 text-sm">Degree</Label>
+                  <Label className="text-white/80 text-sm font-medium">
+                    Degree *
+                  </Label>
                   <Input
                     value={newEducation.degree}
                     onChange={(e) =>
@@ -1070,25 +935,31 @@ const EducationTab = ({ data, isEditing, onChange }) => {
                         degree: e.target.value,
                       })
                     }
-                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                    className="bg-white/10 border-white/30 text-white h-10 text-sm mt-1"
                     placeholder="Bachelor's, Master's, etc."
                   />
                 </div>
               </div>
+
               <div>
-                <Label className="text-white/80 text-sm">Field of Study</Label>
+                <Label className="text-white/80 text-sm font-medium">
+                  Field of Study
+                </Label>
                 <Input
                   value={newEducation.field}
                   onChange={(e) =>
                     setNewEducation({ ...newEducation, field: e.target.value })
                   }
-                  className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                  className="bg-white/10 border-white/30 text-white h-10 text-sm mt-1"
                   placeholder="Computer Science, Engineering, etc."
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-white/80 text-sm">Start Year</Label>
+                  <Label className="text-white/80 text-sm font-medium">
+                    Start Year
+                  </Label>
                   <Input
                     type="number"
                     value={newEducation.startYear}
@@ -1098,12 +969,16 @@ const EducationTab = ({ data, isEditing, onChange }) => {
                         startYear: e.target.value,
                       })
                     }
-                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                    className="bg-white/10 border-white/30 text-white h-10 text-sm mt-1"
                     placeholder="2020"
+                    min="1950"
+                    max="2030"
                   />
                 </div>
                 <div>
-                  <Label className="text-white/80 text-sm">End Year</Label>
+                  <Label className="text-white/80 text-sm font-medium">
+                    End Year
+                  </Label>
                   <Input
                     type="number"
                     value={newEducation.endYear}
@@ -1114,12 +989,15 @@ const EducationTab = ({ data, isEditing, onChange }) => {
                       })
                     }
                     disabled={newEducation.current}
-                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                    className="bg-white/10 border-white/30 text-white h-10 text-sm mt-1 disabled:opacity-50 disabled:bg-white/5"
                     placeholder="2024"
+                    min="1950"
+                    max="2030"
                   />
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+
+              <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
                 <input
                   type="checkbox"
                   checked={newEducation.current}
@@ -1130,23 +1008,25 @@ const EducationTab = ({ data, isEditing, onChange }) => {
                       endYear: e.target.checked ? "" : newEducation.endYear,
                     })
                   }
-                  className="w-4 h-4"
+                  className="w-4 h-4 rounded bg-white/10 border-white/30 text-emerald-600"
                 />
-                <Label className="text-white/80 text-sm">
+                <Label className="text-white/90 text-sm font-medium">
                   Currently studying here
                 </Label>
               </div>
-              <div className="flex gap-2 pt-2">
+
+              <div className="flex gap-3 pt-2">
                 <Button
-                  onClick={addEducation}
-                  className="bg-emerald-700 hover:bg-emerald-600 h-9 px-4 text-sm"
+                  onClick={handleAddEducation}
+                  disabled={!newEducation.institution || !newEducation.degree}
+                  className="bg-emerald-700 hover:bg-emerald-600 text-white h-10 px-6 text-sm font-medium disabled:opacity-50"
                 >
                   Add Education
                 </Button>
                 <Button
                   onClick={() => setShowAddForm(false)}
                   variant="outline"
-                  className="border-white/20 text-white hover:bg-white/5 h-9 px-4 text-sm"
+                  className="bg-transparent border-white/40 text-white hover:bg-white/10 hover:text-white hover:border-white/60 h-10 px-6 text-sm"
                 >
                   Cancel
                 </Button>
@@ -1156,46 +1036,84 @@ const EducationTab = ({ data, isEditing, onChange }) => {
         </Card>
       )}
 
-      <div className="space-y-3">
-        {education.map((edu) => (
-          <Card key={edu.id} className="bg-white/5 border-white/10">
-            <CardContent className="pt-3">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h4 className="text-white font-medium text-sm">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {data.education?.map((edu) => (
+          <Card
+            key={edu.id}
+            className="bg-gradient-to-br from-white/5 to-white/10 border-white/20 hover:from-white/10 hover:to-white/15 transition-all duration-300"
+          >
+            <CardContent className="pt-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-2">
+                    <MdSchool className="w-5 h-5 text-blue-400 mt-0.5" />
+                    {isEditing && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onRemoveEducation(edu.id)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-950/20 h-6 w-6 p-0 -mt-1"
+                      >
+                        <MdDelete className="w-3 h-3" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <h4 className="text-white font-semibold text-base mb-1 leading-tight">
                     {edu.institution}
                   </h4>
-                  <p className="text-white/70 text-xs">
-                    {edu.degree} {edu.field && `in ${edu.field}`}
-                  </p>
-                  <p className="text-white/50 text-xs">
-                    {edu.startYear} - {edu.current ? "Present" : edu.endYear}
-                  </p>
+
+                  <div className="space-y-1">
+                    <p className="text-blue-300 text-sm font-medium">
+                      {edu.degree}
+                      {edu.field && (
+                        <span className="text-white/70 font-normal">
+                          {" "}
+                          in {edu.field}
+                        </span>
+                      )}
+                    </p>
+
+                    {(edu.startYear || edu.endYear) && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 text-white/60 text-xs">
+                          <div className="w-1 h-1 bg-white/60 rounded-full"></div>
+                          <span>
+                            {edu.startYear} -{" "}
+                            {edu.current ? (
+                              <span className="text-emerald-400 font-medium">
+                                Present
+                              </span>
+                            ) : (
+                              edu.endYear || "Unknown"
+                            )}
+                          </span>
+                        </div>
+                        {edu.current && (
+                          <Badge className="bg-emerald-950/60 text-emerald-300 border-emerald-800/50 text-xs px-2 py-0.5">
+                            Current
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {isEditing && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeEducation(edu.id)}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-950/20 h-6 w-6 p-0"
-                  >
-                    <MdDelete className="w-3 h-3" />
-                  </Button>
-                )}
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {education.length === 0 && !showAddForm && (
-        <div className="text-center py-12">
-          <MdSchool className="w-12 h-12 text-white/20 mx-auto mb-4" />
-          <p className="text-white/50 mb-4 text-sm">No education added yet</p>
+      {(!data.education || data.education.length === 0) && !showAddForm && (
+        <div className="text-center py-16">
+          <div className="bg-white/5 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+            <MdSchool className="w-8 h-8 text-white/30" />
+          </div>
+          <p className="text-white/50 mb-6 text-base">No education added yet</p>
           {isEditing && (
             <Button
               onClick={() => setShowAddForm(true)}
-              className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
+              className="bg-white text-zinc-950 hover:bg-white/90 h-10 px-6 text-sm font-medium"
             >
               Add Your First Education
             </Button>
@@ -1206,48 +1124,58 @@ const EducationTab = ({ data, isEditing, onChange }) => {
   );
 };
 
-// Achievements Tab Component (unchanged from previous)
-const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
+// Achievements Tab with full editing
+const AchievementsTab = ({
+  data,
+  isEditing,
+  onAddAchievement,
+  onRemoveAchievement,
+}) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newAchievement, setNewAchievement] = useState({
     title: "",
     description: "",
-    type: "hackathon",
+    type: "",
     date: "",
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onAdd(newAchievement);
-    setNewAchievement({
-      title: "",
-      description: "",
-      type: "hackathon",
-      date: "",
-    });
-    setShowAddForm(false);
+  const handleAddAchievement = () => {
+    if (newAchievement.title && newAchievement.description) {
+      onAddAchievement(newAchievement);
+      setNewAchievement({
+        title: "",
+        description: "",
+        type: "",
+        date: "",
+      });
+      setShowAddForm(false);
+    }
   };
 
   return (
     <div className="space-y-4 h-full">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-medium text-white">Your Achievements</h3>
-        <Button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
-        >
-          <MdAdd className="w-4 h-4 mr-1" />
-          Add Achievement
-        </Button>
+        {isEditing && (
+          <Button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
+          >
+            <MdAdd className="w-4 h-4 mr-1" />
+            Add Achievement
+          </Button>
+        )}
       </div>
 
       {showAddForm && (
-        <Card className="bg-white/5 border-white/10">
+        <Card className="bg-yellow-950/20 border-yellow-800/30">
           <CardContent className="pt-4">
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-white/80 text-sm">Title</Label>
+                  <Label className="text-white/80 text-sm font-medium">
+                    Title *
+                  </Label>
                   <Input
                     value={newAchievement.title}
                     onChange={(e) =>
@@ -1256,35 +1184,69 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
                         title: e.target.value,
                       })
                     }
-                    className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                    className="bg-white/10 border-white/30 text-white h-10 text-sm mt-1"
                     placeholder="Achievement title"
-                    required
                   />
                 </div>
                 <div>
-                  <Label className="text-white/80 text-sm">Type</Label>
+                  <Label className="text-white/80 text-sm font-medium">
+                    Type
+                  </Label>
                   <Select
                     value={newAchievement.type}
                     onValueChange={(value) =>
                       setNewAchievement({ ...newAchievement, type: value })
                     }
                   >
-                    <SelectTrigger className="bg-white/5 border-white/20 text-white h-9 text-sm">
-                      <SelectValue />
+                    <SelectTrigger className="bg-white/10 border-white/30 text-white h-10 text-sm mt-1">
+                      <SelectValue placeholder="Select type" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="hackathon">Hackathon</SelectItem>
-                      <SelectItem value="certification">
+                    <SelectContent className="bg-zinc-900 border-white/20">
+                      <SelectItem
+                        value="hackathon"
+                        className="text-white hover:bg-white/10"
+                      >
+                        Hackathon
+                      </SelectItem>
+                      <SelectItem
+                        value="competition"
+                        className="text-white hover:bg-white/10"
+                      >
+                        Competition
+                      </SelectItem>
+                      <SelectItem
+                        value="certification"
+                        className="text-white hover:bg-white/10"
+                      >
                         Certification
                       </SelectItem>
-                      <SelectItem value="award">Award</SelectItem>
-                      <SelectItem value="project">Project</SelectItem>
+                      <SelectItem
+                        value="award"
+                        className="text-white hover:bg-white/10"
+                      >
+                        Award
+                      </SelectItem>
+                      <SelectItem
+                        value="project"
+                        className="text-white hover:bg-white/10"
+                      >
+                        Project
+                      </SelectItem>
+                      <SelectItem
+                        value="other"
+                        className="text-white hover:bg-white/10"
+                      >
+                        Other
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
+
               <div>
-                <Label className="text-white/80 text-sm">Description</Label>
+                <Label className="text-white/80 text-sm font-medium">
+                  Description *
+                </Label>
                 <Textarea
                   value={newAchievement.description}
                   onChange={(e) =>
@@ -1293,13 +1255,15 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
                       description: e.target.value,
                     })
                   }
-                  className="bg-white/5 border-white/20 text-white text-sm h-16 resize-none"
+                  className="bg-white/10 border-white/30 text-white text-sm h-24 resize-none mt-1"
                   placeholder="Describe your achievement..."
-                  required
                 />
               </div>
+
               <div>
-                <Label className="text-white/80 text-sm">Date</Label>
+                <Label className="text-white/80 text-sm font-medium">
+                  Date (Optional)
+                </Label>
                 <Input
                   type="date"
                   value={newAchievement.date}
@@ -1309,83 +1273,105 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
                       date: e.target.value,
                     })
                   }
-                  className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                  className="bg-white/10 border-white/30 text-white h-10 text-sm mt-1"
                 />
               </div>
-              <div className="flex gap-2 pt-2">
+
+              <div className="flex gap-3 pt-2">
                 <Button
-                  type="submit"
-                  className="bg-emerald-700 hover:bg-emerald-600 h-9 px-4 text-sm"
+                  onClick={handleAddAchievement}
+                  disabled={
+                    !newAchievement.title || !newAchievement.description
+                  }
+                  className="bg-yellow-700 hover:bg-yellow-600 text-white h-10 px-6 text-sm font-medium disabled:opacity-50"
                 >
                   Add Achievement
                 </Button>
                 <Button
-                  type="button"
                   onClick={() => setShowAddForm(false)}
                   variant="outline"
-                  className="border-white/20 text-white hover:bg-white/5 h-9 px-4 text-sm"
+                  className="bg-transparent border-white/40 text-white hover:bg-white/10 hover:text-white hover:border-white/60 h-10 px-6 text-sm"
                 >
                   Cancel
                 </Button>
               </div>
-            </form>
+            </div>
           </CardContent>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {achievements.map((achievement) => (
-          <Card key={achievement._id} className="bg-white/5 border-white/10">
-            <CardContent className="pt-3">
-              <div className="flex items-start justify-between mb-2">
-                <Badge
-                  className={`text-xs px-2 py-1 ${
-                    achievement.type === "hackathon"
-                      ? "bg-cyan-950/60 text-cyan-300 border-cyan-800/50"
-                      : achievement.type === "certification"
-                      ? "bg-emerald-950/60 text-emerald-300 border-emerald-800/50"
-                      : achievement.type === "award"
-                      ? "bg-amber-950/60 text-amber-300 border-amber-800/50"
-                      : "bg-violet-950/60 text-violet-300 border-violet-800/50"
-                  }`}
-                >
-                  {achievement.type}
-                </Badge>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onRemove(achievement._id)}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-950/20 h-6 w-6 p-0"
-                >
-                  <MdDelete className="w-3 h-3" />
-                </Button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {data.achievements?.map((achievement) => (
+          <Card
+            key={achievement.id}
+            className="bg-gradient-to-br from-yellow-950/20 to-orange-950/20 border-yellow-800/30 hover:from-yellow-950/30 hover:to-orange-950/30 transition-all duration-300"
+          >
+            <CardContent className="pt-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-2">
+                    <MdStar className="w-5 h-5 text-yellow-400 mt-0.5" />
+                    {isEditing && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onRemoveAchievement(achievement.id)}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-950/20 h-6 w-6 p-0 -mt-1"
+                      >
+                        <MdDelete className="w-3 h-3" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="flex items-start gap-2 mb-2">
+                    <h4 className="text-white font-semibold text-base leading-tight flex-1">
+                      {achievement.title}
+                    </h4>
+                    {achievement.type && (
+                      <Badge className="bg-yellow-950/60 text-yellow-300 border-yellow-800/50 text-xs px-2 py-0.5 shrink-0">
+                        {achievement.type}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <p className="text-white/80 text-sm mb-2 leading-relaxed">
+                    {achievement.description}
+                  </p>
+
+                  {achievement.date && (
+                    <div className="flex items-center gap-1 text-white/60 text-xs">
+                      <div className="w-1 h-1 bg-white/60 rounded-full"></div>
+                      <span>
+                        {new Date(achievement.date).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <h4 className="text-white font-medium mb-2 text-sm">
-                {achievement.title}
-              </h4>
-              <p className="text-white/70 text-xs mb-2 leading-relaxed">
-                {achievement.description}
-              </p>
-              <p className="text-white/50 text-xs">
-                {new Date(achievement.date).toLocaleDateString()}
-              </p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {achievements.length === 0 && !showAddForm && (
-        <div className="text-center py-12">
-          <MdStar className="w-12 h-12 text-white/20 mx-auto mb-4" />
-          <p className="text-white/50 mb-4 text-sm">No achievements yet</p>
-          <Button
-            onClick={() => setShowAddForm(true)}
-            className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
-          >
-            Add Your First Achievement
-          </Button>
-        </div>
-      )}
+      {(!data.achievements || data.achievements.length === 0) &&
+        !showAddForm && (
+          <div className="text-center py-16">
+            <div className="bg-yellow-950/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+              <MdStar className="w-8 h-8 text-yellow-400/60" />
+            </div>
+            <p className="text-white/50 mb-6 text-base">
+              No achievements added yet
+            </p>
+            {isEditing && (
+              <Button
+                onClick={() => setShowAddForm(true)}
+                className="bg-white text-zinc-950 hover:bg-white/90 h-10 px-6 text-sm font-medium"
+              >
+                Add Your First Achievement
+              </Button>
+            )}
+          </div>
+        )}
     </div>
   );
 };

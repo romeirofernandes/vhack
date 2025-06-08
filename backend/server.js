@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const projectRoutes = require('./routes/projectRoutes');
+const skillsRoutes = require('./routes/skillsRoutes');
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use('/auth', authRoutes);
 app.use('/dashboard', dashboardRoutes);
 app.use('/profile', profileRoutes);
 app.use('/projects', projectRoutes);
+app.use('/skills', skillsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
