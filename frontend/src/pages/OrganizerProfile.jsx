@@ -51,7 +51,7 @@ const OrganizerProfile = () => {
 
       const data = await response.json();
       if (data.success) {
-        navigate("/dashboard");
+        navigate("/organizer/dashboard");
       } else {
         setError(data.error || "Failed to save profile");
       }
