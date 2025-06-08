@@ -85,15 +85,60 @@ const ParticipantDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
+      if (!user) {
+        setError("User not authenticated");
+        return;
+      }
+
       const idToken = await user.getIdToken();
+      console.log("Fetching dashboard with token:", idToken ? "Token exists" : "No token");
+
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/dashboard/participant`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
           },
         }
       );
+
+      console.log("Dashboard response status:", response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Dashboard fetch error:", errorData);
+
+        if (response.status === 401) {
+          // Token is invalid, try to refresh
+          console.log("Token invalid, attempting refresh...");
+          try {
+            const freshToken = await user.getIdToken(true);
+            const retryResponse = await fetch(
+              `${import.meta.env.VITE_API_URL}/dashboard/participant`,
+              {
+                headers: {
+                  Authorization: `Bearer ${freshToken}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+
+            if (retryResponse.ok) {
+              const retryData = await retryResponse.json();
+              if (retryData.success) {
+                setDashboardData(retryData.data);
+                return;
+              }
+            }
+          } catch (refreshError) {
+            console.error("Token refresh failed:", refreshError);
+          }
+        }
+
+        setError(errorData.error || "Failed to fetch dashboard data");
+        return;
+      }
 
       const data = await response.json();
       if (data.success) {
@@ -111,15 +156,23 @@ const ParticipantDashboard = () => {
 
   const fetchHackathons = async () => {
     try {
+      if (!user) return;
+
       const idToken = await user.getIdToken();
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/dashboard/hackathons`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
           },
         }
       );
+
+      if (!response.ok) {
+        console.error("Hackathons fetch failed:", response.status);
+        return;
+      }
 
       const data = await response.json();
       if (data.success) {

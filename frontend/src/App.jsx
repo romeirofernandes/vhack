@@ -21,8 +21,6 @@ const App = () => {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
-
-          {/* Protected routes */}
           <Route
             path="/select-role"
             element={
@@ -63,8 +61,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
-          {/* Organizer routes */}
           <Route
             path="/organizer/dashboard"
             element={
@@ -82,7 +78,6 @@ const App = () => {
             }
           />
 
-          {/* Admin route - no protection here since AdminDashboard handles its own auth */}
           <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>

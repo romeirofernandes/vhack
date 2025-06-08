@@ -16,12 +16,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const authenticateWithBackend = async (firebaseUser) => {
+  const syncWithBackend = async (firebaseUser) => {
     try {
-      const idToken = await firebaseUser.getIdToken();
+      // Always get a fresh token for backend sync
+      const idToken = await firebaseUser.getIdToken(true);
 
-      // Check if user exists in backend
-      const authResponse = await fetch(
+      // Try to get user data from backend
+      const response = await fetch(
         `${import.meta.env.VITE_API_URL}/auth/authenticate`,
         {
           method: "POST",
@@ -32,12 +33,14 @@ export const AuthProvider = ({ children }) => {
         }
       );
 
-      if (authResponse.ok) {
-        const data = await authResponse.json();
-        return data.success ? data.user : null;
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          return data.user;
+        }
       }
 
-      // If user doesn't exist, create them via login endpoint
+      // If user doesn't exist in backend, create via login endpoint
       const loginResponse = await fetch(
         `${import.meta.env.VITE_API_URL}/auth/login`,
         {
@@ -49,11 +52,33 @@ export const AuthProvider = ({ children }) => {
         }
       );
 
-      const loginData = await loginResponse.json();
-      return loginData.success ? loginData.user : null;
+      if (loginResponse.ok) {
+        const loginData = await loginResponse.json();
+        if (loginData.success) {
+          return loginData.user;
+        }
+      }
+
+      // If backend sync fails, still return basic Firebase user data
+      return {
+        id: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL,
+        role: null,
+        profileCompleted: false,
+      };
     } catch (error) {
-      console.error("Backend authentication error:", error);
-      return null;
+      console.error("Backend sync error:", error);
+      // Return basic Firebase user data on error
+      return {
+        id: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL,
+        role: null,
+        profileCompleted: false,
+      };
     }
   };
 
@@ -63,15 +88,25 @@ export const AuthProvider = ({ children }) => {
 
       if (firebaseUser) {
         try {
-          const backendUser = await authenticateWithBackend(firebaseUser);
+          const backendUser = await syncWithBackend(firebaseUser);
           setUser({
             ...firebaseUser,
             ...backendUser,
-            getIdToken: () => firebaseUser.getIdToken(),
+            // Enhanced getIdToken function
+            getIdToken: (forceRefresh = false) =>
+              firebaseUser.getIdToken(forceRefresh),
           });
         } catch (error) {
           console.error("Auth state change error:", error);
-          setUser(null);
+          // Still set user with Firebase data on error
+          setUser({
+            ...firebaseUser,
+            id: firebaseUser.uid,
+            role: null,
+            profileCompleted: false,
+            getIdToken: (forceRefresh = false) =>
+              firebaseUser.getIdToken(forceRefresh),
+          });
         }
       } else {
         setUser(null);
