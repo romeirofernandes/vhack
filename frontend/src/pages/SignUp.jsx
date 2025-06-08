@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   updateProfile,
 } from "firebase/auth";
 import { auth, googleProvider } from "../config/firebase";
@@ -34,22 +33,7 @@ const SignUp = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-          navigate("/select-role");
-        }
-      } catch (error) {
-        setError(error.message);
-      }
-    };
-
-    handleRedirectResult();
-  }, [navigate]);
-
-  // Handle user redirect in useEffect
+  // Remove the redirect result handler and use popup instead
   useEffect(() => {
     if (user) {
       navigate(user.role ? "/dashboard" : "/select-role", { replace: true });
@@ -90,8 +74,10 @@ const SignUp = () => {
         displayName: formData.displayName,
       });
 
-      navigate("/select-role");
+      // The AuthContext will handle backend authentication
+      // Navigate will happen in useEffect when user is set
     } catch (error) {
+      console.error("Email signup error:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -103,9 +89,17 @@ const SignUp = () => {
     setLoading(true);
 
     try {
-      await signInWithRedirect(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
     } catch (error) {
-      setError(error.message);
+      console.error("Google signup error:", error);
+      if (error.code === "auth/popup-closed-by-user") {
+        setError("Sign-up was cancelled");
+      } else if (error.code === "auth/popup-blocked") {
+        setError("Popup was blocked. Please allow popups and try again.");
+      } else {
+        setError(error.message);
+      }
+    } finally {
       setLoading(false);
     }
   };

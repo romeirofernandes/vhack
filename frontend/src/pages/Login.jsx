@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import {
-  signInWithEmailAndPassword,
-  signInWithRedirect,
-  getRedirectResult,
-} from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../config/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,21 +30,6 @@ const Login = () => {
 
   const from = location.state?.from?.pathname || "/dashboard";
 
-   useEffect(() => {
-    const handleRedirectResult = async () => {
-      try {
-        const result = await getRedirectResult(auth);
-        if (result) {
-          navigate(from, { replace: true });
-        }
-      } catch (error) {
-        setError(error.message);
-      }
-    };
-
-    handleRedirectResult();
-  }, [navigate, from]);
-
   // Handle user redirect in useEffect
   useEffect(() => {
     if (user) {
@@ -70,8 +51,9 @@ const Login = () => {
 
     try {
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      navigate(from, { replace: true });
+      // AuthContext will handle the rest
     } catch (error) {
+      console.error("Email login error:", error);
       setError(error.message);
     } finally {
       setLoading(false);
@@ -83,9 +65,37 @@ const Login = () => {
     setLoading(true);
 
     try {
-      await signInWithRedirect(auth, googleProvider);
+      // Clear any existing auth state first
+      await auth.signOut().catch(() => {});
+
+      const result = await signInWithPopup(auth, googleProvider);
     } catch (error) {
-      setError(error.message);
+      console.error("Google login error:", error);
+
+      // Handle specific COOP-related errors
+      if (error.code === "auth/popup-closed-by-user") {
+        setError("Sign-in was cancelled. Please try again.");
+      } else if (error.code === "auth/popup-blocked") {
+        setError(
+          "Popup was blocked by your browser. Please allow popups for this site and try again."
+        );
+      } else if (error.code === "auth/cancelled-popup-request") {
+        setError(
+          "Another sign-in attempt is in progress. Please wait and try again."
+        );
+      } else if (error.code === "auth/operation-not-allowed") {
+        setError("Google sign-in is not enabled. Please contact support.");
+      } else if (
+        error.message?.includes("COOP") ||
+        error.message?.includes("Cross-Origin-Opener-Policy")
+      ) {
+        setError(
+          "Browser security settings are blocking sign-in. Please try refreshing the page or using a different browser."
+        );
+      } else {
+        setError(error.message || "Google sign-in failed. Please try again.");
+      }
+    } finally {
       setLoading(false);
     }
   };

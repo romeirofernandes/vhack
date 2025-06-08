@@ -16,58 +16,71 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const authenticateWithBackend = async (firebaseUser) => {
+    try {
+      const idToken = await firebaseUser.getIdToken();
+
+      // Check if user exists in backend
+      const authResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/authenticate`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (authResponse.ok) {
+        const data = await authResponse.json();
+        return data.success ? data.user : null;
+      }
+
+      // If user doesn't exist, create them via login endpoint
+      const loginResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ idToken }),
+        }
+      );
+
+      const loginData = await loginResponse.json();
+      return loginData.success ? loginData.user : null;
+    } catch (error) {
+      console.error("Backend authentication error:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
+
       if (firebaseUser) {
         try {
-          // Get the Firebase ID token
-          const idToken = await firebaseUser.getIdToken();
-
-          // Authenticate with your backend
-          const response = await fetch(
-            `${import.meta.env.VITE_API_URL}/auth/authenticate`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${idToken}`,
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-              // Merge Firebase user with backend user data
-              setUser({
-                ...firebaseUser,
-                ...data.user,
-                getIdToken: firebaseUser.getIdToken.bind(firebaseUser),
-              });
-            } else {
-              console.error("Backend authentication failed:", data.error);
-              setUser(firebaseUser);
-            }
-          } else {
-            // If backend fails, still set Firebase user
-            console.error(
-              "Backend authentication request failed:",
-              response.status
-            );
-            setUser(firebaseUser);
-          }
+          const backendUser = await authenticateWithBackend(firebaseUser);
+          setUser({
+            ...firebaseUser,
+            ...backendUser,
+            getIdToken: () => firebaseUser.getIdToken(),
+          });
         } catch (error) {
-          console.error("Auth error:", error);
-          // If there's an error, still set the Firebase user
-          setUser(firebaseUser);
+          console.error("Auth state change error:", error);
+          setUser(null);
         }
       } else {
         setUser(null);
       }
+
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => unsubscribe();
   }, []);
 
   const value = {
