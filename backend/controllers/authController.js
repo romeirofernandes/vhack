@@ -167,14 +167,24 @@ const authController = {
       const { profile } = req.body;
       const userId = req.user._id;
 
+      if (!profile) {
+        return res.status(400).json({
+          success: false,
+          error: "Profile data is required",
+        });
+      }
+
+      // Update user profile
       const user = await User.findByIdAndUpdate(
         userId,
         {
-          profile,
+          profile: profile,
           profileCompleted: true,
           updatedAt: new Date(),
         },
         { new: true }
+      ).select(
+        "displayName email role profile profileCompleted"
       );
 
       if (!user) {
@@ -189,16 +199,15 @@ const authController = {
         message: "Profile updated successfully",
         user: {
           id: user._id,
-          email: user.email,
           displayName: user.displayName,
-          photoURL: user.photoURL,
+          email: user.email,
           role: user.role,
           profile: user.profile,
           profileCompleted: user.profileCompleted,
         },
       });
     } catch (error) {
-      console.error("Profile update error:", error);
+      console.error("Update profile error:", error);
       res.status(500).json({
         success: false,
         error: "Failed to update profile",

@@ -25,9 +25,31 @@ const UserSchema = new mongoose.Schema({
     default: null,
   },
   profile: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {},
+    // For participants
+    skills: [String],
+    experience: String,
+    github: String,
+    linkedin: String,
+    portfolio: String,
+    bio: String,
+
+    // For organizers
+    company: String,
+    position: String,
+    website: String,
+
+    // For judges
+    expertise: [String],
+    organization: String,
+    yearsOfExperience: Number,
+
+    // Common fields
+    firstName: String,
+    lastName: String,
+    location: String,
+    // ...other fields can be added as needed
   },
+
   profileCompleted: {
     type: Boolean,
     default: false,
