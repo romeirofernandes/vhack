@@ -8,6 +8,8 @@ import SelectRole from "./pages/SelectRole";
 import ParticipantProfile from "./pages/ParticipantProfile";
 import JudgeProfile from "./pages/JudgeProfile";
 import OrganizerProfile from "./pages/OrganizerProfile";
+import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./components/dashboards/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
@@ -56,12 +58,13 @@ const App = () => {
             path="/dashboard"
             element={
               <ProtectedRoute requiresRole={true}>
-                <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center">
-                  <h1 className="text-4xl">Dashboard - Coming Soon</h1>
-                </div>
+                <Dashboard />
               </ProtectedRoute>
             }
           />
+
+          {/* Admin route - no protection here since AdminDashboard handles its own auth */}
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
