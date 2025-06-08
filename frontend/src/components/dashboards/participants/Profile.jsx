@@ -24,9 +24,6 @@ import {
   MdWork,
   MdSchool,
   MdStar,
-  MdSettings,
-  MdVisibility,
-  MdNotifications,
 } from "react-icons/md";
 import { FaGithub, FaLinkedin, FaGlobe } from "react-icons/fa";
 import { Search, X } from "lucide-react";
@@ -168,7 +165,6 @@ const Profile = () => {
     { id: "professional", label: "Professional", icon: MdWork },
     { id: "education", label: "Education", icon: MdSchool },
     { id: "achievements", label: "Achievements", icon: MdStar },
-    { id: "settings", label: "Settings", icon: MdSettings },
   ];
 
   if (loading) {
@@ -254,22 +250,28 @@ const Profile = () => {
         </div>
       )}
 
-      {/* Compact Tabs */}
-      <div className="flex space-x-1 bg-white/5 p-1 rounded-lg flex-shrink-0">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center space-x-2 px-3 py-2 rounded-md transition-all text-sm ${
-              activeTab === tab.id
-                ? "bg-white text-zinc-950 font-medium"
-                : "text-white/70 hover:text-white hover:bg-white/10"
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            <span>{tab.label}</span>
-          </button>
-        ))}
+      {/* Centered Responsive Tab Bar */}
+      <div className="flex justify-center flex-shrink-0">
+        <div className="flex space-x-1 bg-white/5 p-1 rounded-lg w-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center justify-center transition-all ${
+                activeTab === tab.id
+                  ? "bg-white text-zinc-950 font-medium"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
+              } rounded-md
+              ${/* Mobile: icon only */ ""}
+              sm:space-x-2 sm:px-3 sm:py-2 px-3 py-2
+              ${/* Desktop: icon + label */ ""}
+              `}
+            >
+              <tab.icon className="w-4 h-4" />
+              <span className="hidden sm:inline text-sm">{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Content Area - No Scrollbars */}
@@ -309,16 +311,13 @@ const Profile = () => {
               onRemove={removeAchievement}
             />
           )}
-          {activeTab === "settings" && (
-            <SettingsTab profileData={profileData} onUpdate={fetchProfile} />
-          )}
         </motion.div>
       </div>
     </div>
   );
 };
 
-// Basic Info Tab Component
+// Basic Info Tab Component (unchanged)
 const BasicInfoTab = ({ data, isEditing, onChange }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
     <Card className="bg-white/5 border-white/10">
@@ -494,7 +493,7 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
   </div>
 );
 
-// Professional Tab Component with Fixed Skill Management
+// Professional Tab Component (unchanged from previous - with skill management)
 const ProfessionalTab = ({ data, isEditing, onChange }) => {
   const [skillInputs, setSkillInputs] = useState({
     programmingLanguages: "",
@@ -704,7 +703,6 @@ const ProfessionalTab = ({ data, isEditing, onChange }) => {
             </Label>
             {isEditing ? (
               <div className="space-y-2">
-                {/* Selected Skills */}
                 {(data.programmingLanguages || []).length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {data.programmingLanguages.map((lang, index) => (
@@ -721,7 +719,6 @@ const ProfessionalTab = ({ data, isEditing, onChange }) => {
                     ))}
                   </div>
                 )}
-                {/* Input with Dropdown */}
                 <div className="relative">
                   <div className="relative">
                     <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/40" />
@@ -1209,7 +1206,7 @@ const EducationTab = ({ data, isEditing, onChange }) => {
   );
 };
 
-// Achievements Tab Component
+// Achievements Tab Component (unchanged from previous)
 const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newAchievement, setNewAchievement] = useState({
@@ -1392,65 +1389,5 @@ const AchievementsTab = ({ achievements, onAdd, onRemove }) => {
     </div>
   );
 };
-
-// Settings Tab Component
-const SettingsTab = ({ profileData, onUpdate }) => (
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
-    <Card className="bg-white/5 border-white/10">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center gap-2 text-lg">
-          <MdVisibility className="w-4 h-4" />
-          Privacy Settings
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div>
-          <Label className="text-white/80 text-sm">Profile Visibility</Label>
-          <Select defaultValue="public">
-            <SelectTrigger className="bg-white/5 border-white/20 text-white h-9 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="public">Public</SelectItem>
-              <SelectItem value="participants-only">
-                Participants Only
-              </SelectItem>
-              <SelectItem value="private">Private</SelectItem>
-            </SelectContent>
-          </Select>
-          <p className="text-white/50 text-xs mt-1">
-            Control who can view your profile information
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-
-    <Card className="bg-white/5 border-white/10">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-white flex items-center gap-2 text-lg">
-          <MdNotifications className="w-4 h-4" />
-          Notification Settings
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <Label className="text-white/80 text-sm">Email Notifications</Label>
-            <p className="text-white/50 text-xs mt-1">
-              Manage your email notification preferences
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-white/20 text-white hover:bg-white/5 hover:border-white/30 h-8 px-3 text-xs"
-          >
-            Configure
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  </div>
-);
 
 export default Profile;
