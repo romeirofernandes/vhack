@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "framer-motion";
 import { TbMenu2, TbX, TbCode, TbSparkles } from "react-icons/tb";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,11 +27,27 @@ const Navbar = () => {
     { name: "Pricing", href: "#pricing" },
   ];
 
+  const handleGetStarted = () => {
+    if (user) {
+      navigate(user.role ? "/dashboard" : "/select-role");
+    } else {
+      navigate("/signup");
+    }
+  };
+
+  const handleSignIn = () => {
+    if (user) {
+      navigate(user.role ? "/dashboard" : "/select-role");
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <motion.nav
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 1 }}
+      transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
           ? "bg-zinc-950/80 backdrop-blur-xl border-b border-white/5"
@@ -42,17 +62,19 @@ const Navbar = () => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center border border-white/10">
-              <TbCode className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-white">vHack</span>
-            <Badge
-              variant="secondary"
-              className="bg-white/5 border-white/10 text-white/90 text-xs"
-            >
-              <TbSparkles className="w-3 h-3 mr-1" />
-              Beta
-            </Badge>
+            <Link to="/" className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center border border-white/10">
+                <TbCode className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-white">vHack</span>
+              <Badge
+                variant="secondary"
+                className="bg-white/5 border-white/10 text-white/90 text-xs"
+              >
+                <TbSparkles className="w-3 h-3 mr-1" />
+                Beta
+              </Badge>
+            </Link>
           </motion.div>
 
           {/* Desktop Navigation */}
@@ -78,15 +100,17 @@ const Navbar = () => {
               variant="ghost"
               size="sm"
               className="text-white/70 hover:text-white hover:bg-white/5"
+              onClick={handleSignIn}
             >
-              Sign In
+              {user ? "Dashboard" : "Sign In"}
             </Button>
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="sm"
                 className="bg-white text-zinc-950 hover:bg-white/90"
+                onClick={handleGetStarted}
               >
-                Get Started
+                {user ? "Dashboard" : "Get Started"}
               </Button>
             </motion.div>
           </div>
@@ -133,14 +157,22 @@ const Navbar = () => {
                     variant="ghost"
                     size="sm"
                     className="justify-start text-white/70 hover:text-white hover:bg-white/5"
+                    onClick={() => {
+                      handleSignIn();
+                      setIsOpen(false);
+                    }}
                   >
-                    Sign In
+                    {user ? "Dashboard" : "Sign In"}
                   </Button>
                   <Button
                     size="sm"
                     className="justify-start bg-white text-zinc-950 hover:bg-white/90"
+                    onClick={() => {
+                      handleGetStarted();
+                      setIsOpen(false);
+                    }}
                   >
-                    Get Started
+                    {user ? "Dashboard" : "Get Started"}
                   </Button>
                 </div>
               </div>

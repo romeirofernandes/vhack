@@ -1,10 +1,23 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { TbCode, TbSparkles, TbArrowRight } from "react-icons/tb";
+import { useAuth } from "../../contexts/AuthContext";
 
 const CTA = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleStartBuilding = () => {
+    if (user) {
+      navigate(user.role ? "/dashboard" : "/select-role");
+    } else {
+      navigate("/signup");
+    }
+  };
+
   return (
     <section className="relative py-24 px-6">
       <div className="max-w-4xl mx-auto text-center relative">
@@ -55,9 +68,10 @@ const CTA = () => {
               <Button
                 size="lg"
                 className="px-8 py-4 bg-white text-zinc-950 hover:bg-white/90 font-medium group"
+                onClick={handleStartBuilding}
               >
                 <TbCode className="w-5 h-5 mr-2" />
-                Start Building
+                {user ? "Go to Dashboard" : "Start Building"}
                 <TbArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </motion.div>

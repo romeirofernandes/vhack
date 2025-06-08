@@ -1,10 +1,37 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
 import { TbCode, TbSparkles, TbArrowRight, TbUsers } from "react-icons/tb";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Hero = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleStartBuilding = () => {
+    if (user) {
+      navigate(user.role ? "/dashboard" : "/select-role");
+    } else {
+      navigate("/signup");
+    }
+  };
+
+  const handleBrowseHackathons = () => {
+    if (user) {
+      navigate("/dashboard");
+    } else {
+      // Scroll to hackathons section or navigate to signup
+      const hackathonsSection = document.getElementById("hackathons");
+      if (hackathonsSection) {
+        hackathonsSection.scrollIntoView({ behavior: "smooth" });
+      } else {
+        navigate("/signup");
+      }
+    }
+  };
+
   return (
     <section className="relative pt-32 pb-24 px-6">
       {/* Background grid pattern with radial mask */}
@@ -15,15 +42,15 @@ const Hero = () => {
 
       <div className="max-w-4xl mx-auto text-center relative">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
         >
           {/* Beta Badge */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
             className="mb-8"
           >
             <Badge
@@ -38,9 +65,9 @@ const Hero = () => {
           {/* Main heading with container */}
           <motion.div
             className="relative p-8 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-sm mb-8"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
           >
             <h1 className="text-6xl md:text-8xl font-bold leading-tight">
               <span className="text-white">Build.</span>
@@ -54,9 +81,9 @@ const Hero = () => {
           {/* Subtitle */}
           <motion.p
             className="text-xl text-white/70 mb-12 max-w-2xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6, duration: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
           >
             The ultimate hackathon platform where developers come together to
             create groundbreaking solutions and compete for amazing prizes.
@@ -65,17 +92,18 @@ const Hero = () => {
           {/* CTA Buttons */}
           <motion.div
             className="flex flex-col sm:flex-row gap-4 justify-center mb-20"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8, duration: 1 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
           >
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="lg"
                 className="px-8 py-4 bg-white text-zinc-950 hover:bg-white/90 font-medium group"
+                onClick={handleStartBuilding}
               >
                 <TbCode className="w-5 h-5 mr-2" />
-                Start Building
+                {user ? "Go to Dashboard" : "Start Building"}
                 <TbArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </motion.div>
@@ -85,6 +113,7 @@ const Hero = () => {
                 variant="outline"
                 size="lg"
                 className="px-8 py-4 border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-white/20 backdrop-blur-sm"
+                onClick={handleBrowseHackathons}
               >
                 <TbUsers className="w-5 h-5 mr-2" />
                 Browse Hackathons
@@ -95,9 +124,9 @@ const Hero = () => {
           {/* Stats container */}
           <motion.div
             className="relative p-6 rounded-xl border border-white/5 bg-white/[0.02] backdrop-blur-sm"
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1, duration: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
           >
             <div className="grid grid-cols-3 gap-12">
               {[
@@ -108,9 +137,9 @@ const Hero = () => {
                 <motion.div
                   key={index}
                   className="text-center"
-                  initial={{ opacity: 0, scale: 0.8 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.2 + index * 0.1, duration: 0.8 }}
+                  transition={{ delay: 0.6 + index * 0.05, duration: 0.4 }}
                 >
                   <div className="text-3xl font-bold text-white mb-2">
                     {stat.number}
