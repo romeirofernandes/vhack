@@ -18,7 +18,7 @@ const BentoGrid = ({ className, children }) => {
   return (
     <div
       className={cn(
-        "grid md:auto-rows-[18rem] grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto",
+        "grid md:auto-rows-[20rem] grid-cols-1 md:grid-cols-3 gap-4 max-w-7xl mx-auto",
         className
       )}
     >
@@ -38,28 +38,28 @@ const BentoGridItem = ({
   return (
     <motion.div
       className={cn(
-        "row-span-1 rounded-2xl group/bento hover:shadow-2xl transition-all duration-300 shadow-lg shadow-[#03001C]/30 p-6 bg-[#301E67]/30 border border-[#301E67]/60 hover:border-[#5B8FB9]/60 justify-between flex flex-col space-y-6 backdrop-blur-sm",
+        "row-span-1 rounded-2xl group/bento hover:shadow-2xl transition-all duration-300 shadow-lg shadow-[#03001C]/30 p-4 bg-[#301E67]/30 border border-[#301E67]/60 hover:border-[#5B8FB9]/60 justify-between flex flex-col backdrop-blur-sm overflow-hidden",
         className
       )}
       whileHover={{ y: -4 }}
     >
       {header}
-      <div className="group-hover/bento:translate-x-1 transition-transform duration-300">
-        <div className="flex items-center justify-between mb-4">
-          <div className="w-12 h-12 bg-[#5B8FB9]/25 rounded-xl flex items-center justify-center border border-[#5B8FB9]/40 group-hover/bento:bg-[#5B8FB9]/35 transition-colors">
+      <div className="group-hover/bento:translate-x-1 transition-transform duration-300 flex-1 flex flex-col justify-end">
+        <div className="flex items-center justify-between mb-3">
+          <div className="w-10 h-10 bg-[#5B8FB9]/25 rounded-lg flex items-center justify-center border border-[#5B8FB9]/40 group-hover/bento:bg-[#5B8FB9]/35 transition-colors">
             {icon}
           </div>
           {badge && (
             <Badge
               variant="secondary"
-              className="bg-[#5B8FB9]/20 border-[#5B8FB9]/40 text-[#B6EADA] text-xs font-medium px-3 py-1"
+              className="bg-[#5B8FB9]/20 border-[#5B8FB9]/40 text-[#B6EADA] text-xs font-medium px-2 py-1"
             >
               {badge}
             </Badge>
           )}
         </div>
-        <div className="font-bold text-white mb-3 text-lg">{title}</div>
-        <div className="font-normal text-white/70 text-sm leading-relaxed">
+        <div className="font-bold text-white mb-2 text-sm md:text-base line-clamp-2">{title}</div>
+        <div className="font-normal text-white/70 text-xs leading-relaxed line-clamp-3">
           {description}
         </div>
       </div>
@@ -128,11 +128,11 @@ const Features = () => {
           >
             Features
           </Badge>
-          <h2 className="text-5xl md:text-6xl font-bold mb-8 text-white tracking-tight">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-8 text-white tracking-tight">
             Everything you need to
             <span className="text-[#B6EADA]/80"> succeed</span>
           </h2>
-          <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
             From ideation to implementation, our platform provides all the tools
             and support you need to build amazing projects.
           </p>
@@ -158,23 +158,23 @@ const Features = () => {
 
 // Feature Header Components
 const FeatureHeader1 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#5B8FB9]/15 border border-[#5B8FB9]/25"></div>
+  <div className="flex flex-1 w-full h-full min-h-[6rem] max-h-[8rem] rounded-lg bg-[#5B8FB9]/15 border border-[#5B8FB9]/25"></div>
 );
 
 const FeatureHeader2 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#B6EADA]/10 border border-[#B6EADA]/20"></div>
+  <div className="flex flex-1 w-full h-full min-h-[6rem] max-h-[8rem] rounded-lg bg-[#B6EADA]/10 border border-[#B6EADA]/20"></div>
 );
 
 const FeatureHeader3 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#301E67]/50 border border-[#301E67]/70"></div>
+  <div className="flex flex-1 w-full h-full min-h-[6rem] max-h-[8rem] rounded-lg bg-[#301E67]/50 border border-[#301E67]/70"></div>
 );
 
 const FeatureHeader4 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#5B8FB9]/20 border border-[#5B8FB9]/35"></div>
+  <div className="flex flex-1 w-full h-full min-h-[6rem] max-h-[8rem] rounded-lg bg-[#5B8FB9]/20 border border-[#5B8FB9]/35"></div>
 );
 
 const FeatureHeader5 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#B6EADA]/8 border border-[#B6EADA]/15"></div>
+  <div className="flex flex-1 w-full h-full min-h-[6rem] max-h-[8rem] rounded-lg bg-[#B6EADA]/8 border border-[#B6EADA]/15"></div>
 );
 
 export default Features;
