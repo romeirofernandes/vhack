@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const ADMIN_PASSWORD = "vhack2025admin"; // Change this to a secure password
+const ADMIN_PASSWORD = "vhack2025admin"; 
 
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

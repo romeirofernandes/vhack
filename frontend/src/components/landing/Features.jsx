@@ -41,7 +41,6 @@ const BentoGridItem = ({
         "row-span-1 rounded-2xl group/bento hover:shadow-2xl transition-all duration-300 shadow-lg shadow-zinc-950/30 p-4 bg-zinc-900/30 border border-zinc-800/60 hover:border-zinc-700/60 justify-between flex flex-col backdrop-blur-sm overflow-hidden",
         className
       )}
-      whileHover={{ y: -4 }}
     >
       {header}
       <div className="group-hover/bento:translate-x-1 transition-transform duration-300 flex-1 flex flex-col justify-end">
@@ -58,7 +57,9 @@ const BentoGridItem = ({
             </Badge>
           )}
         </div>
-        <div className="font-bold text-white mb-2 text-sm md:text-base line-clamp-2">{title}</div>
+        <div className="font-bold text-white mb-2 text-sm md:text-base line-clamp-2">
+          {title}
+        </div>
         <div className="font-normal text-white/70 text-xs leading-relaxed line-clamp-3">
           {description}
         </div>
