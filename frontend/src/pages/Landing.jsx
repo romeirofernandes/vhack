@@ -8,7 +8,7 @@ import Testimonials from "../components/landing/Testimonials";
 
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-[#03001C] text-white dark">
+    <div className="min-h-screen bg-zinc-950 text-white dark">
       <div className="relative">
         <div className="max-w-6xl mx-auto relative">
           <Navbar />

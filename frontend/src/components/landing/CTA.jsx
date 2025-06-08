@@ -22,7 +22,7 @@ const CTA = () => {
     <section className="relative py-32 px-8">
       <div className="max-w-5xl mx-auto text-center relative">
         <motion.div
-          className="relative p-12 rounded-3xl border border-[#301E67]/60 bg-[#301E67]/30 backdrop-blur-sm"
+          className="relative p-12 rounded-3xl border border-zinc-800/60 bg-zinc-900/30 backdrop-blur-sm"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -38,7 +38,7 @@ const CTA = () => {
           >
             <Badge
               variant="secondary"
-              className="px-6 py-3 bg-[#5B8FB9]/25 border border-[#5B8FB9]/40 text-[#B6EADA] hover:bg-[#5B8FB9]/35 transition-colors backdrop-blur-sm rounded-full"
+              className="px-6 py-3 bg-zinc-700/25 border border-zinc-600/40 text-zinc-200 hover:bg-zinc-700/35 transition-colors backdrop-blur-sm rounded-full"
             >
               <TbSparkles className="w-4 h-4 mr-2" />
               Ready to get started?
@@ -67,7 +67,7 @@ const CTA = () => {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="lg"
-                className="px-10 py-5 bg-[#5B8FB9] text-white hover:bg-[#5B8FB9]/90 font-semibold group rounded-xl shadow-xl shadow-[#5B8FB9]/30 text-lg"
+                className="px-10 py-5 bg-white text-zinc-950 hover:bg-white/90 font-semibold group rounded-xl shadow-xl shadow-white/30 text-lg"
                 onClick={handleStartBuilding}
               >
                 <TbCode className="w-6 h-6 mr-3" />
