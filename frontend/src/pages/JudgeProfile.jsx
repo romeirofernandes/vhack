@@ -182,7 +182,7 @@ const JudgeProfile = () => {
 
     setLoading(true);
     setError("");
-
+    console.log("Submitting profile data:", formData);
     try {
       const idToken = await user.getIdToken();
       const response = await fetch(
@@ -203,8 +203,9 @@ const JudgeProfile = () => {
       );
 
       const data = await response.json();
+      console.log("Profile save response:", data);
       if (data.success) {
-        navigate("/dashboard");
+        window.location.href = "/dashboard";
       } else {
         setError(data.error || "Failed to save profile");
       }

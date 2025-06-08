@@ -257,7 +257,7 @@ const ParticipantProfile = () => {
 
       const data = await response.json();
       if (data.success) {
-        navigate("/dashboard");
+        window.location.href = "/dashboard";
       } else {
         setError(data.error || "Failed to save profile");
       }
