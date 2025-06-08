@@ -20,6 +20,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { signOut } from "firebase/auth";
+import { auth } from "@/config/firebase";
 import { useNavigate } from "react-router-dom";
 
 const JudgeDashboard = () => {
@@ -27,9 +29,14 @@ const JudgeDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    navigate("/login");
-  };
+  const handleLogout = async () => {
+      try {
+        await signOut(auth);
+        navigate("/");
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    };
 
   const links = [
     {
@@ -66,7 +73,7 @@ const JudgeDashboard = () => {
       label: "Logout",
       href: "#",
       icon: <MdLogout className="text-white/70 h-5 w-5 flex-shrink-0" />,
-      onClick: handleLogout,
+      onClick: ()=>handleLogout(),
     },
   ];
 
