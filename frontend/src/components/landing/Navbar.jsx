@@ -50,7 +50,7 @@ const Navbar = () => {
       transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-[#03001C]/95 backdrop-blur-xl border-b border-[#301E67]/50"
+          ? "bg-zinc-950/95 backdrop-blur-xl border-b border-zinc-800/50"
           : "bg-transparent"
       }`}
     >
@@ -63,15 +63,15 @@ const Navbar = () => {
             whileTap={{ scale: 0.98 }}
           >
             <Link to="/" className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[#301E67]/60 rounded-xl flex items-center justify-center border border-[#5B8FB9]/30 backdrop-blur-sm">
-                <TbCode className="w-6 h-6 text-[#B6EADA]" />
+              <div className="w-10 h-10 bg-zinc-800/60 rounded-xl flex items-center justify-center border border-zinc-700/30 backdrop-blur-sm">
+                <TbCode className="w-6 h-6 text-zinc-200" />
               </div>
               <span className="text-2xl font-bold text-white tracking-tight">
                 vHack
               </span>
               <Badge
                 variant="secondary"
-                className="bg-[#5B8FB9]/20 border-[#5B8FB9]/40 text-[#B6EADA] text-xs font-medium px-3 py-1"
+                className="bg-zinc-700/20 border-zinc-600/40 text-zinc-200 text-xs font-medium px-3 py-1"
               >
                 <TbSparkles className="w-3 h-3 mr-1" />
                 Beta
@@ -85,7 +85,7 @@ const Navbar = () => {
               <motion.a
                 key={item.name}
                 href={item.href}
-                className="text-white/80 hover:text-[#B6EADA] transition-colors text-sm font-medium tracking-wide"
+                className="text-white/80 hover:text-zinc-200 transition-colors text-sm font-medium tracking-wide"
                 whileHover={{ y: -2 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -101,7 +101,7 @@ const Navbar = () => {
             <Button
               variant="ghost"
               size="sm"
-              className="text-white/80 hover:text-white hover:bg-[#301E67]/60 px-6 py-2 rounded-lg"
+              className="text-white/80 hover:text-white hover:bg-zinc-800/60 px-6 py-2 rounded-lg"
               onClick={handleSignIn}
             >
               {user ? "Dashboard" : "Sign In"}
@@ -109,7 +109,7 @@ const Navbar = () => {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="sm"
-                className="bg-[#5B8FB9] text-white hover:bg-[#5B8FB9]/90 px-6 py-2 rounded-lg font-medium shadow-lg shadow-[#5B8FB9]/25"
+                className="bg-white text-zinc-950 hover:bg-white/90 px-6 py-2 rounded-lg font-medium shadow-lg shadow-white/25"
                 onClick={handleGetStarted}
               >
                 {user ? "Dashboard" : "Get Started"}
@@ -138,14 +138,14 @@ const Navbar = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-[#301E67]/50 mt-4 pt-6 pb-6"
+              className="md:hidden border-t border-zinc-800/50 mt-4 pt-6 pb-6"
             >
               <div className="flex flex-col space-y-6">
                 {navItems.map((item, index) => (
                   <motion.a
                     key={item.name}
                     href={item.href}
-                    className="text-white/80 hover:text-[#B6EADA] transition-colors text-base"
+                    className="text-white/80 hover:text-zinc-200 transition-colors text-base"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
@@ -154,11 +154,11 @@ const Navbar = () => {
                     {item.name}
                   </motion.a>
                 ))}
-                <div className="flex flex-col space-y-4 pt-6 border-t border-[#301E67]/50">
+                <div className="flex flex-col space-y-4 pt-6 border-t border-zinc-800/50">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="justify-start text-white/80 hover:text-white hover:bg-[#301E67]/60 rounded-lg"
+                    className="justify-start text-white/80 hover:text-white hover:bg-zinc-800/60 rounded-lg"
                     onClick={() => {
                       handleSignIn();
                       setIsOpen(false);
@@ -168,7 +168,7 @@ const Navbar = () => {
                   </Button>
                   <Button
                     size="sm"
-                    className="justify-start bg-[#5B8FB9] text-white hover:bg-[#5B8FB9]/90 rounded-lg shadow-lg shadow-[#5B8FB9]/25"
+                    className="justify-start bg-white text-zinc-950 hover:bg-white/90 rounded-lg shadow-lg shadow-white/25"
                     onClick={() => {
                       handleGetStarted();
                       setIsOpen(false);

@@ -35,10 +35,10 @@ const Hero = () => {
   return (
     <section className="relative pt-40 pb-32 px-8">
       {/* Background pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#301E67_1px,transparent_1px),linear-gradient(to_bottom,#301E67_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_30%,transparent_100%)] opacity-40" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#404040_1px,transparent_1px),linear-gradient(to_bottom,#404040_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_30%,transparent_100%)] opacity-40" />
 
       {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#03001C]/0 via-[#03001C]/40 to-[#03001C]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/0 via-zinc-950/40 to-zinc-950" />
 
       <div className="max-w-5xl mx-auto text-center relative">
         <motion.div
@@ -55,7 +55,7 @@ const Hero = () => {
           >
             <Badge
               variant="secondary"
-              className="px-6 py-3 bg-[#301E67]/60 border border-[#5B8FB9]/40 text-[#B6EADA] hover:bg-[#301E67]/80 transition-colors backdrop-blur-sm rounded-full text-sm"
+              className="px-6 py-3 bg-zinc-800/60 border border-zinc-700/40 text-zinc-200 hover:bg-zinc-800/80 transition-colors backdrop-blur-sm rounded-full text-sm"
             >
               <TbSparkles className="w-4 h-4 mr-2" />
               Platform Beta Now Live
@@ -74,7 +74,7 @@ const Hero = () => {
               <br />
               <span className="text-white">Compete.</span>
               <br />
-              <span className="text-[#B6EADA]/80">Innovate.</span>
+              <span className="text-zinc-300/80">Innovate.</span>
             </h1>
           </motion.div>
 
@@ -99,7 +99,7 @@ const Hero = () => {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="lg"
-                className="px-10 py-5 bg-[#5B8FB9] text-white hover:bg-[#5B8FB9]/90 font-semibold group rounded-xl shadow-xl shadow-[#5B8FB9]/30 text-lg"
+                className="px-10 py-5 bg-white text-zinc-950 hover:bg-white/90 font-semibold group rounded-xl shadow-xl shadow-white/30 text-lg"
                 onClick={handleStartBuilding}
               >
                 <TbCode className="w-6 h-6 mr-3" />
@@ -112,7 +112,7 @@ const Hero = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="px-10 py-5 border-[#301E67] bg-[#301E67]/40 text-white hover:bg-[#301E67]/60 hover:border-[#5B8FB9]/60 backdrop-blur-sm rounded-xl text-lg"
+                className="px-10 py-5 border-zinc-800 bg-zinc-900/40 text-white hover:bg-zinc-800/60 hover:border-zinc-700/60 backdrop-blur-sm rounded-xl text-lg"
                 onClick={handleBrowseHackathons}
               >
                 <TbUsers className="w-6 h-6 mr-3" />
@@ -123,7 +123,7 @@ const Hero = () => {
 
           {/* Stats container */}
           <motion.div
-            className="relative p-8 rounded-2xl border border-[#301E67]/50 bg-[#301E67]/30 backdrop-blur-sm"
+            className="relative p-8 rounded-2xl border border-zinc-800/50 bg-zinc-900/30 backdrop-blur-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
@@ -145,7 +145,7 @@ const Hero = () => {
                   <div className="text-4xl md:text-5xl font-bold text-white mb-3">
                     {number}
                   </div>
-                  <div className="text-sm text-[#B6EADA]/80 uppercase tracking-wider font-medium">
+                  <div className="text-sm text-zinc-300/80 uppercase tracking-wider font-medium">
                     {["Developers", "Hackathons", "Prizes"][index]}
                   </div>
                 </motion.div>

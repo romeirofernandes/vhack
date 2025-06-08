@@ -29,8 +29,8 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center rounded-t-3xl border-t border-[#301E67]/60 bg-[#301E67]/30 backdrop-blur-sm px-8 py-16 lg:py-20">
-      <div className="bg-[#5B8FB9]/40 absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full blur" />
+    <footer className="relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center rounded-t-3xl border-t border-zinc-800/60 bg-zinc-900/30 backdrop-blur-sm px-8 py-16 lg:py-20">
+      <div className="bg-zinc-700/40 absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full blur" />
 
       <div className="flex w-full justify-between items-start">
         <AnimatedContainer className="space-y-6">
@@ -45,11 +45,11 @@ const Footer = () => {
             <div key={member.name} className="flex items-center space-x-2 mr-2">
               <a
                 href={member.github}
-                className="text-white/60 hover:text-[#B6EADA] transition-colors"
+                className="text-white/60 hover:text-zinc-200 transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <span className="text-white/70 hover:text-[#B6EADA] text-base font-medium">{member.name}</span>
+                <span className="text-white/70 hover:text-zinc-200 text-base font-medium">{member.name}</span>
               </a>
             </div>
           ))}
@@ -58,7 +58,7 @@ const Footer = () => {
 
       <AnimatedContainer
         delay={0.4}
-        className="w-full mt-12 pt-8 border-t border-[#301E67]/60"
+        className="w-full mt-12 pt-8 border-t border-zinc-800/60"
       >
         <div className="flex flex-col md:flex-row justify-between items-center">
           <p className="text-white/60 text-base mb-4 md:mb-0">
