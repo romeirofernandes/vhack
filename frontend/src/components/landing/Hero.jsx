@@ -35,7 +35,7 @@ const Hero = () => {
   return (
     <section className="relative pt-40 pb-32 px-8">
       {/* Background pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#301E67_1px,transparent_1px),linear-gradient(to_bottom,#301E67_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_30%,transparent_100%)] opacity-40" />
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#301E67_1px,transparent_1px),linear-gradient(to_bottom,#301E67_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_30%,transparent_80%)] opacity-40" />
 
       {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#03001C]/0 via-[#03001C]/40 to-[#03001C]" />
