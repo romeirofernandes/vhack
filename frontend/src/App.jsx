@@ -11,6 +11,7 @@ import OrganizerProfile from "./pages/OrganizerProfile";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./components/dashboards/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import OrganizerDashboard from "./components/dashboards/OrganizerDashboard";
 
 const App = () => {
   return (
@@ -59,6 +60,24 @@ const App = () => {
             element={
               <ProtectedRoute requiresRole={true}>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Organizer routes */}
+          <Route
+            path="/organizer/dashboard"
+            element={
+              <ProtectedRoute requiresRole={true}>
+                <OrganizerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organizer/profile"
+            element={
+              <ProtectedRoute requiresRole={true}>
+                <OrganizerProfile />
               </ProtectedRoute>
             }
           />
