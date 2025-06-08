@@ -38,28 +38,28 @@ const BentoGridItem = ({
   return (
     <motion.div
       className={cn(
-        "row-span-1 rounded-xl group/bento hover:shadow-xl transition duration-200 shadow-input dark:shadow-none p-4 dark:bg-white/[0.02] bg-white border border-white/10 hover:border-white/20 justify-between flex flex-col space-y-4",
+        "row-span-1 rounded-2xl group/bento hover:shadow-2xl transition-all duration-300 shadow-lg shadow-[#03001C]/30 p-6 bg-[#301E67]/30 border border-[#301E67]/60 hover:border-[#5B8FB9]/60 justify-between flex flex-col space-y-6 backdrop-blur-sm",
         className
       )}
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -4 }}
     >
       {header}
-      <div className="group-hover/bento:translate-x-2 transition duration-200">
-        <div className="flex items-center justify-between mb-3">
-          <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center border border-white/10 group-hover/bento:bg-white/10 transition-colors">
+      <div className="group-hover/bento:translate-x-1 transition-transform duration-300">
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-12 h-12 bg-[#5B8FB9]/25 rounded-xl flex items-center justify-center border border-[#5B8FB9]/40 group-hover/bento:bg-[#5B8FB9]/35 transition-colors">
             {icon}
           </div>
           {badge && (
             <Badge
               variant="secondary"
-              className="bg-white/5 border-white/10 text-white/90 text-xs"
+              className="bg-[#5B8FB9]/20 border-[#5B8FB9]/40 text-[#B6EADA] text-xs font-medium px-3 py-1"
             >
               {badge}
             </Badge>
           )}
         </div>
-        <div className="font-sans font-bold text-white mb-2 mt-2">{title}</div>
-        <div className="font-sans font-normal text-white/70 text-sm">
+        <div className="font-bold text-white mb-3 text-lg">{title}</div>
+        <div className="font-normal text-white/70 text-sm leading-relaxed">
           {description}
         </div>
       </div>
@@ -74,7 +74,7 @@ const Features = () => {
       description:
         "Join exciting competitions with amazing prizes and recognition from top tech companies worldwide.",
       header: <FeatureHeader1 />,
-      icon: <TbTrophy className="w-5 h-5 text-white/70" />,
+      icon: <TbTrophy className="w-6 h-6 text-[#B6EADA]" />,
       badge: "Popular",
       className: "md:col-span-2",
     },
@@ -83,7 +83,7 @@ const Features = () => {
       description:
         "Find teammates and collaborate seamlessly with built-in project management tools.",
       header: <FeatureHeader2 />,
-      icon: <TbUsers className="w-5 h-5 text-white/70" />,
+      icon: <TbUsers className="w-6 h-6 text-[#B6EADA]" />,
       badge: "New",
       className: "md:col-span-1",
     },
@@ -92,7 +92,7 @@ const Features = () => {
       description:
         "Get instant notifications about hackathon updates, deadlines, and announcements.",
       header: <FeatureHeader3 />,
-      icon: <TbBolt className="w-5 h-5 text-white/70" />,
+      icon: <TbBolt className="w-6 h-6 text-[#B6EADA]" />,
       className: "md:col-span-1",
     },
     {
@@ -100,7 +100,7 @@ const Features = () => {
       description:
         "Your intellectual property is protected with secure submission handling.",
       header: <FeatureHeader4 />,
-      icon: <TbShield className="w-5 h-5 text-white/70" />,
+      icon: <TbShield className="w-6 h-6 text-[#B6EADA]" />,
       className: "md:col-span-1",
     },
     {
@@ -108,37 +108,37 @@ const Features = () => {
       description:
         "Build web, mobile, AI, blockchain, or any type of project with our flexible platform.",
       header: <FeatureHeader5 />,
-      icon: <TbCode className="w-5 h-5 text-white/70" />,
+      icon: <TbCode className="w-6 h-6 text-[#B6EADA]" />,
       className: "md:col-span-1",
     },
   ];
 
   return (
-    <section className="py-20 px-6">
-      <div className="max-w-5xl mx-auto">
+    <section className="py-24 px-8">
+      <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-20"
         >
           <Badge
             variant="secondary"
-            className="mb-6 bg-white/5 border-white/10 text-white/90"
+            className="mb-8 bg-[#301E67]/60 border-[#5B8FB9]/40 text-[#B6EADA] px-6 py-2 rounded-full"
           >
             Features
           </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+          <h2 className="text-5xl md:text-6xl font-bold mb-8 text-white tracking-tight">
             Everything you need to
-            <span className="text-white/60"> succeed</span>
+            <span className="text-[#B6EADA]/80"> succeed</span>
           </h2>
-          <p className="text-xl text-white/70 max-w-2xl mx-auto">
+          <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
             From ideation to implementation, our platform provides all the tools
             and support you need to build amazing projects.
           </p>
         </motion.div>
 
-        <BentoGrid className="max-w-4xl mx-auto">
+        <BentoGrid className="max-w-5xl mx-auto">
           {features.map((item, i) => (
             <BentoGridItem
               key={i}
@@ -158,23 +158,23 @@ const Features = () => {
 
 // Feature Header Components
 const FeatureHeader1 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20"></div>
+  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#5B8FB9]/15 border border-[#5B8FB9]/25"></div>
 );
 
 const FeatureHeader2 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-blue-500/20"></div>
+  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#B6EADA]/10 border border-[#B6EADA]/20"></div>
 );
 
 const FeatureHeader3 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-500/20"></div>
+  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#301E67]/50 border border-[#301E67]/70"></div>
 );
 
 const FeatureHeader4 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-500/20"></div>
+  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#5B8FB9]/20 border border-[#5B8FB9]/35"></div>
 );
 
 const FeatureHeader5 = () => (
-  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-lg bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20"></div>
+  <div className="flex flex-1 w-full h-full min-h-[8rem] rounded-xl bg-[#B6EADA]/8 border border-[#B6EADA]/15"></div>
 );
 
 export default Features;

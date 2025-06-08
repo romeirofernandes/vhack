@@ -29,27 +29,27 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="relative w-full max-w-5xl mx-auto flex flex-col items-center justify-center rounded-t-4xl border-t border-white/5 bg-[radial-gradient(35%_128px_at_50%_0%,theme(backgroundColor.white/8%),transparent)] px-6 py-12 lg:py-16">
-      <div className="bg-white/20 absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full blur" />
+    <footer className="relative w-full max-w-6xl mx-auto flex flex-col items-center justify-center rounded-t-3xl border-t border-[#301E67]/60 bg-[#301E67]/30 backdrop-blur-sm px-8 py-16 lg:py-20">
+      <div className="bg-[#5B8FB9]/40 absolute top-0 right-1/2 left-1/2 h-px w-1/3 -translate-x-1/2 -translate-y-1/2 rounded-full blur" />
 
       <div className="flex w-full justify-between items-start">
-        <AnimatedContainer className="space-y-4">
-          <h3 className="text-2xl font-bold text-white">vHack</h3>
-          <p className="text-white/70 max-w-md leading-relaxed">
+        <AnimatedContainer className="space-y-6">
+          <h3 className="text-3xl font-bold text-white tracking-tight">vHack</h3>
+          <p className="text-white/70 max-w-md leading-relaxed text-lg">
             The ultimate platform for competitive hackathons.
           </p>
         </AnimatedContainer>
 
-        <AnimatedContainer delay={0.2} className="space-y-3">
+        <AnimatedContainer delay={0.2} className="space-y-4">
           {teamMembers.map((member, index) => (
             <div key={member.name} className="flex items-center space-x-2 mr-2">
               <a
                 href={member.github}
-                className="text-white/50 hover:text-white transition-colors"
+                className="text-white/60 hover:text-[#B6EADA] transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <span className="text-white/70 hover:text-white text-sm">{member.name}</span>
+                <span className="text-white/70 hover:text-[#B6EADA] text-base font-medium">{member.name}</span>
               </a>
             </div>
           ))}
@@ -58,13 +58,13 @@ const Footer = () => {
 
       <AnimatedContainer
         delay={0.4}
-        className="w-full mt-8 pt-8 border-t border-white/5"
+        className="w-full mt-12 pt-8 border-t border-[#301E67]/60"
       >
         <div className="flex flex-col md:flex-row justify-between items-center">
-          <p className="text-white/60 text-sm mb-4 md:mb-0">
+          <p className="text-white/60 text-base mb-4 md:mb-0">
             © 2025 vHack. All rights reserved.
           </p>
-          <p className="text-white/60 text-sm">Crafted by Team CPU</p>
+          <p className="text-white/60 text-base">Crafted by Team CPU</p>
         </div>
       </AnimatedContainer>
     </footer>

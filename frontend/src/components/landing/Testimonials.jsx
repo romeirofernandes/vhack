@@ -59,25 +59,25 @@ const Testimonials = () => {
   const secondColumn = testimonials.slice(3, 6);
 
   return (
-    <section className="py-16 px-6 overflow-hidden">
-      <div className="max-w-5xl mx-auto">
+    <section className="py-20 px-8 overflow-hidden">
+      <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
           <Badge
             variant="secondary"
-            className="mb-4 bg-white/5 border-white/10 text-white/90"
+            className="mb-8 bg-[#301E67]/60 border-[#5B8FB9]/40 text-[#B6EADA] px-6 py-2 rounded-full"
           >
             Testimonials
           </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">
             Loved by developers
-            <span className="text-white/60"> worldwide</span>
+            <span className="text-[#B6EADA]/80"> worldwide</span>
           </h2>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto">
+          <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
             Join thousands of developers who have transformed their careers
             through hackathons.
           </p>
@@ -85,8 +85,8 @@ const Testimonials = () => {
 
         <div className="relative">
           {/* Gradient masks for fade effect */}
-          <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-zinc-950 to-transparent z-10 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-zinc-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#03001C] to-transparent z-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#03001C] to-transparent z-10 pointer-events-none" />
 
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto h-[400px] overflow-hidden">
             {/* First Column - Moving Up */}
@@ -161,19 +161,19 @@ const Testimonials = () => {
 
 const TestimonialCard = ({ testimonial }) => {
   return (
-    <div className="p-4 rounded-lg border border-white/5 bg-white/[0.02] backdrop-blur-sm">
-      <div className="flex items-start space-x-3">
-        <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/10 flex-shrink-0">
-          <span className="text-white font-semibold text-xs">
+    <div className="p-6 rounded-2xl border border-[#301E67]/60 bg-[#301E67]/30 backdrop-blur-sm">
+      <div className="flex items-start space-x-4">
+        <div className="w-12 h-12 bg-[#5B8FB9]/25 rounded-xl flex items-center justify-center border border-[#5B8FB9]/40 flex-shrink-0">
+          <span className="text-[#B6EADA] font-bold text-sm">
             {testimonial.avatar}
           </span>
         </div>
         <div className="flex-1">
-          <div className="mb-2">
-            <h4 className="text-white font-semibold text-sm">
+          <div className="mb-3">
+            <h4 className="text-white font-semibold text-base">
               {testimonial.name}
             </h4>
-            <p className="text-white/60 text-xs">
+            <p className="text-[#B6EADA]/70 text-sm">
               {testimonial.role} • {testimonial.company}
             </p>
           </div>

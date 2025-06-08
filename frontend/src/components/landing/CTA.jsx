@@ -19,10 +19,10 @@ const CTA = () => {
   };
 
   return (
-    <section className="relative py-24 px-6">
-      <div className="max-w-4xl mx-auto text-center relative">
+    <section className="relative py-32 px-8">
+      <div className="max-w-5xl mx-auto text-center relative">
         <motion.div
-          className="relative p-8 rounded-2xl border border-white/5 bg-white/[0.02] backdrop-blur-sm"
+          className="relative p-12 rounded-3xl border border-[#301E67]/60 bg-[#301E67]/30 backdrop-blur-sm"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -34,11 +34,11 @@ const CTA = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-            className="mb-6"
+            className="mb-8"
           >
             <Badge
               variant="secondary"
-              className="px-4 py-2 bg-white/5 border border-white/10 text-white/90 hover:bg-white/10 transition-colors backdrop-blur-sm"
+              className="px-6 py-3 bg-[#5B8FB9]/25 border border-[#5B8FB9]/40 text-[#B6EADA] hover:bg-[#5B8FB9]/35 transition-colors backdrop-blur-sm rounded-full"
             >
               <TbSparkles className="w-4 h-4 mr-2" />
               Ready to get started?
@@ -47,7 +47,7 @@ const CTA = () => {
 
           {/* Main heading */}
           <motion.h2
-            className="text-4xl md:text-5xl font-bold leading-tight mb-8 text-white"
+            className="text-5xl md:text-6xl font-bold leading-tight mb-12 text-white tracking-tight"
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -67,12 +67,12 @@ const CTA = () => {
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="lg"
-                className="px-8 py-4 bg-white text-zinc-950 hover:bg-white/90 font-medium group"
+                className="px-10 py-5 bg-[#5B8FB9] text-white hover:bg-[#5B8FB9]/90 font-semibold group rounded-xl shadow-xl shadow-[#5B8FB9]/30 text-lg"
                 onClick={handleStartBuilding}
               >
-                <TbCode className="w-5 h-5 mr-2" />
+                <TbCode className="w-6 h-6 mr-3" />
                 {user ? "Go to Dashboard" : "Start Building"}
-                <TbArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                <TbArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-1 transition-transform" />
               </Button>
             </motion.div>
           </motion.div>
