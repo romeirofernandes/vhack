@@ -69,13 +69,13 @@ const Testimonials = () => {
         >
           <Badge
             variant="secondary"
-            className="mb-8 bg-[#301E67]/60 border-[#5B8FB9]/40 text-[#B6EADA] px-6 py-2 rounded-full"
+            className="mb-8 bg-zinc-800/60 border-zinc-700/40 text-zinc-200 px-6 py-2 rounded-full"
           >
             Testimonials
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">
             Loved by developers
-            <span className="text-[#B6EADA]/80"> worldwide</span>
+            <span className="text-zinc-300"> worldwide</span>
           </h2>
           <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
             Join thousands of developers who have transformed their careers
@@ -85,8 +85,8 @@ const Testimonials = () => {
 
         <div className="relative">
           {/* Gradient masks for fade effect */}
-          <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-[#03001C] to-transparent z-10 pointer-events-none" />
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#03001C] to-transparent z-10 pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-zinc-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-zinc-950 to-transparent z-10 pointer-events-none" />
 
           <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto h-[400px] overflow-hidden">
             {/* First Column - Moving Up */}
@@ -161,10 +161,10 @@ const Testimonials = () => {
 
 const TestimonialCard = ({ testimonial }) => {
   return (
-    <div className="p-6 rounded-2xl border border-[#301E67]/60 bg-[#301E67]/30 backdrop-blur-sm">
+    <div className="p-6 rounded-2xl border border-zinc-800/60 bg-zinc-900/30 backdrop-blur-sm">
       <div className="flex items-start space-x-4">
-        <div className="w-12 h-12 bg-[#5B8FB9]/25 rounded-xl flex items-center justify-center border border-[#5B8FB9]/40 flex-shrink-0">
-          <span className="text-[#B6EADA] font-bold text-sm">
+        <div className="w-12 h-12 bg-zinc-700/25 rounded-xl flex items-center justify-center border border-zinc-600/40 flex-shrink-0">
+          <span className="text-zinc-200 font-bold text-sm">
             {testimonial.avatar}
           </span>
         </div>
@@ -173,7 +173,7 @@ const TestimonialCard = ({ testimonial }) => {
             <h4 className="text-white font-semibold text-base">
               {testimonial.name}
             </h4>
-            <p className="text-[#B6EADA]/70 text-sm">
+            <p className="text-zinc-400/70 text-sm">
               {testimonial.role} • {testimonial.company}
             </p>
           </div>

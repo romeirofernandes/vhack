@@ -4,85 +4,90 @@ const admin = require("../config/firebase-admin");
 const authController = {
   // Register method
   async register(req, res) {
-    try {
-      const { email, password, displayName } = req.body;
+  try {
+    const { email, password, displayName } = req.body;
 
-      // Create user in Firebase
-      const userRecord = await admin.auth().createUser({
-        email,
-        password,
-        displayName,
-      });
+    // Create user in Firebase
+    const userRecord = await admin.auth().createUser({
+      email,
+      password,
+      displayName,
+    });
 
-      // Create user in MongoDB
-      const user = new User({
-        firebaseUid: userRecord.uid,
-        email,
-        displayName,
-      });
+    // Create user in MongoDB
+    const user = new User({
+      firebaseUid: userRecord.uid,
+      email,
+      displayName,
+    });
 
-      await user.save();
+    await user.save();
 
-      res.status(201).json({
-        success: true,
-        message: "User created successfully",
-        user: {
-          id: user._id,
-          email: user.email,
-          displayName: user.displayName,
-          role: user.role,
-        },
-      });
-    } catch (error) {
-      console.error("Registration error:", error);
-      res.status(400).json({
-        success: false,
-        error: error.message || "Registration failed",
-      });
-    }
-  },
+    // Create a custom token for immediate authentication
+    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+
+    res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      customToken, // Add this to allow immediate login
+      user: {
+        id: user._id,
+        email: user.email,
+        displayName: user.displayName,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(400).json({
+      success: false,
+      error: error.message || "Registration failed",
+    });
+  }
+},
 
   // Login method
-  async login(req, res) {
-    try {
-      const { idToken } = req.body;
+async login(req, res) {
+  try {
+    const { idToken } = req.body;
 
-      // Verify Firebase token
-      const decodedToken = await admin.auth().verifyIdToken(idToken);
+    // Verify Firebase token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
 
-      // Find or create user in MongoDB
-      let user = await User.findOne({ firebaseUid: decodedToken.uid });
+    // Find or create user in MongoDB
+    let user = await User.findOne({ firebaseUid: decodedToken.uid });
 
-      if (!user) {
-        user = new User({
-          firebaseUid: decodedToken.uid,
-          email: decodedToken.email,
-          displayName: decodedToken.name,
-          photoURL: decodedToken.picture,
-        });
-        await user.save();
-      }
-
-      res.status(200).json({
-        success: true,
-        message: "Login successful",
-        user: {
-          id: user._id,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          role: user.role,
-          profileCompleted: user.profileCompleted,
-        },
+    if (!user) {
+      user = new User({
+        firebaseUid: decodedToken.uid,
+        email: decodedToken.email,
+        // Fix: Use email as fallback if name is not available
+        displayName: decodedToken.name || decodedToken.email.split('@')[0] || 'User',
+        photoURL: decodedToken.picture,
       });
-    } catch (error) {
-      console.error("Login error:", error);
-      res.status(401).json({
-        success: false,
-        error: "Authentication failed",
-      });
+      await user.save();
     }
-  },
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        id: user._id,
+        email: user.email,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        role: user.role,
+        profileCompleted: user.profileCompleted,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(401).json({
+      success: false,
+      error: "Authentication failed",
+    });
+  }
+},
 
   // Authenticate existing user
   async authenticate(req, res) {
@@ -113,6 +118,7 @@ const authController = {
 
   // Update role method
   async updateRole(req, res) {
+    console.log("Updating role for user:", req.user._id);
     try {
       const { role } = req.body;
       const userId = req.user._id;

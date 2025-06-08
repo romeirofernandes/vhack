@@ -22,51 +22,60 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Profile from "./organizer/Profile";
 
 const OrganizerDashboard = () => {
   const [open, setOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("dashboard");
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    navigate("/login");
+    navigate("/organizer/login");
   };
 
   const links = [
     {
       label: "Dashboard",
-      href: "#",
+      href: "/organizer/dashboard",
       icon: <MdDashboard className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("dashboard"),
     },
     {
       label: "My Hackathons",
-      href: "#",
+      href: "/organizer/hackathons",
       icon: <MdCalendarToday className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("hackathons"),
     },
     {
       label: "Create Event",
-      href: "#",
+      href: "/organizer/create-event",
       icon: <MdAdd className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("create-event"),
     },
     {
       label: "Participants",
-      href: "#",
+      href: "/organizer/participants",
       icon: <MdGroup className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("participants"),
     },
     {
       label: "Analytics",
-      href: "#",
+      href: "/organizer/analytics",
       icon: <MdBarChart className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("analytics"),
     },
     {
       label: "Profile",
-      href: "#",
+      href: "/organizer/profile",
       icon: <MdPerson className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("profile"),
     },
     {
       label: "Settings",
-      href: "#",
+      href: "/organizer/settings",
       icon: <MdSettings className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("settings"),
     },
     {
       label: "Logout",
@@ -106,6 +115,177 @@ const OrganizerDashboard = () => {
     },
   ];
 
+  const renderContent = () => {
+    switch (activeSection) {
+      case "profile":
+        return <Profile />;
+      case "dashboard":
+      default:
+        return (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-white">
+                  Organizer Dashboard
+                </h1>
+                <p className="text-white/70">
+                  Manage and create amazing hackathon experiences
+                </p>
+              </div>
+              <Button className="bg-white text-zinc-950 hover:bg-white/90">
+                <MdAdd className="w-4 h-4 mr-2" />
+                Create Hackathon
+              </Button>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-white/70">
+                    Total Hackathons
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-white">8</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-white/70">
+                    Active Events
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-white">2</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-white/70">
+                    Total Participants
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-white">2,847</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-white/70">
+                    Success Rate
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-white">94%</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* My Hackathons */}
+            <Card className="bg-white/5 border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white">My Hackathons</CardTitle>
+                <CardDescription className="text-white/70">
+                  Manage your hackathon events
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {myHackathons.map((hackathon) => (
+                  <div
+                    key={hackathon.id}
+                    className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10"
+                  >
+                    <div className="space-y-1">
+                      <h3 className="font-semibold text-white">
+                        {hackathon.title}
+                      </h3>
+                      <p className="text-sm text-white/70">{hackathon.date}</p>
+                      <div className="flex items-center gap-4 text-sm text-white/60">
+                        <span>Participants: {hackathon.participants}</span>
+                        <span>Teams: {hackathon.teams}</span>
+                        <span>Submissions: {hackathon.submissions}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge
+                        className={`${
+                          hackathon.status === "Active"
+                            ? "bg-green-900/50 text-green-200"
+                            : hackathon.status === "Registration Open"
+                            ? "bg-blue-900/50 text-blue-200"
+                            : "bg-gray-900/50 text-gray-200"
+                        }`}
+                      >
+                        {hackathon.status}
+                      </Badge>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-white/20 text-white hover:bg-white/10"
+                      >
+                        Manage
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Analytics and Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white">Recent Activity</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <div className="text-sm text-white/80">
+                      AI Healthcare Hackathon started
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <div className="text-sm text-white/80">
+                      New team registered for Fintech Challenge
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                    <div className="text-sm text-white/80">
+                      Judge John Doe added to panel
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white/5 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white">Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
+                    <MdAdd className="w-4 h-4 mr-2" />
+                    Create New Hackathon
+                  </Button>
+                  <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
+                    <MdGroup className="w-4 h-4 mr-2" />
+                    Invite Judges
+                  </Button>
+                  <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
+                    <MdBarChart className="w-4 h-4 mr-2" />
+                    View Analytics
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        );
+    }
+  };
+
   return (
     <div className="bg-zinc-950 min-h-screen flex">
       <Sidebar open={open} setOpen={setOpen}>
@@ -139,164 +319,7 @@ const OrganizerDashboard = () => {
       </Sidebar>
 
       <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-white">
-              Organizer Dashboard
-            </h1>
-            <p className="text-white/70">
-              Manage and create amazing hackathon experiences
-            </p>
-          </div>
-          <Button className="bg-white text-zinc-950 hover:bg-white/90">
-            <MdAdd className="w-4 h-4 mr-2" />
-            Create Hackathon
-          </Button>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Total Hackathons
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">8</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Active Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">2</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Total Participants
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">2,847</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Success Rate
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">94%</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* My Hackathons */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">My Hackathons</CardTitle>
-            <CardDescription className="text-white/70">
-              Manage your hackathon events
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {myHackathons.map((hackathon) => (
-              <div
-                key={hackathon.id}
-                className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10"
-              >
-                <div className="space-y-1">
-                  <h3 className="font-semibold text-white">
-                    {hackathon.title}
-                  </h3>
-                  <p className="text-sm text-white/70">{hackathon.date}</p>
-                  <div className="flex items-center gap-4 text-sm text-white/60">
-                    <span>Participants: {hackathon.participants}</span>
-                    <span>Teams: {hackathon.teams}</span>
-                    <span>Submissions: {hackathon.submissions}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge
-                    className={`${
-                      hackathon.status === "Active"
-                        ? "bg-green-900/50 text-green-200"
-                        : hackathon.status === "Registration Open"
-                        ? "bg-blue-900/50 text-blue-200"
-                        : "bg-gray-900/50 text-gray-200"
-                    }`}
-                  >
-                    {hackathon.status}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10"
-                  >
-                    Manage
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Analytics and Recent Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <div className="text-sm text-white/80">
-                  AI Healthcare Hackathon started
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                <div className="text-sm text-white/80">
-                  New team registered for Fintech Challenge
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                <div className="text-sm text-white/80">
-                  Judge John Doe added to panel
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                <MdAdd className="w-4 h-4 mr-2" />
-                Create New Hackathon
-              </Button>
-              <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                <MdGroup className="w-4 h-4 mr-2" />
-                Invite Judges
-              </Button>
-              <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                <MdBarChart className="w-4 h-4 mr-2" />
-                View Analytics
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        {renderContent()}
       </div>
     </div>
   );
