@@ -25,6 +25,10 @@ import { useAuth } from "../../contexts/AuthContext";
 import { signOut } from "firebase/auth";
 import { auth } from "../../config/firebase";
 
+// Import the new components
+import Profile from "./participants/Profile";
+import Projects from "./participants/Projects";
+
 const ParticipantDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -390,12 +394,7 @@ const ParticipantDashboard = () => {
           />
         );
       case "projects":
-        return (
-          <ComingSoon
-            title="Projects"
-            description="Project submissions and portfolio coming soon!"
-          />
-        );
+        return <Projects />;
       case "achievements":
         return (
           <ComingSoon
@@ -404,12 +403,7 @@ const ParticipantDashboard = () => {
           />
         );
       case "profile":
-        return (
-          <ComingSoon
-            title="Profile Settings"
-            description="Advanced profile management coming soon!"
-          />
-        );
+        return <Profile />;
       default:
         return renderDashboardContent();
     }
@@ -431,36 +425,43 @@ const ParticipantDashboard = () => {
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            {/* Logo */}
-            <div className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20">
-              <div className="flex items-center justify-center w-full">
-                <TbCode className="w-5 h-5 text-white flex-shrink-0" />
+            <motion.div
+              className="font-normal flex items-center text-sm text-white py-1 relative z-20 "
+              animate={{
+                justifyContent: sidebarOpen ? "flex-start" : "center",
+              }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex items-center space-x-2">
+                <TbCode className="ml-4 w-5 h-5 text-white flex-shrink-0" />
                 <motion.span
                   animate={{
-                    display: sidebarOpen ? "inline-block" : "none",
+                    width: sidebarOpen ? "auto" : 0,
                     opacity: sidebarOpen ? 1 : 0,
                   }}
-                  className="font-medium text-white whitespace-pre ml-2"
+                  transition={{ duration: 0.2 }}
+                  className="font-medium text-white whitespace-nowrap overflow-hidden"
                 >
                   vHack
                 </motion.span>
-                {sidebarOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 }}
+                <motion.div
+                  animate={{
+                    width: sidebarOpen ? "auto" : 0,
+                    opacity: sidebarOpen ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.2, delay: sidebarOpen ? 0.1 : 0 }}
+                  className="overflow-hidden"
+                >
+                  <Badge
+                    variant="secondary"
+                    className="bg-white/10 border-white/20 text-white/90 text-xs whitespace-nowrap"
                   >
-                    <Badge
-                      variant="secondary"
-                      className="bg-white/10 border-white/20 text-white/90 text-xs ml-2"
-                    >
-                      <TbSparkles className="w-3 h-3 mr-1" />
-                      Beta
-                    </Badge>
-                  </motion.div>
-                )}
+                    <TbSparkles className="w-3 h-3 mr-1" />
+                    Beta
+                  </Badge>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Navigation Links */}
             <div className="mt-8 flex flex-col gap-2">
