@@ -211,6 +211,7 @@ const CreateProjectForm = ({ onSuccess, onError }) => {
     title: "",
     description: "",
     problemStatement: "",
+    challenges: "",
     technologies: "",
     githubUrl: "",
     liveUrl: "",
@@ -300,6 +301,19 @@ const CreateProjectForm = ({ onSuccess, onError }) => {
         />
       </div>
 
+      {/* Add challenges field */}
+      <div>
+        <Label className="text-white/80">Challenges Faced</Label>
+        <Textarea
+          value={formData.challenges}
+          onChange={(e) => handleChange("challenges", e.target.value)}
+          className="bg-white/5 border-white/20 text-white"
+          placeholder="What challenges did you overcome while building this?"
+          rows={2}
+        />
+      </div>
+
+      
       <div>
         <Label className="text-white/80">Technologies Used</Label>
         <Input

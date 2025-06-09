@@ -52,6 +52,11 @@ const projectSchema = new mongoose.Schema({
       role: String,
     },
   ],
+  creator: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  required: true,
+},
   status: {
     type: String,
     enum: ["draft", "submitted", "judging", "judged"],
