@@ -28,6 +28,7 @@ import { auth } from "../../config/firebase";
 // Import the new components
 import Profile from "./participants/Profile";
 import Projects from "./participants/Projects";
+import Achievements from "./participants/Achievements";
 
 const ParticipantDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -449,12 +450,7 @@ const ParticipantDashboard = () => {
       case "projects":
         return <Projects />;
       case "achievements":
-        return (
-          <ComingSoon
-            title="Achievements"
-            description="Your badges and accomplishments coming soon!"
-          />
-        );
+        return <Achievements />;
       case "profile":
         return <Profile />;
       default:
