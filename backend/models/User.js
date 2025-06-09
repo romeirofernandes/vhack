@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    firebaseUID: {
+    firebaseUid: {
       type: String,
       required: true,
       unique: true,
@@ -19,7 +19,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["participant", "judge", "organizer"],
-      required: true,
+      required: false, // Role is optional initially
+      default: null, // Default to null until set
     },
     profileCompleted: {
       type: Boolean,
