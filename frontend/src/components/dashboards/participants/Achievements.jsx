@@ -111,15 +111,6 @@ const Achievements = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/dashboard")}
-              className="text-white/70 hover:text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
             <div>
               <h1 className="text-4xl font-bold flex items-center gap-3">
                 <Trophy className="w-8 h-8 text-yellow-400" />
@@ -144,7 +135,9 @@ const Achievements = () => {
         {/* Error Alert */}
         {error && (
           <Alert className="bg-red-500/10 border-red-500/20 mb-6">
-            <AlertDescription className="text-red-200">{error}</AlertDescription>
+            <AlertDescription className="text-red-200">
+              {error}
+            </AlertDescription>
           </Alert>
         )}
 
@@ -187,7 +180,9 @@ const Achievements = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-white/70">Overall Achievement Progress</span>
+                <span className="text-white/70">
+                  Overall Achievement Progress
+                </span>
                 <span className="text-white font-semibold">
                   {summary.percentage || 0}%
                 </span>
@@ -202,7 +197,9 @@ const Achievements = () => {
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div className="text-center">
-                  <div className="text-white font-semibold">{summary.unlocked || 0}</div>
+                  <div className="text-white font-semibold">
+                    {summary.unlocked || 0}
+                  </div>
                   <div className="text-white/60">Unlocked</div>
                 </div>
                 <div className="text-center">
@@ -213,13 +210,21 @@ const Achievements = () => {
                 </div>
                 <div className="text-center">
                   <div className="text-white font-semibold">
-                    {achievements.filter(a => a.rarity === 'rare' && a.unlocked).length}
+                    {
+                      achievements.filter(
+                        (a) => a.rarity === "rare" && a.unlocked
+                      ).length
+                    }
                   </div>
                   <div className="text-white/60">Rare</div>
                 </div>
                 <div className="text-center">
                   <div className="text-white font-semibold">
-                    {achievements.filter(a => a.rarity === 'legendary' && a.unlocked).length}
+                    {
+                      achievements.filter(
+                        (a) => a.rarity === "legendary" && a.unlocked
+                      ).length
+                    }
                   </div>
                   <div className="text-white/60">Legendary</div>
                 </div>
@@ -247,12 +252,12 @@ const Achievements = () => {
                 {category.label}
                 {category.id === "unlocked" && (
                   <Badge className="bg-green-600 text-white text-xs">
-                    {achievements.filter(a => a.unlocked).length}
+                    {achievements.filter((a) => a.unlocked).length}
                   </Badge>
                 )}
                 {category.id === "locked" && (
                   <Badge className="bg-red-600 text-white text-xs">
-                    {achievements.filter(a => !a.unlocked).length}
+                    {achievements.filter((a) => !a.unlocked).length}
                   </Badge>
                 )}
               </motion.button>
@@ -274,7 +279,8 @@ const Achievements = () => {
               No achievements found
             </h3>
             <p className="text-white/60">
-              Try selecting a different category or start participating in hackathons!
+              Try selecting a different category or start participating in
+              hackathons!
             </p>
           </div>
         )}
