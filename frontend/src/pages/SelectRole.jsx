@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +19,14 @@ const SelectRole = () => {
   const [error, setError] = useState("");
   const { user } = useAuth();
   const navigate = useNavigate();
-
+  
+  useEffect(() => {
+    if(user && user.role) {
+      // If user already has a role, redirect to their profile
+      navigate(`/dashboard`);
+    }
+  }
+  , [user, navigate]);
   const roles = [
     {
       id: "participant",
