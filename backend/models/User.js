@@ -1,5 +1,17 @@
 const mongoose = require("mongoose");
 
+const achievementSchema = new mongoose.Schema(
+  {
+    title: String,
+    description: String,
+    type: String,
+    date: String,
+    id: Number,
+  },
+  { _id: false }
+);
+
+
 const userSchema = new mongoose.Schema(
   {
     firebaseUid: {
@@ -19,8 +31,8 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["participant", "judge", "organizer"],
-      required: false, // Role is optional initially
-      default: null, // Default to null until set
+      required: false,
+      default: null,
     },
     profileCompleted: {
       type: Boolean,
@@ -34,7 +46,7 @@ const userSchema = new mongoose.Schema(
       company: String,
       jobTitle: String,
       experience: String,
-      skills: [String], // Simple array of strings
+      skills: [String], 
       education: [
         {
           institution: String,
@@ -52,15 +64,7 @@ const userSchema = new mongoose.Schema(
         portfolio: String,
         twitter: String,
       },
-      achievements: [
-        {
-          title: String,
-          description: String,
-          type: String,
-          date: String,
-          id: Number,
-        },
-      ],
+      achievements: [achievementSchema],
       expertise: [String],
       organization: String,
       yearsOfExperience: String,

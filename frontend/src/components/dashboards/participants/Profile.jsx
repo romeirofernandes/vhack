@@ -58,7 +58,6 @@ const Profile = () => {
   const [success, setSuccess] = useState("");
   const [activeTab, setActiveTab] = useState("basic");
 
-  // Skills from database
   const [availableSkills, setAvailableSkills] = useState([]);
 
   const { user } = useAuth();
@@ -77,7 +76,6 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Failed to fetch skills:", error);
-      // Fallback skills if API fails
       setAvailableSkills([
         "JavaScript",
         "TypeScript",
@@ -111,7 +109,6 @@ const Profile = () => {
 
       const data = await response.json();
       if (data.success) {
-        console.log("Fetched profile data:", data.data);
 
         setProfileData({
           displayName: data.data.displayName || "",
@@ -122,7 +119,7 @@ const Profile = () => {
           company: data.data.profile?.company || "",
           jobTitle: data.data.profile?.jobTitle || "",
           experience: data.data.profile?.experience || "",
-          skills: data.data.profile?.skills || [], // Simple array of strings
+          skills: data.data.profile?.skills || [], 
           education: data.data.profile?.education || [],
           socialLinks: {
             github: data.data.profile?.socialLinks?.github || "",
@@ -155,7 +152,7 @@ const Profile = () => {
 
       const validAchievements = profileData.achievements.filter(
         (achievement) =>
-          achievement && achievement.title && achievement.description
+          achievement && achievement.title && achievement.description && typeof achievement === 'object'
       );
 
       const dataToSave = {
@@ -164,8 +161,6 @@ const Profile = () => {
         education: validEducation,
         achievements: validAchievements,
       };
-
-      console.log("Saving profile data:", dataToSave);
 
       const idToken = await user.getIdToken(true);
 
