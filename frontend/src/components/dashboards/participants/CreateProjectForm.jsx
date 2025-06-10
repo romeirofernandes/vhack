@@ -8,7 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import {
   MdAdd,
   MdClose,
@@ -262,15 +265,15 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] h-[90vh] max-w-[95vw] bg-zinc-900/95 backdrop-blur-sm border-white/10 text-white p-0 overflow-hidden">
+      <DialogContent className="w-[95vw] h-[90vh] max-w-none bg-zinc-900/95 backdrop-blur-sm border-white/10 text-white p-0 overflow-y-auto sm:max-w-[95vw]">
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           className="h-full flex flex-col"
         >
-          {/* Header */}
-          <div className="p-6 space-y-4 flex-shrink-0">
+          {/* Header - Matching ProjectEditor */}
+          <div className="p-8 space-y-8 flex-shrink-0">
             {/* Alerts */}
             {error && (
               <motion.div
@@ -334,7 +337,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                   variant="outline"
                   onClick={() => createProject(false)}
                   disabled={loading}
-                  className="border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                  className="border-white/20 text-zinc-800 hover:bg-white/40 hover:text-white hover:border-white/30 transition-colors duration-200"
                 >
                   <MdSave className="w-4 h-4 mr-2" />
                   {loading ? "Creating..." : "Save Draft"}
@@ -351,11 +354,11 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
             </div>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-hidden px-6 pb-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+          {/* Content - Matching ProjectEditor Layout */}
+          <div className="flex-1 overflow-hidden px-8 pb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
               {/* Main Content */}
-              <div className="lg:col-span-2 space-y-6 overflow-y-auto pr-4 max-h-full">
+              <div className="lg:col-span-2 space-y-8 overflow-y-auto pr-4">
                 {/* Basic Information */}
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
@@ -364,7 +367,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                       Basic Information
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-6">
                     <div className="space-y-2">
                       <Label
                         htmlFor="title"
@@ -405,9 +408,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                 {/* Problem Statement */}
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
-                    <CardTitle className="text-white">
-                      Problem Statement
-                    </CardTitle>
+                    <CardTitle className="text-white">Problem Statement</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Textarea
@@ -416,7 +417,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                         handleChange("problemStatement", e.target.value)
                       }
                       placeholder="What problem does your project solve? Why is it important?"
-                      rows={3}
+                      rows={4}
                       className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 resize-none"
                     />
                   </CardContent>
@@ -425,18 +426,14 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                 {/* Challenges */}
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
-                    <CardTitle className="text-white">
-                      Challenges & Solutions
-                    </CardTitle>
+                    <CardTitle className="text-white">Challenges & Solutions</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <Textarea
                       value={formData.challenges}
-                      onChange={(e) =>
-                        handleChange("challenges", e.target.value)
-                      }
+                      onChange={(e) => handleChange("challenges", e.target.value)}
                       placeholder="What challenges did you face while building this project? How did you overcome them?"
-                      rows={3}
+                      rows={4}
                       className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 resize-none"
                     />
                   </CardContent>
@@ -451,7 +448,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="border-2 border-dashed border-white/20 rounded-lg p-4 text-center hover:border-white/30 transition-colors">
+                    <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/30 transition-colors">
                       <input
                         type="file"
                         accept="image/*"
@@ -465,17 +462,17 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                         htmlFor="image-upload"
                         className="cursor-pointer block"
                       >
-                        <div className="flex flex-col items-center gap-2">
-                          <div className="bg-white/10 rounded-full p-2">
-                            <MdCloudUpload className="w-5 h-5 text-white/60" />
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="bg-white/10 rounded-full p-3">
+                            <MdCloudUpload className="w-6 h-6 text-white/60" />
                           </div>
                           <div>
-                            <p className="text-white/80 font-medium text-sm">
+                            <p className="text-white/80 font-medium">
                               {uploadingImage
                                 ? "Uploading..."
                                 : "Upload Project Images"}
                             </p>
-                            <p className="text-white/50 text-xs">
+                            <p className="text-white/50 text-sm">
                               Click to browse or drag and drop images
                             </p>
                           </div>
@@ -484,7 +481,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                     </div>
 
                     {formData.images.length > 0 && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {formData.images.map((image, index) => (
                           <motion.div
                             key={index}
@@ -496,15 +493,15 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                               <img
                                 src={image.url}
                                 alt={`Project image ${index + 1}`}
-                                className="w-full h-36 object-cover transition-transform duration-300 group-hover:scale-105"
+                                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
                               />
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => removeImage(index)}
-                                className="absolute top-1 right-1 bg-red-600/80 text-white hover:bg-red-600 rounded-full p-1 h-6 w-6"
+                                className="absolute top-2 right-2 bg-red-600/80 text-white hover:bg-red-600 rounded-full p-1"
                               >
-                                <MdDelete className="w-3 h-3" />
+                                <MdDelete className="w-4 h-4" />
                               </Button>
                             </div>
                             <Input
@@ -513,7 +510,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                                 updateImageCaption(index, e.target.value)
                               }
                               placeholder="Add image caption..."
-                              className="mt-2 bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 text-xs"
+                              className="mt-2 bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 text-sm"
                             />
                           </motion.div>
                         ))}
@@ -524,18 +521,16 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
               </div>
 
               {/* Sidebar */}
-              <div className="space-y-4 overflow-y-auto max-h-full">
+              <div className="space-y-6 overflow-y-auto">
                 {/* Project Settings */}
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
-                    <CardTitle className="text-white text-lg">
-                      Project Settings
-                    </CardTitle>
+                    <CardTitle className="text-white">Project Settings</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-4 overflow-y-auto max-h-full">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
-                        <Label className="text-white/80 font-medium flex items-center gap-2 text-sm">
+                        <Label className="text-white/80 font-medium flex items-center gap-2">
                           {formData.isPublic ? (
                             <MdPublic className="w-4 h-4" />
                           ) : (
@@ -543,7 +538,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                           )}
                           Public Project
                         </Label>
-                        <p className="text-white/50 text-xs">
+                        <p className="text-white/50 text-sm">
                           {formData.isPublic
                             ? "Anyone can view this project"
                             : "Only you and your team can view this project"}
@@ -563,24 +558,24 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                 {/* Technologies */}
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2 text-lg">
-                      <MdCode className="w-4 h-4" />
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <MdCode className="w-5 h-5" />
                       Technologies
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-4">
                     <div className="flex gap-2">
                       <Input
                         value={newTech}
                         onChange={(e) => setNewTech(e.target.value)}
                         placeholder="Add technology..."
-                        className="flex-1 bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 text-sm"
+                        className="flex-1 bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
                         onKeyPress={(e) => e.key === "Enter" && addTechnology()}
                       />
                       <Button
                         type="button"
                         onClick={addTechnology}
-                        className="bg-white/10 text-white hover:bg-white/20 border-white/20 h-8 w-8 p-0"
+                        className="bg-white/10 text-white hover:bg-white/20 border-white/20"
                         variant="outline"
                       >
                         <MdAdd className="w-4 h-4" />
@@ -588,20 +583,20 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                     </div>
 
                     {techArray.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-2">
                         {techArray.map((tech, index) => (
                           <Badge
                             key={index}
-                            className="bg-white/10 text-white/80 border-white/20 hover:bg-white/15 pr-1 text-xs"
+                            className="bg-white/10 text-white/80 border-white/20 hover:bg-white/15 pr-1"
                           >
                             {tech}
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="ml-1 h-3 w-3 p-0 hover:bg-red-500/20"
+                              className="ml-1 h-4 w-4 p-0 hover:bg-red-500/20"
                               onClick={() => removeTechnology(index)}
                             >
-                              <MdClose className="w-2 h-2" />
+                              <MdClose className="w-3 h-3" />
                             </Button>
                           </Badge>
                         ))}
@@ -609,7 +604,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                     )}
 
                     <div className="space-y-2">
-                      <Label className="text-white/60 text-xs">
+                      <Label className="text-white/60 text-sm">
                         Or enter comma-separated:
                       </Label>
                       <Textarea
@@ -619,7 +614,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                         }
                         placeholder="React, Node.js, MongoDB..."
                         rows={2}
-                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 resize-none text-sm"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 resize-none"
                       />
                     </div>
                   </CardContent>
@@ -628,60 +623,54 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                 {/* Project Links */}
                 <Card className="bg-white/5 border-white/10">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2 text-lg">
-                      <MdLink className="w-4 h-4" />
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <MdLink className="w-5 h-5" />
                       Project Links
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-white/80 font-medium flex items-center gap-2 text-sm">
-                        <FaGithub className="w-3 h-3" />
+                      <Label className="text-white/80 font-medium flex items-center gap-2">
+                        <FaGithub className="w-4 h-4" />
                         GitHub Repository
                       </Label>
                       <Input
                         value={formData.githubUrl}
-                        onChange={(e) =>
-                          handleChange("githubUrl", e.target.value)
-                        }
+                        onChange={(e) => handleChange("githubUrl", e.target.value)}
                         placeholder="https://github.com/username/repo"
-                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 text-sm"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-white/80 font-medium flex items-center gap-2 text-sm">
-                        <FaExternalLinkAlt className="w-3 h-3" />
+                      <Label className="text-white/80 font-medium flex items-center gap-2">
+                        <FaExternalLinkAlt className="w-4 h-4" />
                         Live Demo URL
                       </Label>
                       <Input
                         value={formData.liveUrl}
-                        onChange={(e) =>
-                          handleChange("liveUrl", e.target.value)
-                        }
+                        onChange={(e) => handleChange("liveUrl", e.target.value)}
                         placeholder="https://your-project.com"
-                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 text-sm"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-white/80 font-medium flex items-center gap-2 text-sm">
-                        <FaVideo className="w-3 h-3" />
+                      <Label className="text-white/80 font-medium flex items-center gap-2">
+                        <FaVideo className="w-4 h-4" />
                         Video Demo
                       </Label>
                       <Input
                         value={formData.videoUrl}
-                        onChange={(e) =>
-                          handleChange("videoUrl", e.target.value)
-                        }
+                        onChange={(e) => handleChange("videoUrl", e.target.value)}
                         placeholder="https://youtube.com/watch?v=..."
-                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 text-sm"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-white/80 font-medium flex items-center gap-2 text-sm">
-                        <FaFileAlt className="w-3 h-3" />
+                      <Label className="text-white/80 font-medium flex items-center gap-2">
+                        <FaFileAlt className="w-4 h-4" />
                         Presentation
                       </Label>
                       <Input
@@ -690,7 +679,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
                           handleChange("presentationUrl", e.target.value)
                         }
                         placeholder="https://docs.google.com/presentation/..."
-                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 text-sm"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
                       />
                     </div>
                   </CardContent>
