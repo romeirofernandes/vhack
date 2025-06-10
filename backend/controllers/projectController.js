@@ -4,15 +4,29 @@ const Hackathon = require("../models/Hackathon");
 const Team = require("../models/Team");
 
 const projectController = {
-  // Get user's projects
+  // Get user's projects + public projects
   async getProjects(req, res) {
     try {
       const userId = req.user._id;
-      const { status, hackathon, page = 1, limit = 10 } = req.query;
+      const {
+        status,
+        hackathon,
+        page = 1,
+        limit = 10,
+        showPublic = false,
+      } = req.query;
 
-      let query = {
-        $or: [{ "builders.user": userId }, { creator: userId }],
-      };
+      let query;
+
+      if (showPublic === "true") {
+        // Show all public projects from all users
+        query = { isPublic: true };
+      } else {
+        // Show user's own projects (both public and private)
+        query = {
+          $or: [{ "builders.user": userId }, { creator: userId }],
+        };
+      }
 
       // Filter by status
       if (status && status !== "all") {
@@ -120,6 +134,7 @@ const projectController = {
         hackathonId,
         teamId,
         isPublic = true,
+        images,
       } = req.body;
 
       // Validate required fields
@@ -189,6 +204,7 @@ const projectController = {
         ],
         isPublic,
         status: "draft",
+        images: images || [],
       });
 
       await project.save();
