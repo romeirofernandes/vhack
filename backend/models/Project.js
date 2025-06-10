@@ -12,25 +12,44 @@ const projectSchema = new mongoose.Schema({
   },
   thumbnailImage: {
     type: String,
-    required: true,
+    default: "https://via.placeholder.com/400x300?text=Project+Thumbnail",
   },
+  images: [
+    {
+      url: {
+        type: String,
+        required: true,
+      },
+      publicId: String, // Cloudinary public ID for potential deletion
+      caption: String,
+      filename: String,
+      uploadedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      uploadedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   problemStatement: {
     type: String,
-    required: true,
+    default: "",
   },
   challenges: {
     type: String,
-    required: true,
+    default: "",
   },
   technologies: [
     {
       type: String,
-      required: true,
     },
   ],
   links: {
     github: String,
     demo: String,
+    live: String,
     video: String,
     presentation: String,
     other: [String],
@@ -53,10 +72,10 @@ const projectSchema = new mongoose.Schema({
     },
   ],
   creator: {
-  type: mongoose.Schema.Types.ObjectId,
-  ref: "User",
-  required: true,
-},
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   status: {
     type: String,
     enum: ["draft", "submitted", "judging", "judged"],

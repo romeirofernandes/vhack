@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
@@ -27,17 +25,18 @@ import {
   MdDelete,
   MdVisibility,
   MdCode,
-  MdLink,
-  MdImage,
   MdCalendarToday,
   MdGroup,
   MdLaunch,
   MdFileUpload,
   MdFilterList,
   MdSearch,
+  MdImage,
 } from "react-icons/md";
 import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
 import { useAuth } from "../../../contexts/AuthContext";
+import ProjectEditor from "./ProjectEditor";
+import CreateProjectForm from "./CreateProjectForm";
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -47,6 +46,7 @@ const Projects = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
 
   const { user } = useAuth();
 
@@ -178,6 +178,7 @@ const Projects = () => {
           <ProjectCard
             key={project._id}
             project={project}
+            onEdit={() => setEditingProject(project)}
             onUpdate={fetchProjects}
             onError={setError}
             onSuccess={setSuccess}
@@ -201,188 +202,20 @@ const Projects = () => {
           )}
         </div>
       )}
+
+      {/* Project Editor Modal */}
+      <ProjectEditor
+        project={editingProject}
+        isOpen={!!editingProject}
+        onClose={() => setEditingProject(null)}
+        onUpdate={fetchProjects}
+      />
     </div>
   );
 };
 
-// Create Project Form Component
-const CreateProjectForm = ({ onSuccess, onError }) => {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    problemStatement: "",
-    challenges: "",
-    technologies: "",
-    githubUrl: "",
-    liveUrl: "",
-    videoUrl: "",
-    isPublic: true,
-  });
-  const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const idToken = await user.getIdToken();
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/projects`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          technologies: formData.technologies
-            .split(",")
-            .map((tech) => tech.trim())
-            .filter(Boolean),
-          links: {
-            github: formData.githubUrl,
-            live: formData.liveUrl,
-            video: formData.videoUrl,
-          },
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        onSuccess();
-      } else {
-        onError(data.error || "Failed to create project");
-      }
-    } catch (error) {
-      console.error("Create project error:", error);
-      onError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label className="text-white/80">Project Title</Label>
-        <Input
-          value={formData.title}
-          onChange={(e) => handleChange("title", e.target.value)}
-          className="bg-white/5 border-white/20 text-white"
-          placeholder="Enter project title"
-          required
-        />
-      </div>
-
-      <div>
-        <Label className="text-white/80">Description</Label>
-        <Textarea
-          value={formData.description}
-          onChange={(e) => handleChange("description", e.target.value)}
-          className="bg-white/5 border-white/20 text-white"
-          placeholder="Describe your project..."
-          rows={3}
-          required
-        />
-      </div>
-
-      <div>
-        <Label className="text-white/80">Problem Statement</Label>
-        <Textarea
-          value={formData.problemStatement}
-          onChange={(e) => handleChange("problemStatement", e.target.value)}
-          className="bg-white/5 border-white/20 text-white"
-          placeholder="What problem does this project solve?"
-          rows={2}
-        />
-      </div>
-
-      {/* Add challenges field */}
-      <div>
-        <Label className="text-white/80">Challenges Faced</Label>
-        <Textarea
-          value={formData.challenges}
-          onChange={(e) => handleChange("challenges", e.target.value)}
-          className="bg-white/5 border-white/20 text-white"
-          placeholder="What challenges did you overcome while building this?"
-          rows={2}
-        />
-      </div>
-
-      
-      <div>
-        <Label className="text-white/80">Technologies Used</Label>
-        <Input
-          value={formData.technologies}
-          onChange={(e) => handleChange("technologies", e.target.value)}
-          className="bg-white/5 border-white/20 text-white"
-          placeholder="React, Node.js, MongoDB (comma separated)"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label className="text-white/80">GitHub URL</Label>
-          <Input
-            value={formData.githubUrl}
-            onChange={(e) => handleChange("githubUrl", e.target.value)}
-            className="bg-white/5 border-white/20 text-white"
-            placeholder="https://github.com/..."
-          />
-        </div>
-        <div>
-          <Label className="text-white/80">Live Demo URL</Label>
-          <Input
-            value={formData.liveUrl}
-            onChange={(e) => handleChange("liveUrl", e.target.value)}
-            className="bg-white/5 border-white/20 text-white"
-            placeholder="https://your-project.com"
-          />
-        </div>
-      </div>
-
-      <div>
-        <Label className="text-white/80">Video Demo URL</Label>
-        <Input
-          value={formData.videoUrl}
-          onChange={(e) => handleChange("videoUrl", e.target.value)}
-          className="bg-white/5 border-white/20 text-white"
-          placeholder="https://youtube.com/..."
-        />
-      </div>
-
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="isPublic"
-          checked={formData.isPublic}
-          onChange={(e) => handleChange("isPublic", e.target.checked)}
-          className="rounded border-white/20"
-        />
-        <Label htmlFor="isPublic" className="text-white/80">
-          Make project publicly visible
-        </Label>
-      </div>
-
-      <div className="flex justify-end gap-2 pt-4">
-        <Button
-          type="submit"
-          disabled={loading}
-          className="bg-white text-zinc-950 hover:bg-white/90"
-        >
-          {loading ? "Creating..." : "Create Project"}
-        </Button>
-      </div>
-    </form>
-  );
-};
-
 // Project Card Component
-const ProjectCard = ({ project, onUpdate, onError, onSuccess }) => {
+const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
@@ -486,6 +319,17 @@ const ProjectCard = ({ project, onUpdate, onError, onSuccess }) => {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Project Images Preview */}
+        {project.images && project.images.length > 0 && (
+          <div className="flex items-center gap-2">
+            <MdImage className="w-4 h-4 text-white/50" />
+            <span className="text-white/60 text-sm">
+              {project.images.length} image
+              {project.images.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+        )}
+
         {/* Technologies */}
         {project.technologies?.length > 0 && (
           <div className="flex flex-wrap gap-1">
@@ -568,12 +412,13 @@ const ProjectCard = ({ project, onUpdate, onError, onSuccess }) => {
                 className="bg-blue-600 text-white hover:bg-blue-700 flex-1"
               >
                 <MdFileUpload className="w-4 h-4 mr-1" />
-                {loading ? "Submitting..." : "Submit"}
+                {loading ? "Publishing..." : "Publish"}
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 className="border-white/20 text-white hover:bg-white/10"
+                onClick={onEdit}
               >
                 <MdEdit className="w-4 h-4" />
               </Button>
@@ -593,9 +438,10 @@ const ProjectCard = ({ project, onUpdate, onError, onSuccess }) => {
               size="sm"
               variant="outline"
               className="border-white/20 text-white hover:bg-white/10 flex-1"
+              onClick={onEdit}
             >
-              <MdVisibility className="w-4 h-4 mr-1" />
-              View Details
+              <MdEdit className="w-4 h-4 mr-1" />
+              Edit Details
             </Button>
           )}
           {(project.status === "judging" || project.status === "judged") && (
