@@ -32,11 +32,13 @@ import {
   MdFilterList,
   MdSearch,
   MdImage,
+  MdArrowBack,
 } from "react-icons/md";
 import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
 import { useAuth } from "../../../contexts/AuthContext";
 import ProjectEditor from "./ProjectEditor";
 import CreateProjectForm from "./CreateProjectForm";
+import ProjectView from "./ProjectView";
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
@@ -47,6 +49,7 @@ const Projects = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [viewingProject, setViewingProject] = useState(null);
 
   const { user } = useAuth();
 
@@ -54,8 +57,23 @@ const Projects = () => {
     fetchProjects();
   }, [statusFilter]);
 
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(""), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const fetchProjects = async () => {
     try {
+      setLoading(true);
       const idToken = await user.getIdToken();
       const params = new URLSearchParams();
       if (statusFilter !== "all") params.append("status", statusFilter);
@@ -86,35 +104,60 @@ const Projects = () => {
   const filteredProjects = projects.filter(
     (project) =>
       project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.description.toLowerCase().includes(searchTerm.toLowerCase())
+      project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      project.technologies?.some((tech) =>
+        tech.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   );
+
+  // If viewing a specific project, show ProjectView component
+  if (viewingProject) {
+    return (
+      <ProjectView
+        project={viewingProject}
+        onBack={() => setViewingProject(null)}
+        onEdit={(project) => {
+          setViewingProject(null);
+          setEditingProject(project);
+        }}
+        onUpdate={fetchProjects}
+        onError={setError}
+        onSuccess={setSuccess}
+      />
+    );
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-2 border-white/20 border-t-white mx-auto"></div>
+          <p className="text-white/60">Loading your projects...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+        <div className="space-y-2">
           <h1 className="text-3xl font-bold text-white">Projects</h1>
-          <p className="text-white/70">Manage your hackathon projects</p>
+          <p className="text-white/60">
+            Manage and showcase your hackathon projects
+          </p>
         </div>
         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
           <DialogTrigger asChild>
-            <Button className="bg-white text-zinc-950 hover:bg-white/90">
+            <Button className="bg-white text-zinc-950 hover:bg-white/90 font-medium">
               <MdAdd className="w-4 h-4 mr-2" />
               New Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-zinc-900 border-white/10 text-white">
-            <DialogHeader>
-              <DialogTitle className="text-white">
+          <DialogContent className="max-w-6xl h-[90vh] bg-zinc-900/95 backdrop-blur-sm border-white/10 text-white">
+            <DialogHeader className="border-b border-white/10 pb-4">
+              <DialogTitle className="text-white text-xl">
                 Create New Project
               </DialogTitle>
             </DialogHeader>
@@ -123,7 +166,6 @@ const Projects = () => {
                 setShowCreateModal(false);
                 fetchProjects();
                 setSuccess("Project created successfully!");
-                setTimeout(() => setSuccess(""), 3000);
               }}
               onError={setError}
             />
@@ -133,74 +175,123 @@ const Projects = () => {
 
       {/* Alerts */}
       {error && (
-        <Alert className="bg-red-900/20 border-red-800/50">
-          <AlertDescription className="text-red-200">{error}</AlertDescription>
-        </Alert>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+        >
+          <Alert className="bg-red-950/40 border-red-800/50">
+            <AlertDescription className="text-red-300">
+              {error}
+            </AlertDescription>
+          </Alert>
+        </motion.div>
       )}
 
       {success && (
-        <Alert className="bg-green-900/20 border-green-800/50">
-          <AlertDescription className="text-green-200">
-            {success}
-          </AlertDescription>
-        </Alert>
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+        >
+          <Alert className="bg-emerald-950/40 border-emerald-800/50">
+            <AlertDescription className="text-emerald-300">
+              {success}
+            </AlertDescription>
+          </Alert>
+        </motion.div>
       )}
 
-      {/* Filters */}
-      <div className="flex items-center gap-4">
+      {/* Filters and Search */}
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-md">
           <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
           <Input
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search projects..."
-            className="pl-10 bg-white/5 border-white/20 text-white"
+            placeholder="Search projects, technologies..."
+            className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-48 bg-white/5 border-white/20 text-white">
+          <SelectTrigger className="w-48 bg-white/5 border-white/20 text-white hover:bg-white/10 focus:border-white/40">
             <MdFilterList className="w-4 h-4 mr-2" />
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Projects</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="submitted">Submitted</SelectItem>
-            <SelectItem value="judging">Under Review</SelectItem>
-            <SelectItem value="judged">Judged</SelectItem>
+          <SelectContent className="bg-zinc-900 border-white/20">
+            <SelectItem value="all" className="text-white hover:bg-white/10">
+              All Projects
+            </SelectItem>
+            <SelectItem value="draft" className="text-white hover:bg-white/10">
+              Draft
+            </SelectItem>
+            <SelectItem
+              value="submitted"
+              className="text-white hover:bg-white/10"
+            >
+              Submitted
+            </SelectItem>
+            <SelectItem
+              value="judging"
+              className="text-white hover:bg-white/10"
+            >
+              Under Review
+            </SelectItem>
+            <SelectItem value="judged" className="text-white hover:bg-white/10">
+              Judged
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProjects.map((project) => (
-          <ProjectCard
-            key={project._id}
-            project={project}
-            onEdit={() => setEditingProject(project)}
-            onUpdate={fetchProjects}
-            onError={setError}
-            onSuccess={setSuccess}
-          />
-        ))}
-      </div>
-
-      {filteredProjects.length === 0 && (
-        <div className="text-center py-12">
-          <MdCode className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <p className="text-white/50 mb-4">
+      {filteredProjects.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredProjects.map((project, index) => (
+            <motion.div
+              key={project._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <ProjectCard
+                project={project}
+                onView={() => setViewingProject(project)}
+                onEdit={() => setEditingProject(project)}
+                onUpdate={fetchProjects}
+                onError={setError}
+                onSuccess={setSuccess}
+              />
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-16"
+        >
+          <div className="bg-white/5 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+            <MdCode className="w-12 h-12 text-white/20" />
+          </div>
+          <h3 className="text-xl font-medium text-white mb-2">
             {searchTerm ? "No projects match your search" : "No projects yet"}
+          </h3>
+          <p className="text-white/50 mb-6 max-w-md mx-auto">
+            {searchTerm
+              ? "Try adjusting your search terms or filters"
+              : "Start building amazing projects and showcase your skills to the world"}
           </p>
           {!searchTerm && (
             <Button
               onClick={() => setShowCreateModal(true)}
-              className="bg-white text-zinc-950 hover:bg-white/90"
+              className="bg-white text-zinc-950 hover:bg-white/90 font-medium"
             >
+              <MdAdd className="w-4 h-4 mr-2" />
               Create Your First Project
             </Button>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* Project Editor Modal */}
@@ -209,13 +300,22 @@ const Projects = () => {
         isOpen={!!editingProject}
         onClose={() => setEditingProject(null)}
         onUpdate={fetchProjects}
+        onSuccess={setSuccess}
+        onError={setError}
       />
     </div>
   );
 };
 
-// Project Card Component
-const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
+// Enhanced Project Card Component
+const ProjectCard = ({
+  project,
+  onView,
+  onEdit,
+  onUpdate,
+  onError,
+  onSuccess,
+}) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
@@ -237,7 +337,6 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
       if (data.success) {
         onUpdate();
         onSuccess("Project submitted successfully!");
-        setTimeout(() => onSuccess(""), 3000);
       } else {
         onError(data.error || "Failed to submit project");
       }
@@ -250,7 +349,12 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
   };
 
   const deleteProject = async () => {
-    if (!confirm("Are you sure you want to delete this project?")) return;
+    if (
+      !confirm(
+        "Are you sure you want to delete this project? This action cannot be undone."
+      )
+    )
+      return;
 
     setLoading(true);
     try {
@@ -269,7 +373,6 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
       if (data.success) {
         onUpdate();
         onSuccess("Project deleted successfully!");
-        setTimeout(() => onSuccess(""), 3000);
       } else {
         onError(data.error || "Failed to delete project");
       }
@@ -284,46 +387,54 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case "draft":
-        return "bg-gray-900/50 text-gray-200";
+        return "bg-zinc-800/60 text-zinc-200 border-zinc-700/40";
       case "submitted":
-        return "bg-blue-900/50 text-blue-200";
+        return "bg-blue-900/50 text-blue-200 border-blue-800/40";
       case "judging":
-        return "bg-yellow-900/50 text-yellow-200";
+        return "bg-yellow-900/50 text-yellow-200 border-yellow-800/40";
       case "judged":
-        return "bg-green-900/50 text-green-200";
+        return "bg-emerald-900/50 text-emerald-200 border-emerald-800/40";
       default:
-        return "bg-gray-900/50 text-gray-200";
+        return "bg-zinc-800/60 text-zinc-200 border-zinc-700/40";
     }
   };
 
   return (
-    <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors group">
-      <CardHeader>
+    <Card className="bg-white/5 border-white/10 hover:bg-white/8 transition-all duration-300 group cursor-pointer">
+      <CardHeader className="pb-4" onClick={onView}>
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-white text-lg mb-2 group-hover:text-white/90 transition-colors">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-white text-lg mb-2 group-hover:text-white/90 transition-colors line-clamp-1">
               {project.title}
             </CardTitle>
-            <p className="text-white/70 text-sm line-clamp-2">
+            <p className="text-white/60 text-sm line-clamp-2 leading-relaxed">
               {project.description}
             </p>
           </div>
-          <div className="flex items-center gap-2 ml-3">
-            <Badge className={getStatusColor(project.status)}>
+          <div className="flex flex-col items-end gap-2 ml-4 flex-shrink-0">
+            <Badge
+              className={`${getStatusColor(
+                project.status
+              )} text-xs font-medium px-2 py-1`}
+            >
               {project.status}
             </Badge>
             {project.isPublic && (
-              <MdVisibility className="w-4 h-4 text-white/50" />
+              <MdVisibility
+                className="w-4 h-4 text-white/40"
+                title="Public project"
+              />
             )}
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+
+      <CardContent className="space-y-4" onClick={onView}>
         {/* Project Images Preview */}
         {project.images && project.images.length > 0 && (
-          <div className="flex items-center gap-2">
-            <MdImage className="w-4 h-4 text-white/50" />
-            <span className="text-white/60 text-sm">
+          <div className="flex items-center gap-2 text-white/50">
+            <MdImage className="w-4 h-4" />
+            <span className="text-sm">
               {project.images.length} image
               {project.images.length !== 1 ? "s" : ""}
             </span>
@@ -332,12 +443,12 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
 
         {/* Technologies */}
         {project.technologies?.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {project.technologies.slice(0, 3).map((tech, index) => (
               <Badge
                 key={index}
                 variant="secondary"
-                className="bg-white/10 text-white/80 text-xs"
+                className="bg-white/10 text-white/70 text-xs border-white/10 hover:bg-white/15"
               >
                 {tech}
               </Badge>
@@ -345,7 +456,7 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
             {project.technologies.length > 3 && (
               <Badge
                 variant="secondary"
-                className="bg-white/10 text-white/80 text-xs"
+                className="bg-white/10 text-white/70 text-xs border-white/10"
               >
                 +{project.technologies.length - 3} more
               </Badge>
@@ -353,37 +464,40 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
           </div>
         )}
 
-        {/* Project Info */}
-        <div className="space-y-2 text-sm text-white/60">
+        {/* Project Meta Info */}
+        <div className="space-y-2 text-sm text-white/50">
           {project.hackathon && (
             <div className="flex items-center gap-2">
-              <MdCalendarToday className="w-4 h-4" />
-              <span>{project.hackathon.title}</span>
+              <MdCalendarToday className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{project.hackathon.title}</span>
             </div>
           )}
           {project.team && (
             <div className="flex items-center gap-2">
-              <MdGroup className="w-4 h-4" />
-              <span>{project.team.name}</span>
+              <MdGroup className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate">{project.team.name}</span>
             </div>
           )}
           <div className="flex items-center gap-2">
-            <MdCalendarToday className="w-4 h-4" />
+            <MdCalendarToday className="w-4 h-4 flex-shrink-0" />
             <span>
               Created {new Date(project.createdAt).toLocaleDateString()}
             </span>
           </div>
         </div>
 
-        {/* Links */}
+        {/* External Links */}
         {(project.links?.github || project.links?.live) && (
           <div className="flex items-center gap-2">
             {project.links?.github && (
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-white/60 hover:text-white p-1"
-                onClick={() => window.open(project.links.github, "_blank")}
+                className="text-white/50 hover:text-white hover:bg-white/10 p-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(project.links.github, "_blank");
+                }}
               >
                 <FaGithub className="w-4 h-4" />
               </Button>
@@ -392,24 +506,32 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-white/60 hover:text-white p-1"
-                onClick={() => window.open(project.links.live, "_blank")}
+                className="text-white/50 hover:text-white hover:bg-white/10 p-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(project.links.live, "_blank");
+                }}
               >
                 <MdLaunch className="w-4 h-4" />
               </Button>
             )}
           </div>
         )}
+      </CardContent>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 pt-2">
+      {/* Action Buttons */}
+      <div className="p-6 pt-2 border-t border-white/10">
+        <div className="flex items-center gap-2">
           {project.status === "draft" && (
             <>
               <Button
                 size="sm"
-                onClick={submitProject}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  submitProject();
+                }}
                 disabled={loading}
-                className="bg-blue-600 text-white hover:bg-blue-700 flex-1"
+                className="bg-blue-600 text-white hover:bg-blue-700 flex-1 font-medium"
               >
                 <MdFileUpload className="w-4 h-4 mr-1" />
                 {loading ? "Publishing..." : "Publish"}
@@ -417,15 +539,21 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
               <Button
                 size="sm"
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
-                onClick={onEdit}
+                className="border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit();
+                }}
               >
                 <MdEdit className="w-4 h-4" />
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={deleteProject}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteProject();
+                }}
                 disabled={loading}
                 className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
               >
@@ -437,8 +565,11 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
             <Button
               size="sm"
               variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 flex-1"
-              onClick={onEdit}
+              className="border-white/20 text-zinc-800 hover:bg-white/40 hover:text-white hover:border-white/30 flex-1 transition-colors duration-200"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
             >
               <MdEdit className="w-4 h-4 mr-1" />
               Edit Details
@@ -448,14 +579,15 @@ const ProjectCard = ({ project, onEdit, onUpdate, onError, onSuccess }) => {
             <Button
               size="sm"
               variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 flex-1"
+              className="border-white/20 text-white hover:bg-white/10 hover:border-white/30 flex-1"
+              onClick={onView}
             >
               <MdVisibility className="w-4 h-4 mr-1" />
               View Results
             </Button>
           )}
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 };
