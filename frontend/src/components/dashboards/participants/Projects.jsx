@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -12,13 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import {
   MdAdd,
   MdEdit,
@@ -32,7 +26,7 @@ import {
   MdFilterList,
   MdSearch,
   MdImage,
-  MdArrowBack,
+  MdPerson,
 } from "react-icons/md";
 import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -41,21 +35,23 @@ import CreateProjectForm from "./CreateProjectForm";
 import ProjectView from "./ProjectView";
 
 const Projects = () => {
-  const [projects, setProjects] = useState([]);
+  const [myProjects, setMyProjects] = useState([]);
+  const [publicProjects, setPublicProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [viewingProject, setViewingProject] = useState(null);
+  const [activeTab, setActiveTab] = useState("my-projects");
 
   const { user } = useAuth();
 
   useEffect(() => {
     fetchProjects();
-  }, [statusFilter]);
+  }, []);
 
   useEffect(() => {
     if (success) {
@@ -75,11 +71,10 @@ const Projects = () => {
     try {
       setLoading(true);
       const idToken = await user.getIdToken();
-      const params = new URLSearchParams();
-      if (statusFilter !== "all") params.append("status", statusFilter);
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/projects?${params}`,
+      // Fetch user's own projects
+      const myProjectsResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/projects`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -87,11 +82,25 @@ const Projects = () => {
         }
       );
 
-      const data = await response.json();
-      if (data.success) {
-        setProjects(data.data.projects);
-      } else {
-        setError(data.error || "Failed to fetch projects");
+      // Fetch public projects
+      const publicProjectsResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/projects?showPublic=true`,
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+        }
+      );
+
+      const myProjectsData = await myProjectsResponse.json();
+      const publicProjectsData = await publicProjectsResponse.json();
+
+      if (myProjectsData.success) {
+        setMyProjects(myProjectsData.data.projects || []);
+      }
+
+      if (publicProjectsData.success) {
+        setPublicProjects(publicProjectsData.data.projects || []);
       }
     } catch (error) {
       console.error("Projects fetch error:", error);
@@ -101,14 +110,22 @@ const Projects = () => {
     }
   };
 
-  const filteredProjects = projects.filter(
-    (project) =>
+  const currentProjects =
+    activeTab === "my-projects" ? myProjects : publicProjects;
+
+  const filteredProjects = currentProjects.filter((project) => {
+    const matchesSearch =
       project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.technologies?.some((tech) =>
         tech.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-  );
+      );
+
+    const matchesStatus =
+      statusFilter === "all" || project.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   // If viewing a specific project, show ProjectView component
   if (viewingProject) {
@@ -132,7 +149,7 @@ const Projects = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-2 border-white/20 border-t-white mx-auto"></div>
-          <p className="text-white/60">Loading your projects...</p>
+          <p className="text-white/60">Loading projects...</p>
         </div>
       </div>
     );
@@ -148,29 +165,13 @@ const Projects = () => {
             Manage and showcase your hackathon projects
           </p>
         </div>
-        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-          <DialogTrigger asChild>
-            <Button className="bg-white text-zinc-950 hover:bg-white/90 font-medium">
-              <MdAdd className="w-4 h-4 mr-2" />
-              New Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="w-[95vw] h-[90vh] max-w-[95vw] bg-zinc-900/95 backdrop-blur-sm border-white/10 text-white p-0">
-            <DialogHeader className="border-b border-white/10 pb-4">
-              <DialogTitle className="text-white text-xl">
-                Create New Project
-              </DialogTitle>
-            </DialogHeader>
-            <CreateProjectForm
-              onSuccess={() => {
-                setShowCreateModal(false);
-                fetchProjects();
-                setSuccess("Project created successfully!");
-              }}
-              onError={setError}
-            />
-          </DialogContent>
-        </Dialog>
+        <Button
+          onClick={() => setShowCreateForm(true)}
+          className="bg-white text-zinc-950 hover:bg-white/90 font-medium"
+        >
+          <MdAdd className="w-4 h-4 mr-2" />
+          New Project
+        </Button>
       </div>
 
       {/* Alerts */}
@@ -202,97 +203,117 @@ const Projects = () => {
         </motion.div>
       )}
 
-      {/* Filters and Search */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1 max-w-md">
-          <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
-          <Input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search projects, technologies..."
-            className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-48 bg-white/5 border-white/20 text-white hover:bg-white/10 focus:border-white/40">
-            <MdFilterList className="w-4 h-4 mr-2" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-zinc-900 border-white/20">
-            <SelectItem value="all" className="text-white hover:bg-white/10">
-              All Projects
-            </SelectItem>
-            <SelectItem value="draft" className="text-white hover:bg-white/10">
-              Draft
-            </SelectItem>
-            <SelectItem
-              value="submitted"
-              className="text-white hover:bg-white/10"
-            >
-              Submitted
-            </SelectItem>
-            <SelectItem
-              value="judging"
-              className="text-white hover:bg-white/10"
-            >
-              Under Review
-            </SelectItem>
-            <SelectItem value="judged" className="text-white hover:bg-white/10">
-              Judged
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Tabs for My Projects vs Public Projects */}
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-6"
+      >
+        <TabsList className="bg-white/5 border-white/20">
+          <TabsTrigger
+            value="my-projects"
+            className="text-neutral-400 data-[state=active]:bg-white/20 data-[state=active]:text-white"
+          >
+            <MdPerson className="w-4 h-4 mr-2" />
+            My Projects ({myProjects.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="public-projects"
+            className="text-neutral-400 data-[state=active]:bg-white/20 data-[state=active]:text-white"
+          >
+            <MdVisibility className="w-4 h-4 mr-2" />
+            Public Projects ({publicProjects.length})
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Projects Grid */}
-      {filteredProjects.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredProjects.map((project, index) => (
-            <motion.div
-              key={project._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-            >
-              <ProjectCard
-                project={project}
-                onView={() => setViewingProject(project)}
-                onEdit={() => setEditingProject(project)}
-                onUpdate={fetchProjects}
-                onError={setError}
-                onSuccess={setSuccess}
-              />
-            </motion.div>
-          ))}
-        </div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-16"
-        >
-          <div className="bg-white/5 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-            <MdCode className="w-12 h-12 text-white/20" />
+        {/* Filters and Search */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1 max-w-md">
+            <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search projects, technologies..."
+              className="pl-10 bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+            />
           </div>
-          <h3 className="text-xl font-medium text-white mb-2">
-            {searchTerm ? "No projects match your search" : "No projects yet"}
-          </h3>
-          <p className="text-white/50 mb-6 max-w-md mx-auto">
-            {searchTerm
-              ? "Try adjusting your search terms or filters"
-              : "Start building amazing projects and showcase your skills to the world"}
-          </p>
-          {!searchTerm && (
-            <Button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-white text-zinc-950 hover:bg-white/90 font-medium"
-            >
-              <MdAdd className="w-4 h-4 mr-2" />
-              Create Your First Project
-            </Button>
-          )}
-        </motion.div>
-      )}
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-48 bg-white/5 border-white/20 text-white hover:bg-white/10 focus:border-white/40">
+              <MdFilterList className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-zinc-900 border-white/20">
+              <SelectItem value="all" className="text-white hover:bg-white/10">
+                All Projects
+              </SelectItem>
+              <SelectItem
+                value="draft"
+                className="text-white hover:bg-white/10"
+              >
+                Draft
+              </SelectItem>
+              <SelectItem
+                value="submitted"
+                className="text-white hover:bg-white/10"
+              >
+                Submitted
+              </SelectItem>
+              <SelectItem
+                value="judging"
+                className="text-white hover:bg-white/10"
+              >
+                Under Review
+              </SelectItem>
+              <SelectItem
+                value="judged"
+                className="text-white hover:bg-white/10"
+              >
+                Judged
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <TabsContent value="my-projects" className="space-y-6">
+          <ProjectsGrid
+            projects={filteredProjects}
+            onView={setViewingProject}
+            onEdit={setEditingProject}
+            onUpdate={fetchProjects}
+            onError={setError}
+            onSuccess={setSuccess}
+            searchTerm={searchTerm}
+            showCreateButton={() => setShowCreateForm(true)}
+            isMyProjects={true}
+          />
+        </TabsContent>
+
+        <TabsContent value="public-projects" className="space-y-6">
+          <ProjectsGrid
+            projects={filteredProjects}
+            onView={setViewingProject}
+            onEdit={setEditingProject}
+            onUpdate={fetchProjects}
+            onError={setError}
+            onSuccess={setSuccess}
+            searchTerm={searchTerm}
+            showCreateButton={() => setShowCreateForm(true)}
+            isMyProjects={false}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Create Project Form */}
+      <CreateProjectForm
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        onSuccess={(message) => {
+          setShowCreateForm(false);
+          fetchProjects();
+          setSuccess(message);
+        }}
+        onError={setError}
+      />
 
       {/* Project Editor Modal */}
       <ProjectEditor
@@ -307,6 +328,79 @@ const Projects = () => {
   );
 };
 
+// Separate ProjectsGrid component
+const ProjectsGrid = ({
+  projects,
+  onView,
+  onEdit,
+  onUpdate,
+  onError,
+  onSuccess,
+  searchTerm,
+  showCreateButton,
+  isMyProjects,
+}) => {
+  if (projects.length > 0) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {projects.map((project, index) => (
+          <motion.div
+            key={project._id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+          >
+            <ProjectCard
+              project={project}
+              onView={() => onView(project)}
+              onEdit={() => onEdit(project)}
+              onUpdate={onUpdate}
+              onError={onError}
+              onSuccess={onSuccess}
+              isMyProjects={isMyProjects}
+            />
+          </motion.div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="text-center py-16"
+    >
+      <div className="bg-white/5 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+        <MdCode className="w-12 h-12 text-white/20" />
+      </div>
+      <h3 className="text-xl font-medium text-white mb-2">
+        {searchTerm
+          ? "No projects match your search"
+          : isMyProjects
+          ? "No projects yet"
+          : "No public projects yet"}
+      </h3>
+      <p className="text-white/50 mb-6 max-w-md mx-auto">
+        {searchTerm
+          ? "Try adjusting your search terms or filters"
+          : isMyProjects
+          ? "Start building amazing projects and showcase your skills to the world"
+          : "No public projects have been shared yet"}
+      </p>
+      {!searchTerm && isMyProjects && (
+        <Button
+          onClick={showCreateButton}
+          className="bg-white text-zinc-950 hover:bg-white/90 font-medium"
+        >
+          <MdAdd className="w-4 h-4 mr-2" />
+          Create Your First Project
+        </Button>
+      )}
+    </motion.div>
+  );
+};
+
 // Enhanced Project Card Component
 const ProjectCard = ({
   project,
@@ -315,9 +409,14 @@ const ProjectCard = ({
   onUpdate,
   onError,
   onSuccess,
+  isMyProjects = true,
 }) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+
+  const isOwner =
+    project.creator?._id === user.uid ||
+    project.builders?.some((builder) => builder.user._id === user.uid);
 
   const submitProject = async () => {
     setLoading(true);
@@ -430,6 +529,14 @@ const ProjectCard = ({
       </CardHeader>
 
       <CardContent className="space-y-4" onClick={onView}>
+        {/* Creator info for public projects */}
+        {!isMyProjects && (
+          <div className="flex items-center gap-2 text-white/60 text-sm">
+            <MdPerson className="w-4 h-4" />
+            <span>by {project.creator?.displayName || "Unknown"}</span>
+          </div>
+        )}
+
         {/* Project Images Preview */}
         {project.images && project.images.length > 0 && (
           <div className="flex items-center gap-2 text-white/50">
@@ -519,75 +626,77 @@ const ProjectCard = ({
         )}
       </CardContent>
 
-      {/* Action Buttons */}
-      <div className="p-6 pt-2 border-t border-white/10">
-        <div className="flex items-center gap-2">
-          {project.status === "draft" && (
-            <>
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  submitProject();
-                }}
-                disabled={loading}
-                className="bg-blue-600 text-white hover:bg-blue-700 flex-1 font-medium"
-              >
-                <MdFileUpload className="w-4 h-4 mr-1" />
-                {loading ? "Publishing..." : "Publish"}
-              </Button>
+      {/* Action Buttons - Only show for owner's projects */}
+      {isOwner && isMyProjects && (
+        <div className="p-6 pt-2 border-t border-white/10">
+          <div className="flex items-center gap-2">
+            {project.status === "draft" && (
+              <>
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    submitProject();
+                  }}
+                  disabled={loading}
+                  className="bg-blue-600 text-white hover:bg-blue-700 flex-1 font-medium"
+                >
+                  <MdFileUpload className="w-4 h-4 mr-1" />
+                  {loading ? "Publishing..." : "Publish"}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                >
+                  <MdEdit className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteProject();
+                  }}
+                  disabled={loading}
+                  className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                >
+                  <MdDelete className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+            {project.status === "submitted" && (
               <Button
                 size="sm"
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                className="border-white/20 text-white hover:bg-white/10 hover:border-white/30 flex-1"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit();
                 }}
               >
-                <MdEdit className="w-4 h-4" />
+                <MdEdit className="w-4 h-4 mr-1" />
+                Edit Details
               </Button>
+            )}
+            {(project.status === "judging" || project.status === "judged") && (
               <Button
                 size="sm"
-                variant="ghost"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteProject();
-                }}
-                disabled={loading}
-                className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10 hover:border-white/30 flex-1"
+                onClick={onView}
               >
-                <MdDelete className="w-4 h-4" />
+                <MdVisibility className="w-4 h-4 mr-1" />
+                View Results
               </Button>
-            </>
-          )}
-          {project.status === "submitted" && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-white/20 text-zinc-800 hover:bg-white/40 hover:text-white hover:border-white/30 flex-1 transition-colors duration-200"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit();
-              }}
-            >
-              <MdEdit className="w-4 h-4 mr-1" />
-              Edit Details
-            </Button>
-          )}
-          {(project.status === "judging" || project.status === "judged") && (
-            <Button
-              size="sm"
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 hover:border-white/30 flex-1"
-              onClick={onView}
-            >
-              <MdVisibility className="w-4 h-4 mr-1" />
-              View Results
-            </Button>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </Card>
   );
 };
