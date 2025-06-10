@@ -155,7 +155,7 @@ const Projects = () => {
               New Project
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-6xl h-[90vh] bg-zinc-900/95 backdrop-blur-sm border-white/10 text-white">
+          <DialogContent className="w-[95vw] h-[90vh] max-w-[95vw] bg-zinc-900/95 backdrop-blur-sm border-white/10 text-white p-0">
             <DialogHeader className="border-b border-white/10 pb-4">
               <DialogTitle className="text-white text-xl">
                 Create New Project

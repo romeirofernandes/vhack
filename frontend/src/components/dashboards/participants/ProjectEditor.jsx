@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
@@ -15,17 +16,36 @@ import {
 } from "@/components/ui/dialog";
 import {
   MdAdd,
-  MdDelete,
-  MdImage,
-  MdSave,
-  MdPublish,
   MdClose,
+  MdSave,
+  MdFileUpload,
+  MdImage,
+  MdDelete,
+  MdEdit,
+  MdLink,
+  MdCode,
+  MdAssignment,
+  MdPublic,
+  MdLock,
   MdCloudUpload,
+  MdArrowBack,
 } from "react-icons/md";
-import { FaGithub, FaExternalLinkAlt, FaYoutube } from "react-icons/fa";
+import {
+  FaGithub,
+  FaExternalLinkAlt,
+  FaVideo,
+  FaFileAlt,
+} from "react-icons/fa";
 import { useAuth } from "../../../contexts/AuthContext";
 
-const ProjectEditor = ({ project, isOpen, onClose, onUpdate }) => {
+const ProjectEditor = ({
+  project,
+  isOpen,
+  onClose,
+  onUpdate,
+  onSuccess,
+  onError,
+}) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -35,6 +55,7 @@ const ProjectEditor = ({ project, isOpen, onClose, onUpdate }) => {
     githubUrl: "",
     liveUrl: "",
     videoUrl: "",
+    presentationUrl: "",
     isPublic: true,
     images: [],
   });
@@ -42,6 +63,8 @@ const ProjectEditor = ({ project, isOpen, onClose, onUpdate }) => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [newTech, setNewTech] = useState("");
+  const [techArray, setTechArray] = useState([]);
 
   const { user } = useAuth();
 
@@ -54,144 +77,184 @@ const ProjectEditor = ({ project, isOpen, onClose, onUpdate }) => {
         challenges: project.challenges || "",
         technologies: project.technologies?.join(", ") || "",
         githubUrl: project.links?.github || "",
-        liveUrl: project.links?.demo || project.links?.live || "",
+        liveUrl: project.links?.live || "",
         videoUrl: project.links?.video || "",
-        isPublic: project.isPublic ?? true,
+        presentationUrl: project.links?.presentation || "",
+        isPublic: project.isPublic !== undefined ? project.isPublic : true,
         images: project.images || [],
       });
+      setTechArray(project.technologies || []);
+    } else {
+      // Reset form for new project
+      setFormData({
+        title: "",
+        description: "",
+        problemStatement: "",
+        challenges: "",
+        technologies: "",
+        githubUrl: "",
+        liveUrl: "",
+        videoUrl: "",
+        presentationUrl: "",
+        isPublic: true,
+        images: [],
+      });
+      setTechArray([]);
     }
+    setError("");
+    setSuccess("");
   }, [project]);
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === "technologies") {
+      // Update tech array when typing
+      const techs = value
+        .split(",")
+        .map((tech) => tech.trim())
+        .filter((tech) => tech);
+      setTechArray(techs);
+    }
+  };
+
+  const addTechnology = () => {
+    if (newTech.trim() && !techArray.includes(newTech.trim())) {
+      const updatedTechs = [...techArray, newTech.trim()];
+      setTechArray(updatedTechs);
+      setFormData((prev) => ({
+        ...prev,
+        technologies: updatedTechs.join(", "),
+      }));
+      setNewTech("");
+    }
+  };
+
+  const removeTechnology = (index) => {
+    const updatedTechs = techArray.filter((_, i) => i !== index);
+    setTechArray(updatedTechs);
+    setFormData((prev) => ({
+      ...prev,
+      technologies: updatedTechs.join(", "),
+    }));
   };
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (file.size > 10 * 1024 * 1024) {
-      setError("Image size should be less than 10MB");
-      return;
-    }
-
-    const allowedTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-    ];
-    if (!allowedTypes.includes(file.type)) {
-      setError("Please upload a valid image file (JPEG, PNG, GIF, or WebP)");
-      return;
-    }
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
     setUploadingImage(true);
-    setError("");
-
     try {
       const idToken = await user.getIdToken();
-      const formDataImg = new FormData();
-      formDataImg.append("image", file);
+      const uploadedImages = [];
 
-      // Upload via your backend
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/upload/image`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
-          body: formDataImg,
+      for (const file of files) {
+        const uploadFormData = new FormData();
+        uploadFormData.append("image", file);
+
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/upload`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${idToken}`,
+            },
+            body: uploadFormData,
+          }
+        );
+
+        const data = await response.json();
+        if (data.success) {
+          uploadedImages.push({
+            url: data.data.url,
+            publicId: data.data.publicId,
+            filename: file.name,
+            caption: "",
+          });
         }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
       }
 
-      const data = await response.json();
-
-      if (data.success && data.data.url) {
-        const newImage = {
-          url: data.data.url,
-          publicId: data.data.publicId,
-          caption: "",
-          uploadedAt: new Date(),
-          filename: data.data.originalName,
-        };
-
-        setFormData({
-          ...formData,
-          images: [...formData.images, newImage],
-        });
-
-        setSuccess("Image uploaded successfully!");
-        setTimeout(() => setSuccess(""), 3000);
-      } else {
-        throw new Error("No URL returned from server");
-      }
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, ...uploadedImages],
+      }));
+      setSuccess(`${uploadedImages.length} image(s) uploaded successfully!`);
     } catch (error) {
       console.error("Image upload error:", error);
-      setError(`Failed to upload image: ${error.message}`);
+      setError("Failed to upload images. Please try again.");
     } finally {
       setUploadingImage(false);
     }
   };
 
   const removeImage = (index) => {
-    const newImages = formData.images.filter((_, i) => i !== index);
-    setFormData({ ...formData, images: newImages });
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
   };
 
   const updateImageCaption = (index, caption) => {
-    const newImages = [...formData.images];
-    newImages[index] = { ...newImages[index], caption };
-    setFormData({ ...formData, images: newImages });
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.map((img, i) =>
+        i === index ? { ...img, caption } : img
+      ),
+    }));
   };
 
   const saveProject = async (publish = false) => {
-    setLoading(true);
-    setError("");
-    setSuccess("");
+    if (!formData.title.trim() || !formData.description.trim()) {
+      setError("Title and description are required.");
+      return;
+    }
 
+    setLoading(true);
     try {
       const idToken = await user.getIdToken();
-      const projectData = {
-        ...formData,
-        technologies: formData.technologies
-          .split(",")
-          .map((tech) => tech.trim())
-          .filter(Boolean),
+      const payload = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        problemStatement: formData.problemStatement.trim(),
+        challenges: formData.challenges.trim(),
+        technologies: techArray,
         links: {
-          github: formData.githubUrl,
-          demo: formData.liveUrl,
-          live: formData.liveUrl,
-          video: formData.videoUrl,
+          github: formData.githubUrl.trim(),
+          live: formData.liveUrl.trim(),
+          video: formData.videoUrl.trim(),
+          presentation: formData.presentationUrl.trim(),
         },
+        isPublic: formData.isPublic,
+        images: formData.images,
       };
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/projects/${project._id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(projectData),
-        }
-      );
+      const url = project
+        ? `${import.meta.env.VITE_API_URL}/projects/${project._id}`
+        : `${import.meta.env.VITE_API_URL}/projects`;
+
+      const method = project ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
       const data = await response.json();
       if (data.success) {
-        if (publish) {
-          await submitProject();
+        onUpdate();
+        onSuccess(
+          project
+            ? "Project updated successfully!"
+            : "Project created successfully!"
+        );
+
+        if (publish && data.data.project) {
+          await submitProject(data.data.project._id);
         } else {
-          setSuccess("Project saved successfully!");
-          setTimeout(() => setSuccess(""), 3000);
-          onUpdate();
+          onClose();
         }
       } else {
         setError(data.error || "Failed to save project");
@@ -204,11 +267,14 @@ const ProjectEditor = ({ project, isOpen, onClose, onUpdate }) => {
     }
   };
 
-  const submitProject = async () => {
+  const submitProject = async (projectId = null) => {
+    const id = projectId || project._id;
+    if (!id) return;
+
     try {
       const idToken = await user.getIdToken();
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/projects/${project._id}/submit`,
+        `${import.meta.env.VITE_API_URL}/projects/${id}/submit`,
         {
           method: "POST",
           headers: {
@@ -219,18 +285,15 @@ const ProjectEditor = ({ project, isOpen, onClose, onUpdate }) => {
 
       const data = await response.json();
       if (data.success) {
-        setSuccess("Project published successfully!");
-        setTimeout(() => {
-          setSuccess("");
-          onUpdate();
-          onClose();
-        }, 2000);
+        onUpdate();
+        onSuccess("Project published successfully!");
+        onClose();
       } else {
         setError(data.error || "Failed to publish project");
       }
     } catch (error) {
       console.error("Submit project error:", error);
-      setError("Failed to publish project");
+      setError("Failed to publish project. Please try again.");
     }
   };
 
@@ -238,291 +301,443 @@ const ProjectEditor = ({ project, isOpen, onClose, onUpdate }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto bg-zinc-900 border-white/10 text-white">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-white text-xl">
-              Edit Project: {project?.title}
-            </DialogTitle>
-            <Badge
-              className={
-                project?.status === "draft"
-                  ? "bg-gray-900/50 text-gray-200"
-                  : project?.status === "submitted"
-                  ? "bg-blue-900/50 text-blue-200"
-                  : "bg-green-900/50 text-green-200"
-              }
-            >
-              {project?.status}
-            </Badge>
-          </div>
-        </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Alerts */}
-          {error && (
-            <Alert className="bg-red-900/20 border-red-800/50">
-              <AlertDescription className="text-red-200">
-                {error}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {success && (
-            <Alert className="bg-green-900/20 border-green-800/50">
-              <AlertDescription className="text-green-200">
-                {success}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Basic Information */}
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-white/80">Project Title *</Label>
-                <Input
-                  value={formData.title}
-                  onChange={(e) => handleChange("title", e.target.value)}
-                  className="bg-white/5 border-white/20 text-white mt-1"
-                  placeholder="Enter your project title"
-                />
-              </div>
-
-              <div>
-                <Label className="text-white/80">Description *</Label>
-                <Textarea
-                  value={formData.description}
-                  onChange={(e) => handleChange("description", e.target.value)}
-                  className="bg-white/5 border-white/20 text-white mt-1"
-                  placeholder="Describe what your project does and its key features..."
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label className="text-white/80">Problem Statement</Label>
-                <Textarea
-                  value={formData.problemStatement}
-                  onChange={(e) =>
-                    handleChange("problemStatement", e.target.value)
-                  }
-                  className="bg-white/5 border-white/20 text-white mt-1"
-                  placeholder="What problem does this project solve? What inspired you to build it?"
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <Label className="text-white/80">Challenges & Solutions</Label>
-                <Textarea
-                  value={formData.challenges}
-                  onChange={(e) => handleChange("challenges", e.target.value)}
-                  className="bg-white/5 border-white/20 text-white mt-1"
-                  placeholder="What challenges did you face and how did you overcome them?"
-                  rows={2}
-                />
-              </div>
-
-              <div>
-                <Label className="text-white/80">Technologies Used</Label>
-                <Input
-                  value={formData.technologies}
-                  onChange={(e) => handleChange("technologies", e.target.value)}
-                  className="bg-white/5 border-white/20 text-white mt-1"
-                  placeholder="React, Node.js, MongoDB, Python (comma separated)"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Project Images */}
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-white">Project Images</CardTitle>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                    disabled={uploadingImage}
-                  />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10"
-                    onClick={() =>
-                      document.getElementById("image-upload").click()
-                    }
-                    disabled={uploadingImage}
-                  >
-                    <MdCloudUpload className="w-4 h-4 mr-2" />
-                    {uploadingImage ? "Uploading..." : "Add Image"}
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {formData.images.length === 0 ? (
-                <div className="text-center py-8 border border-dashed border-white/20 rounded-lg">
-                  <MdImage className="w-12 h-12 text-white/30 mx-auto mb-2" />
-                  <p className="text-white/50">No images added yet</p>
-                  <p className="text-white/40 text-sm">
-                    Add screenshots, demos, architecture diagrams, or UI mockups
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {formData.images.map((image, index) => (
-                    <div
-                      key={index}
-                      className="relative group bg-white/5 rounded-lg overflow-hidden"
-                    >
-                      <img
-                        src={image.url}
-                        alt={`Project image ${index + 1}`}
-                        className="w-full h-40 object-cover cursor-pointer"
-                        onClick={() => window.open(image.url, "_blank")}
-                      />
-                      <div className="p-3 space-y-2">
-                        <Input
-                          value={image.caption || ""}
-                          onChange={(e) =>
-                            updateImageCaption(index, e.target.value)
-                          }
-                          placeholder="Add caption (optional)..."
-                          className="bg-white/5 border-white/20 text-white text-xs h-8"
-                        />
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-7 w-full"
-                          onClick={() => removeImage(index)}
-                        >
-                          <MdDelete className="w-3 h-3 mr-1" />
-                          Remove
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Project Links */}
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Project Links</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-white/80 flex items-center gap-2">
-                    <FaGithub className="w-4 h-4" />
-                    GitHub Repository
-                  </Label>
-                  <Input
-                    value={formData.githubUrl}
-                    onChange={(e) => handleChange("githubUrl", e.target.value)}
-                    className="bg-white/5 border-white/20 text-white mt-1"
-                    placeholder="https://github.com/username/project"
-                  />
-                </div>
-                <div>
-                  <Label className="text-white/80 flex items-center gap-2">
-                    <FaExternalLinkAlt className="w-4 h-4" />
-                    Live Demo
-                  </Label>
-                  <Input
-                    value={formData.liveUrl}
-                    onChange={(e) => handleChange("liveUrl", e.target.value)}
-                    className="bg-white/5 border-white/20 text-white mt-1"
-                    placeholder="https://your-project.vercel.app"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-white/80 flex items-center gap-2">
-                  <FaYoutube className="w-4 h-4" />
-                  Video Demo (Optional)
-                </Label>
-                <Input
-                  value={formData.videoUrl}
-                  onChange={(e) => handleChange("videoUrl", e.target.value)}
-                  className="bg-white/5 border-white/20 text-white mt-1"
-                  placeholder="https://youtube.com/watch?v=..."
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Project Settings */}
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Project Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="isPublic"
-                  checked={formData.isPublic}
-                  onChange={(e) => handleChange("isPublic", e.target.checked)}
-                  className="rounded border-white/20"
-                />
-                <Label htmlFor="isPublic" className="text-white/80">
-                  Make project publicly visible in showcase
-                </Label>
-              </div>
-              <p className="text-white/50 text-sm mt-2">
-                Public projects can be viewed by other users and judges
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4 sticky bottom-0 bg-zinc-900 py-4 border-t border-white/10">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="border-white/20 text-white hover:bg-white/10"
-              disabled={loading}
-            >
-              <MdClose className="w-4 h-4 mr-2" />
-              Cancel
-            </Button>
-
-            <div className="flex items-center gap-3">
-              <Button
-                onClick={() => saveProject(false)}
-                disabled={loading}
-                className="bg-gray-700 text-white hover:bg-gray-600"
+      <DialogContent className="w-[95vw] h-[90vh] max-w-none bg-zinc-900/95 backdrop-blur-sm border-white/10 text-white p-0 overflow-y-auto sm:max-w-[95vw]">
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="h-full flex flex-col"
+        >
+          {/* Header - Matching ProjectView */}
+          <div className="p-8 space-y-8 flex-shrink-0">
+            {/* Alerts */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
               >
-                <MdSave className="w-4 h-4 mr-2" />
-                {loading ? "Saving..." : "Save Draft"}
-              </Button>
+                <Alert className="bg-red-950/40 border-red-800/50">
+                  <AlertDescription className="text-red-300">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
+            )}
 
-              {project?.status === "draft" && (
+            {success && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Alert className="bg-emerald-950/40 border-emerald-800/50">
+                  <AlertDescription className="text-emerald-300">
+                    {success}
+                  </AlertDescription>
+                </Alert>
+              </motion.div>
+            )}
+
+            {/* Header Section */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  onClick={onClose}
+                  className="text-white hover:bg-white/10 hover:text-white p-2"
+                >
+                  <MdArrowBack className="w-5 h-5" />
+                </Button>
+                <div>
+                  <h1 className="text-3xl font-bold text-white">
+                    {project ? "Edit Project" : "Create New Project"}
+                  </h1>
+                  <div className="flex items-center gap-3 mt-2">
+                    {formData.isPublic ? (
+                      <div className="flex items-center gap-1 text-white/50">
+                        <MdPublic className="w-4 h-4" />
+                        <span className="text-sm">Public</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1 text-white/50">
+                        <MdLock className="w-4 h-4" />
+                        <span className="text-sm">Private</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => saveProject(false)}
+                  disabled={loading}
+                  className="border-white/20 text-zinc-800 hover:bg-white/40 hover:text-white hover:border-white/30 transition-colors duration-200"
+                >
+                  <MdSave className="w-4 h-4 mr-2" />
+                  {loading ? "Saving..." : "Save Draft"}
+                </Button>
                 <Button
                   onClick={() => saveProject(true)}
                   disabled={loading}
-                  className="bg-green-600 text-white hover:bg-green-700"
+                  className="bg-blue-600 text-white hover:bg-blue-700 font-medium"
                 >
-                  <MdPublish className="w-4 h-4 mr-2" />
-                  {loading ? "Publishing..." : "Publish Project"}
+                  <MdFileUpload className="w-4 h-4 mr-2" />
+                  {loading ? "Publishing..." : "Save & Publish"}
                 </Button>
-              )}
+              </div>
             </div>
           </div>
-        </div>
+
+          {/* Content - Matching ProjectView Layout */}
+          <div className="flex-1 overflow-hidden px-8 pb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
+              {/* Main Content */}
+              <div className="lg:col-span-2 space-y-8 overflow-y-auto pr-4">
+                {/* Basic Information */}
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <MdAssignment className="w-5 h-5" />
+                      Basic Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="title"
+                        className="text-white/80 font-medium"
+                      >
+                        Project Title *
+                      </Label>
+                      <Input
+                        id="title"
+                        value={formData.title}
+                        onChange={(e) => handleChange("title", e.target.value)}
+                        placeholder="Enter your project title..."
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="description"
+                        className="text-white/80 font-medium"
+                      >
+                        Description *
+                      </Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          handleChange("description", e.target.value)
+                        }
+                        placeholder="Describe your project, what it does, and its key features..."
+                        rows={4}
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 resize-none"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Problem Statement */}
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">
+                      Problem Statement
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      value={formData.problemStatement}
+                      onChange={(e) =>
+                        handleChange("problemStatement", e.target.value)
+                      }
+                      placeholder="What problem does your project solve? Why is it important?"
+                      rows={4}
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 resize-none"
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Challenges */}
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">
+                      Challenges & Solutions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      value={formData.challenges}
+                      onChange={(e) =>
+                        handleChange("challenges", e.target.value)
+                      }
+                      placeholder="What challenges did you face while building this project? How did you overcome them?"
+                      rows={4}
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 resize-none"
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Project Images */}
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <MdImage className="w-5 h-5" />
+                      Project Gallery ({formData.images.length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="border-2 border-dashed border-white/20 rounded-lg p-6 text-center hover:border-white/30 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
+                        disabled={uploadingImage}
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer block"
+                      >
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="bg-white/10 rounded-full p-3">
+                            <MdCloudUpload className="w-6 h-6 text-white/60" />
+                          </div>
+                          <div>
+                            <p className="text-white/80 font-medium">
+                              {uploadingImage
+                                ? "Uploading..."
+                                : "Upload Project Images"}
+                            </p>
+                            <p className="text-white/50 text-sm">
+                              Click to browse or drag and drop images
+                            </p>
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+
+                    {formData.images.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {formData.images.map((image, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="relative group"
+                          >
+                            <div className="relative rounded-lg overflow-hidden bg-white/5 border border-white/10">
+                              <img
+                                src={image.url}
+                                alt={`Project image ${index + 1}`}
+                                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+                              />
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeImage(index)}
+                                className="absolute top-2 right-2 bg-red-600/80 text-white hover:bg-red-600 rounded-full p-1"
+                              >
+                                <MdDelete className="w-4 h-4" />
+                              </Button>
+                            </div>
+                            <Input
+                              value={image.caption || ""}
+                              onChange={(e) =>
+                                updateImageCaption(index, e.target.value)
+                              }
+                              placeholder="Add image caption..."
+                              className="mt-2 bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 text-sm"
+                            />
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sidebar */}
+              <div className="space-y-6 overflow-y-auto">
+                {/* Project Settings */}
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white">
+                      Project Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4 overflow-y-auto max-h-full">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Label className="text-white/80 font-medium flex items-center gap-2">
+                          {formData.isPublic ? (
+                            <MdPublic className="w-4 h-4" />
+                          ) : (
+                            <MdLock className="w-4 h-4" />
+                          )}
+                          Public Project
+                        </Label>
+                        <p className="text-white/50 text-sm">
+                          {formData.isPublic
+                            ? "Anyone can view this project"
+                            : "Only you and your team can view this project"}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={formData.isPublic}
+                        onCheckedChange={(checked) =>
+                          handleChange("isPublic", checked)
+                        }
+                        className="data-[state=checked]:bg-blue-600"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Technologies */}
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <MdCode className="w-5 h-5" />
+                      Technologies
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex gap-2">
+                      <Input
+                        value={newTech}
+                        onChange={(e) => setNewTech(e.target.value)}
+                        placeholder="Add technology..."
+                        className="flex-1 bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+                        onKeyPress={(e) => e.key === "Enter" && addTechnology()}
+                      />
+                      <Button
+                        type="button"
+                        onClick={addTechnology}
+                        className="bg-white/10 text-white hover:bg-white/20 border-white/20"
+                        variant="outline"
+                      >
+                        <MdAdd className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    {techArray.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {techArray.map((tech, index) => (
+                          <Badge
+                            key={index}
+                            className="bg-white/10 text-white/80 border-white/20 hover:bg-white/15 pr-1"
+                          >
+                            {tech}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="ml-1 h-4 w-4 p-0 hover:bg-red-500/20"
+                              onClick={() => removeTechnology(index)}
+                            >
+                              <MdClose className="w-3 h-3" />
+                            </Button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <Label className="text-white/60 text-sm">
+                        Or enter comma-separated:
+                      </Label>
+                      <Textarea
+                        value={formData.technologies}
+                        onChange={(e) =>
+                          handleChange("technologies", e.target.value)
+                        }
+                        placeholder="React, Node.js, MongoDB..."
+                        rows={2}
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20 resize-none"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Project Links */}
+                <Card className="bg-white/5 border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <MdLink className="w-5 h-5" />
+                      Project Links
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-white/80 font-medium flex items-center gap-2">
+                        <FaGithub className="w-4 h-4" />
+                        GitHub Repository
+                      </Label>
+                      <Input
+                        value={formData.githubUrl}
+                        onChange={(e) =>
+                          handleChange("githubUrl", e.target.value)
+                        }
+                        placeholder="https://github.com/username/repo"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white/80 font-medium flex items-center gap-2">
+                        <FaExternalLinkAlt className="w-4 h-4" />
+                        Live Demo URL
+                      </Label>
+                      <Input
+                        value={formData.liveUrl}
+                        onChange={(e) =>
+                          handleChange("liveUrl", e.target.value)
+                        }
+                        placeholder="https://your-project.com"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white/80 font-medium flex items-center gap-2">
+                        <FaVideo className="w-4 h-4" />
+                        Video Demo
+                      </Label>
+                      <Input
+                        value={formData.videoUrl}
+                        onChange={(e) =>
+                          handleChange("videoUrl", e.target.value)
+                        }
+                        placeholder="https://youtube.com/watch?v=..."
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white/80 font-medium flex items-center gap-2">
+                        <FaFileAlt className="w-4 h-4" />
+                        Presentation
+                      </Label>
+                      <Input
+                        value={formData.presentationUrl}
+                        onChange={(e) =>
+                          handleChange("presentationUrl", e.target.value)
+                        }
+                        placeholder="https://docs.google.com/presentation/..."
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/40 focus:border-white/40 focus:ring-1 focus:ring-white/20"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </DialogContent>
     </Dialog>
   );
