@@ -208,7 +208,7 @@ const SignUp = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-white text-zinc-950 hover:bg-white/90"
+                className="w-full bg-white text-zinc-950 hover:bg-white/80 hover:scale-[0.98]"
                 disabled={loading}
               >
                 {loading ? (
@@ -218,7 +218,7 @@ const SignUp = () => {
                   </>
                 ) : (
                   <>
-                    <User className="mr-2 h-4 w-4" />
+                    <User className="h-4 w-4" />
                     Create Account
                   </>
                 )}
@@ -238,14 +238,14 @@ const SignUp = () => {
 
             <Button
               variant="outline"
-              className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10"
+              className="w-full border-white/20 bg-white/5 text-white hover:text-white hover:scale-[0.98] hover:bg-white/10"
               onClick={handleGoogleSignUp}
               disabled={loading}
             >
               {loading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <Mail className="mr-2 h-4 w-4" />
+                <Mail className="h-4 w-4" />
               )}
               Google
             </Button>
