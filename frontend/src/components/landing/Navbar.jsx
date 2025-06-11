@@ -21,10 +21,9 @@ const Navbar = () => {
   }, []);
 
   const navItems = [
-    { name: "Hackathons", href: "#hackathons" },
-    { name: "About", href: "#about" },
-    { name: "Community", href: "#community" },
-    { name: "Pricing", href: "#pricing" },
+    { name: "Home", href: "#home" },
+    { name: "Features", href: "#features" },
+    { name: "Testimonials", href: "#testimonials" },
   ];
 
   const handleGetStarted = () => {
@@ -40,6 +39,31 @@ const Navbar = () => {
       navigate(user.role ? "/dashboard" : "/select-role");
     } else {
       navigate("/login");
+    }
+  };
+
+  const handleSmoothScroll = (href) => {
+    const targetId = href.substring(1); 
+
+    if (targetId === "home") {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    } else {
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        const navbarHeight = 80; 
+        const elementPosition = targetElement.getBoundingClientRect().top;
+        const offsetPosition =
+          elementPosition + window.pageYOffset - navbarHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+      }
     }
   };
 
@@ -82,17 +106,17 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-10">
             {navItems.map((item, index) => (
-              <motion.a
+              <motion.button
                 key={item.name}
-                href={item.href}
-                className="text-white/80 hover:text-zinc-200 transition-colors text-sm font-medium tracking-wide"
+                onClick={() => handleSmoothScroll(item.href)}
+                className="text-white/80 hover:text-zinc-200 transition-colors text-sm font-medium tracking-wide cursor-pointer"
                 whileHover={{ y: -2 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 + index * 0.1 }}
               >
                 {item.name}
-              </motion.a>
+              </motion.button>
             ))}
           </div>
 
@@ -134,17 +158,19 @@ const Navbar = () => {
             >
               <div className="flex flex-col space-y-6">
                 {navItems.map((item, index) => (
-                  <motion.a
+                  <motion.button
                     key={item.name}
-                    href={item.href}
-                    className="text-white/80 hover:text-zinc-200 transition-colors text-base"
+                    onClick={() => {
+                      handleSmoothScroll(item.href);
+                      setIsOpen(false);
+                    }}
+                    className="text-white/80 hover:text-zinc-200 transition-colors text-base text-left"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    onClick={() => setIsOpen(false)}
                   >
                     {item.name}
-                  </motion.a>
+                  </motion.button>
                 ))}
                 <div className="flex flex-col pt-6 border-t border-zinc-800/50">
                   <Button
