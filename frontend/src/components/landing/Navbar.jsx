@@ -97,15 +97,7 @@ const Navbar = () => {
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-white/80 hover:text-white hover:bg-zinc-800/60 px-6 py-2 rounded-lg"
-              onClick={handleSignIn}
-            >
-              {user ? "Dashboard" : "Sign In"}
-            </Button>
+          <div className="hidden md:flex items-center">
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="sm"
@@ -154,18 +146,7 @@ const Navbar = () => {
                     {item.name}
                   </motion.a>
                 ))}
-                <div className="flex flex-col space-y-4 pt-6 border-t border-zinc-800/50">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="justify-start text-white/80 hover:text-white hover:bg-zinc-800/60 rounded-lg"
-                    onClick={() => {
-                      handleSignIn();
-                      setIsOpen(false);
-                    }}
-                  >
-                    {user ? "Dashboard" : "Sign In"}
-                  </Button>
+                <div className="flex flex-col pt-6 border-t border-zinc-800/50">
                   <Button
                     size="sm"
                     className="justify-start bg-white text-zinc-950 hover:bg-white/90 rounded-lg shadow-lg shadow-white/25"
