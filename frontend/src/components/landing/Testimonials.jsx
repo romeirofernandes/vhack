@@ -88,7 +88,38 @@ const Testimonials = () => {
           <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-zinc-950 to-transparent z-10 pointer-events-none" />
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-zinc-950 to-transparent z-10 pointer-events-none" />
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto h-[400px] overflow-hidden">
+          {/* Mobile: Single column */}
+          <div className="md:hidden max-w-md mx-auto h-[400px] overflow-hidden">
+            <motion.div
+              className="space-y-4"
+              animate={{
+                y: [0, -1800],
+              }}
+              transition={{
+                y: {
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  duration: 45,
+                  ease: "linear",
+                },
+              }}
+            >
+              {[
+                ...testimonials,
+                ...testimonials,
+                ...testimonials,
+                ...testimonials,
+              ].map((testimonial, index) => (
+                <TestimonialCard
+                  key={`mobile-${index}`}
+                  testimonial={testimonial}
+                />
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Desktop: Two columns */}
+          <div className="hidden md:grid md:grid-cols-2 gap-6 max-w-4xl mx-auto h-[400px] overflow-hidden">
             {/* First Column - Moving Up */}
             <div className="overflow-hidden">
               <motion.div
