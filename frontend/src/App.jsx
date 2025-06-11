@@ -70,15 +70,36 @@ const App = () => {
             }
           />
           <Route
-            path="/organizer/profile"
+            path="/judge/dashboard"
             element={
               <ProtectedRoute requiresRole={true}>
-                <OrganizerProfile />
+                <Dashboard />
               </ProtectedRoute>
             }
           />
-
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute requiresRole={true}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <div className="flex items-center justify-center min-h-screen bg-zinc-950 text-white">
+                <div className="text-center">
+                  <h1 className="text-4xl font-bold mb-4">
+                    404 - Page Not Found
+                  </h1>
+                  <p className="text-white/70">
+                    The page you're looking for doesn't exist.
+                  </p>
+                </div>
+              </div>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
