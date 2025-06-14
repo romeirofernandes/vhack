@@ -13,6 +13,7 @@ import AdminDashboard from "./components/dashboards/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OrganizerDashboard from "./components/dashboards/OrganizerDashboard";
 import CreateHackathon from "./pages/CreateHackathon";
+import AllotJudges from "./pages/AllotJudges";
 
 const App = () => {
   return (
@@ -75,6 +76,14 @@ const App = () => {
             element={
               <ProtectedRoute requiresRole={true}>
                 <CreateHackathon />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organizer/hackathon/:hackathonId/allot-judges"
+            element={
+              <ProtectedRoute requiresRole={true}>
+                <AllotJudges />
               </ProtectedRoute>
             }
           />
