@@ -11,4 +11,7 @@ router.get('/organizer/:organizerName', hackathonController.getOrganizerHackatho
 // Create a new hackathon
 router.post('/', hackathonController.createHackathon);
 
+// Get hackathon details by ID
+router.get('/:hackathonId', hackathonController.getHackathonById);
+
 module.exports = router; 

@@ -295,7 +295,7 @@ const OrganizerDashboard = () => {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="border-white/20 text-white hover:bg-white/10"
+                            className="border-white/20 text-black hover:bg-white/10"
                             onClick={() => navigate(`/organizer/hackathon/${hackathon._id}`)}
                           >
                             View Details

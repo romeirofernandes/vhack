@@ -117,3 +117,39 @@ exports.getOrganizerHackathons = async (req, res) => {
         });
     }
 }; 
+
+exports.getHackathonById = async (req, res) => {
+    try {
+        const { hackathonId } = req.params;
+
+        if (!hackathonId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Hackathon ID is required'
+            });
+        }
+
+        const hackathon = await Hackathon.findById(hackathonId)
+        .populate('judges', 'displayName email photoURL') // Add photoURL here
+        .populate('invitedJudges', 'displayName email photoURL') // Add photoURL here
+
+        if (!hackathon) {
+            return res.status(404).json({
+                success: false,
+                message: 'Hackathon not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: hackathon
+        });
+    } catch (error) {
+        console.error('Error fetching hackathon by ID:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching hackathon',
+            error: error.message
+        });
+    }
+}
