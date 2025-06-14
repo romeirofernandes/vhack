@@ -6,96 +6,83 @@ const hackathonSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  organizerName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
   description: {
     type: String,
     required: true,
   },
-  organizer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+  theme: {
+    type: String,
+    enum: ["AI", "Fintech", "Healthcare", "Education", "Sustainability", "Other"],
+    default: "Other",
+  },
+  bannerImageUrl: {
+    type: String,
+  },
+  timelines: {
+    registrationStart: {
+      type: Date,
+      required: true,
+    },
+    registrationEnd: {
+      type: Date,
+      required: true,
+    },
+    hackathonStart: {
+      type: Date,
+      required: true,
+    },
+    hackathonEnd: {
+      type: Date,
+      required: true,
+    },
+    resultsDate: {
+      type: Date,
+    },
+  },
+  teamSettings: {
+    minTeamSize: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    maxTeamSize: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    allowSolo: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  prizes: {
+    firstPrize: {
+      type: String,
+      required: true,
+    },
+    secondPrize: {
+      type: String,
+      required: true,
+    },
+    thirdPrize: {
+      type: String,
+      required: true,
+    },
+    participantPrize: {
+      type: String,
+      required: true,
+    },
   },
   status: {
     type: String,
-    enum: ["upcoming", "ongoing", "judging", "completed", "cancelled"],
-    default: "upcoming",
+    enum: ["draft", "published", "ongoing", "completed"],
+    default: "draft",
   },
-  startDate: {
-    type: Date,
-    required: true,
-  },
-  endDate: {
-    type: Date,
-    required: true,
-  },
-  registrationDeadline: {
-    type: Date,
-    required: true,
-  },
-  submissionDeadline: {
-    type: Date,
-    required: true,
-  },
-  maxParticipants: {
-    type: Number,
-    default: null,
-  },
-  maxTeamSize: {
-    type: Number,
-    default: 4,
-  },
-  participants: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
-  teams: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Team",
-    },
-  ],
-  projects: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Project",
-    },
-  ],
-  themes: [String],
-  prizes: [
-    {
-      position: {
-        type: String,
-        required: true,
-      },
-      amount: {
-        type: Number,
-        required: true,
-      },
-      description: String,
-    },
-  ],
-  rules: String,
-  requirements: [String],
-  judgesCriteria: [
-    {
-      name: String,
-      weight: Number,
-      description: String,
-    },
-  ],
-  judges: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
-  ],
-  isPublic: {
-    type: Boolean,
-    default: true,
-  },
-  bannerImage: String,
   createdAt: {
     type: Date,
     default: Date.now,
@@ -106,4 +93,12 @@ const hackathonSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Hackathon", hackathonSchema);
+// Update the updatedAt timestamp before saving
+hackathonSchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+const Hackathon = mongoose.model("Hackathon", hackathonSchema);
+
+module.exports = Hackathon;

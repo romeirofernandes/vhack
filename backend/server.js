@@ -9,6 +9,7 @@ const projectRoutes = require("./routes/projectRoutes");
 const skillsRoutes = require("./routes/skillsRoutes");
 const achievementRoutes = require("./routes/achievementRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
+const hackathonRoutes = require("./routes/hackathonRoutes");
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/projects", projectRoutes);
 app.use("/skills", skillsRoutes);
 app.use("/achievements", achievementRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/hackathons", hackathonRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

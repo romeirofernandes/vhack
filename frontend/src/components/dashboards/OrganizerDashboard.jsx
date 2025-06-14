@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import {
   MdDashboard,
@@ -23,12 +23,53 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Profile from "./organizer/Profile";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const OrganizerDashboard = () => {
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [hackathons, setHackathons] = useState([]);
+  const [stats, setStats] = useState({
+    totalHackathons: 0,
+    activeEvents: 0,
+    totalParticipants: 0,
+    successRate: 0
+  });
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchHackathons();
+  }, []);
+
+  const fetchHackathons = async () => {
+    try {
+      setLoading(true);
+      console.log('Current user:', user); // Debug log for user info
+
+      // First try to fetch all hackathons
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/hackathons`,
+        { withCredentials: true }
+      );
+
+      console.log('All hackathons response:', response.data); // Debug log
+
+      if (response.data.success) {
+        setHackathons(response.data.data.hackathons);
+        setStats(response.data.data.stats);
+      } else {
+        toast.error(response.data.message || 'Error fetching hackathons');
+      }
+    } catch (error) {
+      console.error('Error details:', error.response?.data || error.message); // Debug log
+      toast.error(error.response?.data?.message || 'Error fetching hackathons');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     navigate("/organizer/login");
@@ -49,7 +90,7 @@ const OrganizerDashboard = () => {
     },
     {
       label: "Create Event",
-      href: "/organizer/create-event",
+      href: "/organizer/create-hackathon",
       icon: <MdAdd className="text-white/70 h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("create-event"),
     },
@@ -85,36 +126,6 @@ const OrganizerDashboard = () => {
     },
   ];
 
-  const myHackathons = [
-    {
-      id: 1,
-      title: "AI for Healthcare Hackathon",
-      date: "March 20-22, 2025",
-      participants: 450,
-      teams: 89,
-      status: "Active",
-      submissions: 67,
-    },
-    {
-      id: 2,
-      title: "Fintech Innovation Challenge",
-      date: "April 15-17, 2025",
-      participants: 320,
-      teams: 64,
-      status: "Registration Open",
-      submissions: 0,
-    },
-    {
-      id: 3,
-      title: "Green Tech Solutions",
-      date: "May 10-12, 2025",
-      participants: 0,
-      teams: 0,
-      status: "Draft",
-      submissions: 0,
-    },
-  ];
-
   const renderContent = () => {
     switch (activeSection) {
       case "profile":
@@ -133,7 +144,10 @@ const OrganizerDashboard = () => {
                   Manage and create amazing hackathon experiences
                 </p>
               </div>
-              <Button className="bg-white text-zinc-950 hover:bg-white/90">
+              <Button 
+                className="bg-white text-zinc-950 hover:bg-white/90"
+                onClick={() => navigate('/organizer/create-hackathon')}
+              >
                 <MdAdd className="w-4 h-4 mr-2" />
                 Create Hackathon
               </Button>
@@ -148,7 +162,7 @@ const OrganizerDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-white">8</div>
+                  <div className="text-2xl font-bold text-white">{stats.totalHackathons}</div>
                 </CardContent>
               </Card>
               <Card className="bg-white/5 border-white/10">
@@ -158,7 +172,7 @@ const OrganizerDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-white">2</div>
+                  <div className="text-2xl font-bold text-white">{stats.activeEvents}</div>
                 </CardContent>
               </Card>
               <Card className="bg-white/5 border-white/10">
@@ -168,7 +182,7 @@ const OrganizerDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-white">2,847</div>
+                  <div className="text-2xl font-bold text-white">{stats.totalParticipants}</div>
                 </CardContent>
               </Card>
               <Card className="bg-white/5 border-white/10">
@@ -178,7 +192,7 @@ const OrganizerDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold text-white">94%</div>
+                  <div className="text-2xl font-bold text-white">{stats.successRate}%</div>
                 </CardContent>
               </Card>
             </div>
@@ -186,101 +200,121 @@ const OrganizerDashboard = () => {
             {/* My Hackathons */}
             <Card className="bg-white/5 border-white/10">
               <CardHeader>
-                <CardTitle className="text-white">My Hackathons</CardTitle>
-                <CardDescription className="text-white/70">
-                  Manage your hackathon events
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-white">My Hackathons</CardTitle>
+                    <CardDescription className="text-white/70">
+                      Manage your hackathon events
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    className="bg-white text-zinc-950 hover:bg-white/90"
+                    onClick={() => navigate('/organizer/create-hackathon')}
+                  >
+                    <MdAdd className="w-4 h-4 mr-2" />
+                    Create New
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {myHackathons.map((hackathon) => (
-                  <div
-                    key={hackathon.id}
-                    className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10"
-                  >
-                    <div className="space-y-1">
-                      <h3 className="font-semibold text-white">
-                        {hackathon.title}
-                      </h3>
-                      <p className="text-sm text-white/70">{hackathon.date}</p>
-                      <div className="flex items-center gap-4 text-sm text-white/60">
-                        <span>Participants: {hackathon.participants}</span>
-                        <span>Teams: {hackathon.teams}</span>
-                        <span>Submissions: {hackathon.submissions}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge
-                        className={`${
-                          hackathon.status === "Active"
-                            ? "bg-green-900/50 text-green-200"
-                            : hackathon.status === "Registration Open"
-                            ? "bg-blue-900/50 text-blue-200"
-                            : "bg-gray-900/50 text-gray-200"
-                        }`}
-                      >
-                        {hackathon.status}
-                      </Badge>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-white/20 text-white hover:bg-white/10"
-                      >
-                        Manage
-                      </Button>
-                    </div>
+                {loading ? (
+                  <div className="text-center text-white/70 py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/70 mx-auto mb-4"></div>
+                    Loading hackathons...
                   </div>
-                ))}
+                ) : hackathons.length === 0 ? (
+                  <div className="text-center text-white/70 py-8">
+                    <p className="mb-4">No hackathons created yet</p>
+                    <Button 
+                      className="bg-white text-zinc-950 hover:bg-white/90"
+                      onClick={() => navigate('/organizer/create-hackathon')}
+                    >
+                      Create Your First Hackathon
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid gap-4">
+                    {hackathons.map((hackathon) => (
+                      <div
+                        key={hackathon._id}
+                        className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                      >
+                        <div className="space-y-3 flex-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <h3 className="font-semibold text-white text-lg">
+                                {hackathon.title}
+                              </h3>
+                              <p className="text-sm text-white/70 mt-1">
+                                {hackathon.description.length > 150 
+                                  ? `${hackathon.description.substring(0, 150)}...` 
+                                  : hackathon.description}
+                              </p>
+                            </div>
+                            <Badge
+                              className={`${
+                                hackathon.status === "ongoing"
+                                  ? "bg-green-900/50 text-green-200"
+                                  : hackathon.status === "draft"
+                                  ? "bg-blue-900/50 text-blue-200"
+                                  : "bg-gray-900/50 text-gray-200"
+                              }`}
+                            >
+                              {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                            <div className="space-y-1">
+                              <p className="text-white/50">Timeline</p>
+                              <p className="text-white/80">
+                                {new Date(hackathon.timelines.hackathonStart).toLocaleDateString()} - {new Date(hackathon.timelines.hackathonEnd).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-white/50">Registration</p>
+                              <p className="text-white/80">
+                                {new Date(hackathon.timelines.registrationStart).toLocaleDateString()} - {new Date(hackathon.timelines.registrationEnd).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-white/50">Team Size</p>
+                              <p className="text-white/80">
+                                {hackathon.teamSettings.minTeamSize} - {hackathon.teamSettings.maxTeamSize} members
+                                {hackathon.teamSettings.allowSolo && " (Solo allowed)"}
+                              </p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-white/50">Theme</p>
+                              <p className="text-white/80 capitalize">{hackathon.theme}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 mt-4 md:mt-0 md:ml-4">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-white/20 text-white hover:bg-white/10"
+                            onClick={() => navigate(`/organizer/hackathon/${hackathon._id}`)}
+                          >
+                            View Details
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-white/20 text-white hover:bg-white/10"
+                            onClick={() => navigate(`/organizer/hackathon/${hackathon._id}/manage`)}
+                          >
+                            Manage
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
-
-            {/* Analytics and Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <div className="text-sm text-white/80">
-                      AI Healthcare Hackathon started
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                    <div className="text-sm text-white/80">
-                      New team registered for Fintech Challenge
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
-                    <div className="text-sm text-white/80">
-                      Judge John Doe added to panel
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                    <MdAdd className="w-4 h-4 mr-2" />
-                    Create New Hackathon
-                  </Button>
-                  <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                    <MdGroup className="w-4 h-4 mr-2" />
-                    Invite Judges
-                  </Button>
-                  <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                    <MdBarChart className="w-4 h-4 mr-2" />
-                    View Analytics
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
           </>
         );
     }

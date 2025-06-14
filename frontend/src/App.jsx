@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./components/dashboards/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OrganizerDashboard from "./components/dashboards/OrganizerDashboard";
+import CreateHackathon from "./pages/CreateHackathon";
 
 const App = () => {
   return (
@@ -66,6 +67,14 @@ const App = () => {
             element={
               <ProtectedRoute requiresRole={true}>
                 <OrganizerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/organizer/create-hackathon"
+            element={
+              <ProtectedRoute requiresRole={true}>
+                <CreateHackathon />
               </ProtectedRoute>
             }
           />
