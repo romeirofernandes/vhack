@@ -51,7 +51,7 @@ const OrganizerDashboard = () => {
 
       // First try to fetch all hackathons
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/hackathons`,
+        `${import.meta.env.VITE_API_URL}/hackathons`,
         { withCredentials: true }
       );
 
