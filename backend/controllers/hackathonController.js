@@ -3,12 +3,8 @@ const Hackathon = require('../models/Hackathon');
 // Get all hackathons
 exports.getAllHackathons = async (req, res) => {
     try {
-        console.log('Fetching all hackathons'); // Debug log
-
         const hackathons = await Hackathon.find()
             .sort({ createdAt: -1 }); // Sort by newest first
-
-        console.log('Found hackathons:', hackathons); // Debug log
 
         // Calculate statistics
         const stats = {
@@ -85,8 +81,6 @@ exports.createHackathon = async (req, res) => {
 exports.getOrganizerHackathons = async (req, res) => {
     try {
         const { organizerName } = req.params;
-        
-        console.log('Fetching hackathons for organizer:', organizerName); // Debug log
 
         if (!organizerName) {
             return res.status(400).json({
@@ -97,8 +91,6 @@ exports.getOrganizerHackathons = async (req, res) => {
 
         const hackathons = await Hackathon.find({ organizerName })
             .sort({ createdAt: -1 }); // Sort by newest first
-
-        console.log('Found hackathons:', hackathons); // Debug log
 
         // Calculate statistics
         const stats = {
