@@ -83,6 +83,15 @@ const hackathonSchema = new mongoose.Schema({
     enum: ["draft", "published", "ongoing", "completed"],
     default: "draft",
   },
+  invitedJudges: [{ // Add this field
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }],
+  
+  judges: [{ // Add this field for accepted judges
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

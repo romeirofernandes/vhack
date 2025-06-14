@@ -35,10 +35,10 @@ app.use("/profile", profileRoutes);
 app.use("/projects", projectRoutes);
 app.use("/skills", skillsRoutes);
 app.use("/achievements", achievementRoutes);
-app.use("/api/upload", uploadRoutes);
-app.use("/api/hackathons", hackathonRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+app.use("/upload", uploadRoutes);
+app.use("/hackathons", hackathonRoutes);
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

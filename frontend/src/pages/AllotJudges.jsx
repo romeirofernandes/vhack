@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams,useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { TbSearch, TbUserPlus, TbUsers, TbMail } from 'react-icons/tb';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ const AllotJudges = () => {
     const [isInviting, setIsInviting] = useState(false);
     const { user } = useAuth();
     const { hackathonId } = useParams();
+    const navigate = useNavigate();
 
     const handleSearch = async () => {
         if (!searchQuery.trim()) {
@@ -85,6 +86,36 @@ const AllotJudges = () => {
         }
     };
 
+    useEffect(() => {
+        const fetchJudges = async () => {
+            setIsLoading(true);
+            try {
+                const idToken = await user.getIdToken();
+                const response = await axios.get(
+                    `${import.meta.env.VITE_API_URL}/users/judges`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${idToken}`,
+                        },
+                    }
+                );
+
+                if (response.data.success) {
+                    setJudges(response.data.judges);
+                    setFilteredJudges(response.data.judges);
+                } else {
+                    toast.error(response.data.error || 'Failed to fetch judges');
+                }
+            } catch (error) {
+                console.error('Error fetching judges:', error.response?.data || error);
+                toast.error(error.response?.data?.error || 'Error fetching judges');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchJudges();
+    }, [hackathonId, user]);
     return (
         <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white p-6">
             <div className="max-w-6xl mx-auto">
@@ -106,6 +137,15 @@ const AllotJudges = () => {
                         </div>
                     </div>
 
+                    <Button
+                        as="a"
+                        onClick={() => navigate('/dashboard')}
+                        className="mb-6 bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700"
+                        leftIcon={<TbUserPlus className="w-5 h-5" />}
+                        size="lg"
+                    >
+                        <span>Back to Dashboard</span>
+                    </Button>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Search Section */}
                         <div className="lg:col-span-2 space-y-6">

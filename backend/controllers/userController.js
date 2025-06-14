@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Hackathon = require("../models/Hackathon");
+const mongoose = require("mongoose");
 
 const userController = {
   // Get all judges
@@ -76,9 +77,19 @@ const userController = {
 
   // Send judge invite
   async sendJudgeInvite(req, res) {
+    console.log("Sending judge invite...");
+    // Ensure the request is authenticated
     try {
       const { hackathonId } = req.params;
       const { judgeId } = req.body;
+
+      console.log(`Inviting judge ${judgeId} to hackathon ${hackathonId}`);
+      if (!hackathonId || !judgeId) {
+        return res.status(400).json({
+          success: false,
+          error: "Hackathon ID and Judge ID are required",
+        });
+      }
 
       // Check if hackathon exists
       const hackathon = await Hackathon.findById(hackathonId);
@@ -123,6 +134,89 @@ const userController = {
       });
     }
   },
+
+  // Add these methods to your userController.js
+
+// Get pending hackathon invitations for a judge
+async getJudgeInvitations(req, res) {
+  try {
+    const userId = req.user._id;
+    
+    // Get all hackathons where this user is in invitedJudges array but not in judges array
+    const hackathons = await Hackathon.find({
+      invitedJudges: userId,
+      judges: { $ne: userId }
+    }).select('title organizerName theme timelines');
+    
+    const invitations = hackathons.map(hackathon => ({
+      _id: new mongoose.Types.ObjectId(),
+      hackathon,
+      invitedAt: hackathon._id.getTimestamp() // Use document creation time as a fallback
+    }));
+    
+    res.status(200).json({
+      success: true,
+      invitations
+    });
+  } catch (error) {
+    console.error('Error fetching judge invitations:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch invitations'
+    });
+  }
+},
+
+// Respond to a hackathon invitation (accept or decline)
+async respondToInvitation(req, res) {
+  try {
+    const { hackathonId } = req.params;
+    const { accept } = req.body;
+    const userId = req.user._id;
+    
+    // Find the hackathon
+    const hackathon = await Hackathon.findById(hackathonId);
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        error: 'Hackathon not found'
+      });
+    }
+    
+    // Check if the user is actually invited
+    if (!hackathon.invitedJudges.includes(userId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'You are not invited to this hackathon'
+      });
+    }
+    
+    if (accept) {
+      // Add to judges array if not already there
+      if (!hackathon.judges.includes(userId)) {
+        hackathon.judges.push(userId);
+      }
+    }
+    
+    // Remove from invitedJudges array either way
+    hackathon.invitedJudges = hackathon.invitedJudges.filter(
+      id => id.toString() !== userId.toString()
+    );
+    
+    await hackathon.save();
+    
+    res.status(200).json({
+      success: true,
+      message: accept ? 'Invitation accepted' : 'Invitation declined'
+    });
+  } catch (error) {
+    console.error('Error responding to invitation:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process your response'
+    });
+  }
+}
 };
 
 module.exports = userController; 
