@@ -12,9 +12,10 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./components/dashboards/AdminDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OrganizerDashboard from "./components/dashboards/OrganizerDashboard";
-import CreateHackathon from "./pages/CreateHackathon";
-import AllotJudges from "./components/dashboards/judges/AllotJudges";
-import ViewHackathonDetails from "./components/dashboards/judges/ViewHackathonDetails";
+import CreateHackathon from "./components/dashboards/organizer/CreateHackathon";
+import AllotJudges from "./components/dashboards/organizer/AllotJudges";
+import ViewHackathonDetails from "./components/dashboards/organizer/ViewHackathonDetails";
+import EditHackathon from "./components/dashboards/organizer/EditHackathon";
 
 const App = () => {
   return (
@@ -89,6 +90,7 @@ const App = () => {
             }
           />
           <Route path="/organizer/hackathon/:hackathonId" element={<ViewHackathonDetails />} />
+          <Route path="/organizer/hackathon/:hackathonId/edit" element={<EditHackathon />} />
           <Route
             path="/judge/dashboard"
             element={

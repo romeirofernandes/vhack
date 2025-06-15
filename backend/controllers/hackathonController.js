@@ -153,3 +153,88 @@ exports.getHackathonById = async (req, res) => {
         });
     }
 }
+// Update hackathon
+exports.updateHackathon = async (req, res) => {
+    try {
+        const { hackathonId } = req.params;
+        const updateData = req.body;
+
+        if (!hackathonId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Hackathon ID is required'
+            });
+        }
+
+        // Find and update the hackathon
+        const updatedHackathon = await Hackathon.findByIdAndUpdate(
+            hackathonId,
+            {
+                ...updateData,
+                updatedAt: new Date()
+            },
+            { 
+                new: true, // Return the updated document
+                runValidators: true // Run schema validations
+            }
+        ).populate('judges', 'displayName email photoURL')
+         .populate('invitedJudges', 'displayName email photoURL');
+
+        if (!updatedHackathon) {
+            return res.status(404).json({
+                success: false,
+                message: 'Hackathon not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Hackathon updated successfully',
+            data: updatedHackathon
+        });
+    } catch (error) {
+        console.error('Error updating hackathon:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error updating hackathon',
+            error: error.message
+        });
+    }
+};
+
+// Delete hackathon
+exports.deleteHackathon = async (req, res) => {
+    try {
+        const { hackathonId } = req.params;
+
+        if (!hackathonId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Hackathon ID is required'
+            });
+        }
+
+        // Find and delete the hackathon
+        const deletedHackathon = await Hackathon.findByIdAndDelete(hackathonId);
+
+        if (!deletedHackathon) {
+            return res.status(404).json({
+                success: false,
+                message: 'Hackathon not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Hackathon deleted successfully',
+            data: deletedHackathon
+        });
+    } catch (error) {
+        console.error('Error deleting hackathon:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error deleting hackathon',
+            error: error.message
+        });
+    }
+};

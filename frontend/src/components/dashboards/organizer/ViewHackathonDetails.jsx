@@ -43,7 +43,7 @@ const ViewHackathonDetails = () => {
       setLoading(true);
       const idToken = await user.getIdToken();
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
+        `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`, // Fixed URL
         {
           headers: { Authorization: `Bearer ${idToken}` }
         }
@@ -71,7 +71,7 @@ const ViewHackathonDetails = () => {
       setActionLoading(true);
       const idToken = await user.getIdToken();
       const response = await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/hackathons/${hackathonId}`,
+        `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
         {
           headers: { Authorization: `Bearer ${idToken}` }
         }
@@ -208,6 +208,7 @@ const ViewHackathonDetails = () => {
             </div>
           </div>
 
+          {/* Rest of your existing JSX remains the same */}
           {/* Status and Quick Info */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm">
