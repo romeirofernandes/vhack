@@ -86,12 +86,22 @@ const profileController = {
           twitter: String(socialLinks?.twitter || ""),
         },
         achievements: cleanAchievements,
-        expertise: currentUser.profile?.expertise || [],
-        organization: currentUser.profile?.organization || "",
-        yearsOfExperience: currentUser.profile?.yearsOfExperience || "",
-        website: currentUser.profile?.website || "",
-        position: currentUser.profile?.position || "",
-      };
+        expertise: typeof req.body.expertise !== "undefined"
+          ? req.body.expertise
+          : (currentUser.profile?.expertise || []),
+        organization: typeof req.body.organization !== "undefined"
+          ? req.body.organization
+          : (currentUser.profile?.organization || ""),
+        yearsOfExperience: typeof req.body.yearsOfExperience !== "undefined"
+          ? req.body.yearsOfExperience
+          : (currentUser.profile?.yearsOfExperience || ""),
+        website: typeof req.body.website !== "undefined"
+          ? req.body.website
+          : (currentUser.profile?.website || ""),
+        position: typeof req.body.position !== "undefined"
+          ? req.body.position
+          : (currentUser.profile?.position || ""),
+};
 
       // Update the user using save() method instead of findByIdAndUpdate
       currentUser.displayName = displayName || currentUser.displayName;
