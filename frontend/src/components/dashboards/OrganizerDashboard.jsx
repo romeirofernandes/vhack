@@ -72,9 +72,14 @@ const OrganizerDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    navigate("/organizer/login");
-  };
+  const handleLogout = async () => {
+      try {
+        await signOut(auth);
+        navigate("/");
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    };
 
   const links = [
     {
