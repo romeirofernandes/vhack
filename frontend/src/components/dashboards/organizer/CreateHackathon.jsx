@@ -105,7 +105,12 @@ const CreateHackathon = () => {
                             <p className="text-zinc-400 mt-2 text-lg">Design and launch your next amazing hackathon event</p>
                         </div>
                     </div>
-
+                    <Button
+                        onClick={() => navigate('/organizer/dashboard')}
+                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
+                    >
+                    <span className="text-sm text-zinc-400 ml-2">Back to Dashboard</span>
+                    </Button>
                     <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Hackathon Details Section */}
                         <motion.div

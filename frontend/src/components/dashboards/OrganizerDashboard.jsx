@@ -19,15 +19,42 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Profile from "./organizer/Profile";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import OrganizerProfile from "@/pages/CreateOrganizerProfile";
 import { signOut } from "firebase/auth";
-import { auth } from "@/config/firebase";// Adjust the import based on your firebase config file structure
+import { auth } from "@/config/firebase";
+import MyHackathons from "./organizer/MyHackathons";
+
+const CreateEvent = () => (
+  <div className="text-white text-xl text-center py-20">
+    <MdAdd className="mx-auto mb-4 w-10 h-10" />
+    <p>Create Event functionality coming soon!</p>
+  </div>
+);
+
+const Participants = () => (
+  <div className="text-white text-xl text-center py-20">
+    <MdGroup className="mx-auto mb-4 w-10 h-10" />
+    <p>Participants management coming soon!</p>
+  </div>
+);
+
+const Analytics = () => (
+  <div className="text-white text-xl text-center py-20">
+    <MdBarChart className="mx-auto mb-4 w-10 h-10" />
+    <p>Analytics dashboard coming soon!</p>
+  </div>
+);
+
+const Settings = () => (
+  <div className="text-white text-xl text-center py-20">
+    <MdSettings className="mx-auto mb-4 w-10 h-10" />
+    <p>Settings coming soon!</p>
+  </div>
+);
 
 const OrganizerDashboard = () => {
   const [open, setOpen] = useState(false);
@@ -44,22 +71,19 @@ const OrganizerDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchHackathons();
-  }, []);
+    if (activeSection === "dashboard" || activeSection === "hackathons") {
+      fetchHackathons();
+    }
+    // eslint-disable-next-line
+  }, [activeSection]);
 
   const fetchHackathons = async () => {
     try {
       setLoading(true);
-      console.log('Current user:', user); // Debug log for user info
-
-      // First try to fetch all hackathons
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/hackathons`,
         { withCredentials: true }
       );
-
-      console.log('All hackathons response:', response.data); // Debug log
-
       if (response.data.success) {
         setHackathons(response.data.data.hackathons);
         setStats(response.data.data.stats);
@@ -67,7 +91,6 @@ const OrganizerDashboard = () => {
         toast.error(response.data.message || 'Error fetching hackathons');
       }
     } catch (error) {
-      console.error('Error details:', error.response?.data || error.message); // Debug log
       toast.error(error.response?.data?.message || 'Error fetching hackathons');
     } finally {
       setLoading(false);
@@ -75,13 +98,13 @@ const OrganizerDashboard = () => {
   };
 
   const handleLogout = async () => {
-      try {
-        await signOut(auth);
-        navigate("/");
-      } catch (error) {
-        console.error("Logout error:", error);
-      }
-    };
+    try {
+      await signOut(auth);
+      navigate("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
 
   const links = [
     {
@@ -134,12 +157,10 @@ const OrganizerDashboard = () => {
     },
   ];
 
+  // Main content rendering based on activeSection
   const renderContent = () => {
     switch (activeSection) {
-      case "profile":
-        return <Profile />;
       case "dashboard":
-      default:
         return (
           <>
             {/* Header */}
@@ -152,15 +173,7 @@ const OrganizerDashboard = () => {
                   Manage and create amazing hackathon experiences
                 </p>
               </div>
-              <Button 
-                className="bg-white text-zinc-950 hover:bg-white/90"
-                onClick={() => navigate('/organizer/create-hackathon')}
-              >
-                <MdAdd className="w-4 h-4 mr-2" />
-                Create Hackathon
-              </Button>
             </div>
-
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card className="bg-white/5 border-white/10">
@@ -204,125 +217,24 @@ const OrganizerDashboard = () => {
                 </CardContent>
               </Card>
             </div>
-
             {/* My Hackathons */}
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-white">My Hackathons</CardTitle>
-                    <CardDescription className="text-white/70">
-                      Manage your hackathon events
-                    </CardDescription>
-                  </div>
-                  <Button 
-                    className="bg-white text-zinc-950 hover:bg-white/90"
-                    onClick={() => navigate('/organizer/create-hackathon')}
-                  >
-                    <MdAdd className="w-4 h-4 mr-2" />
-                    Create New
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {loading ? (
-                  <div className="text-center text-white/70 py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white/70 mx-auto mb-4"></div>
-                    Loading hackathons...
-                  </div>
-                ) : hackathons.length === 0 ? (
-                  <div className="text-center text-white/70 py-8">
-                    <p className="mb-4">No hackathons created yet</p>
-                    <Button 
-                      className="bg-white text-zinc-950 hover:bg-white/90"
-                      onClick={() => navigate('/organizer/create-hackathon')}
-                    >
-                      Create Your First Hackathon
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="grid gap-4">
-                    {hackathons.map((hackathon) => (
-                      <div
-                        key={hackathon._id}
-                        className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
-                      >
-                        <div className="space-y-3 flex-1">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="font-semibold text-white text-lg">
-                                {hackathon.title}
-                              </h3>
-                              <p className="text-sm text-white/70 mt-1">
-                                {hackathon.description.length > 150 
-                                  ? `${hackathon.description.substring(0, 150)}...` 
-                                  : hackathon.description}
-                              </p>
-                            </div>
-                            <Badge
-                              className={`${
-                                hackathon.status === "ongoing"
-                                  ? "bg-green-900/50 text-green-200"
-                                  : hackathon.status === "draft"
-                                  ? "bg-blue-900/50 text-blue-200"
-                                  : "bg-gray-900/50 text-gray-200"
-                              }`}
-                            >
-                              {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
-                            </Badge>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                            <div className="space-y-1">
-                              <p className="text-white/50">Timeline</p>
-                              <p className="text-white/80">
-                                {new Date(hackathon.timelines.hackathonStart).toLocaleDateString()} - {new Date(hackathon.timelines.hackathonEnd).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-white/50">Registration</p>
-                              <p className="text-white/80">
-                                {new Date(hackathon.timelines.registrationStart).toLocaleDateString()} - {new Date(hackathon.timelines.registrationEnd).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-white/50">Team Size</p>
-                              <p className="text-white/80">
-                                {hackathon.teamSettings.minTeamSize} - {hackathon.teamSettings.maxTeamSize} members
-                                {hackathon.teamSettings.allowSolo && " (Solo allowed)"}
-                              </p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-white/50">Theme</p>
-                              <p className="text-white/80 capitalize">{hackathon.theme}</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 mt-4 md:mt-0 md:ml-4">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-white/20 text-black hover:bg-white/10"
-                            onClick={() => navigate(`/organizer/hackathon/${hackathon._id}`)}
-                          >
-                            View Details
-                          </Button>
-                          <Button
-                            onClick={() => navigate(`/organizer/hackathon/${hackathon._id}/allot-judges`)}
-                            className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/20"
-                          >
-                            Add Judges
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <MyHackathons hackathons={hackathons} loading={loading} navigate={navigate} />
           </>
         );
+      case "hackathons":
+        return <MyHackathons hackathons={hackathons} loading={loading} navigate={navigate} />;
+      case "create-event":
+        return <CreateEvent />;
+      case "participants":
+        return <Participants />;
+      case "analytics":
+        return <Analytics />;
+      case "profile":
+        return <Profile />;
+      case "settings":
+        return <Settings />;
+      default:
+        return null;
     }
   };
 
