@@ -24,8 +24,7 @@ const HackathonDetails = ({ hackathon, onBack, onEdit, onDelete }) => {
         </Button>
         <div className="flex gap-3">
           <Button
-            variant="outline"
-            className="border-white/20 text-white hover:bg-white/10"
+            className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-lg shadow-blue-500/20"
             onClick={onEdit}
           >
             <MdEdit className="w-4 h-4 mr-2" />
