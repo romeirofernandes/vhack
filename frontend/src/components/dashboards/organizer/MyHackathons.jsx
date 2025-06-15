@@ -85,7 +85,7 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
   return (
-    <Card className="bg-white/5 border-white/10">
+    <Card className="bg-zinc-950 border-white/10">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
@@ -108,7 +108,7 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
           {/* Custom Calendar */}
           <div className="space-y-4">
             {/* Calendar Header */}
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
+            <div className="flex items-center justify-between p-4 bg-zinc-950 rounded-lg border border-white/10">
               <Button
                 variant="ghost"
                 size="sm"
@@ -129,11 +129,11 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
             </div>
 
             {/* Calendar Grid */}
-            <div className="bg-white/5 rounded-lg border border-white/10 p-4">
+            <div className="bg-zinc-950 rounded-lg border border-white/10 p-4">
               {/* Week Days Header */}
               <div className="grid grid-cols-7 gap-1 mb-2">
                 {weekDays.map(day => (
-                  <div key={day} className="text-center text-white/60 text-sm font-medium py-2">
+                  <div key={day} className="text-center text-white/70 text-sm font-medium py-2">
                     {day}
                   </div>
                 ))}
@@ -156,9 +156,9 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
                         className={`
                           relative aspect-square p-1 rounded-lg text-sm font-medium transition-all duration-200
                           ${isSelected
-                            ? 'bg-blue-600 text-white ring-2 ring-blue-400'
+                            ? 'bg-blue-600 text-white ring-2 ring-blue-400 shadow-lg'
                             : isToday(date)
-                            ? 'bg-white/20 text-white ring-1 ring-white/30'
+                            ? 'bg-blue-500/30 text-white ring-1 ring-blue-400/50'
                             : isCurrentMonth(date)
                             ? 'text-white hover:bg-white/10'
                             : 'text-white/30 hover:bg-white/5'
@@ -192,7 +192,7 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
             {/* Legend */}
             <div className="flex items-center gap-4 text-xs text-white/70">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-white/20 rounded border border-white/30"></div>
+                <div className="w-3 h-3 bg-blue-500/30 rounded border border-blue-400/50"></div>
                 <span>Today</span>
               </div>
               <div className="flex items-center gap-2">
@@ -225,17 +225,17 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
                     {selectedDateHackathons.map(hackathon => (
                       <div
                         key={hackathon._id}
-                        className="p-4 bg-white/10 rounded-lg border border-white/10 hover:bg-white/15 transition-colors"
+                        className="p-4 bg-zinc-950 rounded-lg border border-white/10 hover:bg-white/5 transition-colors"
                       >
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-medium text-white">{hackathon.title}</h4>
                           <Badge
                             className={`${
                               hackathon.status === "ongoing"
-                                ? "bg-green-900/50 text-green-200"
+                                ? "bg-green-600/80 text-green-100"
                                 : hackathon.status === "draft"
-                                ? "bg-blue-900/50 text-blue-200"
-                                : "bg-gray-900/50 text-gray-200"
+                                ? "bg-blue-600/80 text-blue-100"
+                                : "bg-white/20 text-white"
                             }`}
                           >
                             {hackathon.status}
@@ -267,11 +267,11 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+              <div className="p-4 bg-zinc-950 rounded-lg border border-white/10">
                 <div className="text-2xl font-bold text-white">{hackathons.length}</div>
                 <div className="text-white/70 text-sm">Total Events</div>
               </div>
-              <div className="p-4 bg-white/5 rounded-lg border border-white/10">
+              <div className="p-4 bg-zinc-950 rounded-lg border border-white/10">
                 <div className="text-2xl font-bold text-white">
                   {hackathons.filter(h => h.status === 'ongoing').length}
                 </div>
@@ -307,7 +307,7 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
                   key={hackathon._id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-white/5 rounded-lg border border-white/10 hover:bg-white/10 transition-colors"
+                  className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 bg-zinc-950 rounded-lg border border-white/10 hover:bg-white/5 transition-colors"
                 >
                   <div className="space-y-3 flex-1">
                     <div className="flex items-start justify-between">
@@ -324,10 +324,10 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
                       <Badge
                         className={`${
                           hackathon.status === "ongoing"
-                            ? "bg-green-900/50 text-green-200"
+                            ? "bg-green-600/80 text-green-100"
                             : hackathon.status === "draft"
-                            ? "bg-blue-900/50 text-blue-200"
-                            : "bg-gray-900/50 text-gray-200"
+                            ? "bg-blue-600/80 text-blue-100"
+                            : "bg-white/20 text-white"
                         }`}
                       >
                         {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
@@ -370,7 +370,7 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
                     </Button>
                     <Button
                       onClick={() => navigate(`/organizer/hackathon/${hackathon._id}/allot-judges`)}
-                      className="bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white px-4 py-2 rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-purple-500/20"
+                      className="bg-white text-zinc-950 hover:bg-white/90 px-4 py-2 rounded-lg transition-all duration-200"
                     >
                       Add Judges
                     </Button>

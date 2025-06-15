@@ -85,7 +85,7 @@ const AllotJudges = () => {
         try {
             const idToken = await user.getIdToken();
             const response = await axios.get(
-                `${import.meta.env.VITE_API_URL}/users/search?email=${searchQuery}&role=judge`,
+                `${import.meta.env.VITE_API_URL}/judge/search?email=${searchQuery}&role=judge`,
                 {
                     headers: {
                         Authorization: `Bearer ${idToken}`,
@@ -132,7 +132,7 @@ const AllotJudges = () => {
         try {
             const idToken = await user.getIdToken();
             const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/users/hackathon/${hackathonId}/invite`,
+                `${import.meta.env.VITE_API_URL}/judge/hackathon/${hackathonId}/invite`,
                 { judgeId },
                 {
                     headers: {
@@ -189,7 +189,7 @@ const AllotJudges = () => {
             try {
                 const idToken = await user.getIdToken();
                 const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/users/judges`,
+                    `${import.meta.env.VITE_API_URL}/judge`,
                     {
                         headers: {
                             Authorization: `Bearer ${idToken}`,

@@ -21,6 +21,7 @@ const Dashboard = () => {
     return <Navigate to="/login" replace />;
   }
   console.log("User role:", user.role);
+  console.log("User data:", user);
   if (!user.role) {
     return <Navigate to="/select-role" replace />;
   }
