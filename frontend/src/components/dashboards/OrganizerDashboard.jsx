@@ -25,7 +25,7 @@ import { useNavigate } from "react-router-dom";
 import Profile from "./organizer/Profile";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import OrganizerProfile from "@/pages/OrganizerProfile";
+import OrganizerProfile from "@/pages/CreateOrganizerProfile";
 
 const OrganizerDashboard = () => {
   const [open, setOpen] = useState(false);
