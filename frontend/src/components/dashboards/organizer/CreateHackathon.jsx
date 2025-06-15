@@ -68,7 +68,7 @@ const CreateHackathon = () => {
         try {
             const idToken = await user.getIdToken();
             const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/api/hackathons/create`,
+                `${import.meta.env.VITE_API_URL}/hackathons/create`,
                 formData,
                 {
                     headers: {

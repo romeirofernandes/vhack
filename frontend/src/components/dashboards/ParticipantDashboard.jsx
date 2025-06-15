@@ -95,7 +95,7 @@ const ParticipantDashboard = () => {
       console.log("Fetching dashboard with token:", idToken ? "Token exists" : "No token");
 
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/dashboard/participant`,
+        `${import.meta.env.VITE_API_URL}/participant/dashboard`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -116,7 +116,7 @@ const ParticipantDashboard = () => {
           try {
             const freshToken = await user.getIdToken(true);
             const retryResponse = await fetch(
-              `${import.meta.env.VITE_API_URL}/dashboard/participant`,
+              `${import.meta.env.VITE_API_URL}/participant/dashboard`,
               {
                 headers: {
                   Authorization: `Bearer ${freshToken}`,
@@ -161,7 +161,7 @@ const ParticipantDashboard = () => {
 
       const idToken = await user.getIdToken();
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/dashboard/hackathons`,
+        `${import.meta.env.VITE_API_URL}/participant/hackathons`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -199,7 +199,7 @@ const ParticipantDashboard = () => {
       const response = await fetch(
         `${
           import.meta.env.VITE_API_URL
-        }/dashboard/hackathons/${hackathonId}/join`,
+        }/participant/hackathons/${hackathonId}/join`,
         {
           method: "POST",
           headers: {

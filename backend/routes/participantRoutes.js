@@ -7,7 +7,7 @@ const authMiddleware = require("../middleware/auth");
 router.use(authMiddleware);
 
 // Dashboard routes
-router.get("/participant", participantController.getParticipantDashboard);
+router.get("/dashboard", participantController.getParticipantDashboard);
 router.get("/hackathons", participantController.getHackathons);
 router.post("/hackathons/:hackathonId/join", participantController.joinHackathon);
 

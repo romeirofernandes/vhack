@@ -128,7 +128,7 @@ const JudgeDashboard = () => {
     try {
       const idToken = await user.getIdToken();
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/users/judge/invitations`,
+        `${import.meta.env.VITE_API_URL}/judge/invitations`,
         {
           headers: { Authorization: `Bearer ${idToken}` }
         }
@@ -148,7 +148,7 @@ const JudgeDashboard = () => {
     try {
       const idToken = await user.getIdToken();
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/users/judge/invitations/${invitationId}/respond`,
+        `${import.meta.env.VITE_API_URL}/judge/invitations/${invitationId}/respond`,
         { response },
         {
           headers: {
