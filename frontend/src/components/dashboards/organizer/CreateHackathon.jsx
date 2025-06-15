@@ -9,13 +9,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CreateHackathon = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
-        organizerName: '',
+        organizerName: user?.displayName || '',
         description: '',
         theme: 'Other',
         bannerImageUrl: '',
@@ -64,10 +66,16 @@ const CreateHackathon = () => {
         setLoading(true);
 
         try {
+            const idToken = await user.getIdToken();
             const response = await axios.post(
                 `${import.meta.env.VITE_API_URL}/api/hackathons/create`,
                 formData,
-                { withCredentials: true }
+                {
+                    headers: {
+                        Authorization: `Bearer ${idToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
             );
 
             if (response.data.success) {
@@ -75,6 +83,7 @@ const CreateHackathon = () => {
                 navigate('/organizer/dashboard');
             }
         } catch (error) {
+            console.error('Error creating hackathon:', error);
             toast.error(error.response?.data?.message || 'Error creating hackathon');
         } finally {
             setLoading(false);

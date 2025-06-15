@@ -39,7 +39,7 @@ app.use("/projects", projectRoutes);
 app.use("/skills", skillsRoutes);
 app.use("/achievements", achievementRoutes);
 app.use("/upload", uploadRoutes);
-app.use("/hackathons", hackathonRoutes);
+app.use("/api/hackathons", hackathonRoutes);
 app.use('/auth', authRoutes);
 
 app.listen(PORT, () => {

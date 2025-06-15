@@ -1,13 +1,49 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MdAdd, MdChevronLeft, MdChevronRight } from "react-icons/md";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import HackathonDetails from './HackathonDetails';
 
-const MyHackathons = ({ hackathons, loading, navigate }) => {
+const MyHackathons = ({ navigate }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
+  const [hackathons, setHackathons] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedHackathon, setSelectedHackathon] = useState(null);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    fetchOrganizerHackathons();
+  }, [user]);
+
+  const fetchOrganizerHackathons = async () => {
+    try {
+      setLoading(true);
+      const idToken = await user.getIdToken();
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/hackathons/organizer/hackathons`,
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setHackathons(response.data.data.hackathons);
+      }
+    } catch (error) {
+      console.error('Error fetching hackathons:', error);
+      toast.error('Failed to load hackathons');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Get calendar data
   const { days, monthYear } = useMemo(() => {
@@ -84,6 +120,51 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+  const handleViewDetails = (hackathon) => {
+    setSelectedHackathon(hackathon);
+  };
+
+  const handleBack = () => {
+    setSelectedHackathon(null);
+  };
+
+  const handleEdit = (hackathon) => {
+    navigate(`/organizer/hackathon/${hackathon._id}/edit`);
+  };
+
+  const handleDelete = async (hackathon) => {
+    if (window.confirm('Are you sure you want to delete this hackathon?')) {
+      try {
+        const idToken = await user.getIdToken();
+        await axios.delete(
+          `${import.meta.env.VITE_API_URL}/api/hackathons/${hackathon._id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${idToken}`
+            }
+          }
+        );
+        toast.success('Hackathon deleted successfully');
+        fetchOrganizerHackathons();
+        setSelectedHackathon(null);
+      } catch (error) {
+        console.error('Error deleting hackathon:', error);
+        toast.error('Failed to delete hackathon');
+      }
+    }
+  };
+
+  if (selectedHackathon) {
+    return (
+      <HackathonDetails
+        hackathon={selectedHackathon}
+        onBack={handleBack}
+        onEdit={() => handleEdit(selectedHackathon)}
+        onDelete={() => handleDelete(selectedHackathon)}
+      />
+    );
+  }
+
   return (
     <Card className="bg-zinc-950 border-white/10">
       <CardHeader>
@@ -91,7 +172,7 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
           <div>
             <CardTitle className="text-white">My Hackathons</CardTitle>
             <p className="text-white/70 text-sm">
-              Calendar view of your hackathons
+              Manage your hackathon events
             </p>
           </div>
           <Button
@@ -249,7 +330,7 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
                             size="sm"
                             variant="outline"
                             className="border-white/20 text-white hover:bg-white/10"
-                            onClick={() => navigate(`/organizer/hackathon/${hackathon._id}`)}
+                            onClick={() => handleViewDetails(hackathon)}
                           >
                             View Details
                           </Button>
@@ -276,6 +357,91 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
                   {hackathons.filter(h => h.status === 'ongoing').length}
                 </div>
                 <div className="text-white/70 text-sm">Active Now</div>
+              </div>
+            </div>
+
+            {/* Hackathon Details Cards */}
+            <div className="mt-8">
+              <h3 className="text-white font-semibold text-lg mb-4">Hackathon Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {hackathons.map((hackathon) => (
+                  <motion.div
+                    key={hackathon._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-zinc-950 rounded-lg border border-white/10 p-6 hover:bg-white/5 transition-all duration-200"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h4 className="text-xl font-semibold text-white mb-2">{hackathon.title}</h4>
+                        <Badge
+                          className={`${
+                            hackathon.status === "ongoing"
+                              ? "bg-green-600/80 text-green-100"
+                              : hackathon.status === "draft"
+                              ? "bg-blue-600/80 text-blue-100"
+                              : "bg-white/20 text-white"
+                          }`}
+                        >
+                          {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-white/50 text-sm mb-1">Description</p>
+                        <p className="text-white/80 text-sm line-clamp-2">{hackathon.description}</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-white/50 text-sm mb-1">Theme</p>
+                          <p className="text-white/80 text-sm capitalize">{hackathon.theme}</p>
+                        </div>
+                        <div>
+                          <p className="text-white/50 text-sm mb-1">Team Size</p>
+                          <p className="text-white/80 text-sm">
+                            {hackathon.teamSettings.minTeamSize} - {hackathon.teamSettings.maxTeamSize}
+                            {hackathon.teamSettings.allowSolo && " (Solo allowed)"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-white/50 text-sm mb-1">Start Date</p>
+                          <p className="text-white/80 text-sm">
+                            {new Date(hackathon.timelines.hackathonStart).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-white/50 text-sm mb-1">End Date</p>
+                          <p className="text-white/80 text-sm">
+                            {new Date(hackathon.timelines.hackathonEnd).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 flex gap-3">
+                        <Button
+                          size="sm"
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                          onClick={() => handleViewDetails(hackathon)}
+                        >
+                          View Details
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-purple-600 text-white hover:bg-purple-700"
+                          onClick={() => navigate(`/organizer/hackathon/${hackathon._id}/allot-judges`)}
+                        >
+                          Manage Judges
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </div>
           </div>
@@ -364,7 +530,7 @@ const MyHackathons = ({ hackathons, loading, navigate }) => {
                       size="sm"
                       variant="outline"
                       className="border-white/20 text-white hover:bg-white/10"
-                      onClick={() => navigate(`/organizer/hackathon/${hackathon._id}`)}
+                      onClick={() => handleViewDetails(hackathon)}
                     >
                       View Details
                     </Button>

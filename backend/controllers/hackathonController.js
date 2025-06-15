@@ -1,9 +1,11 @@
 const Hackathon = require('../models/Hackathon');
+const User = require('../models/User');
 
 // Get all hackathons
 exports.getAllHackathons = async (req, res) => {
     try {
         const hackathons = await Hackathon.find()
+            .populate('organizerId', 'displayName email photoURL')
             .sort({ createdAt: -1 }); // Sort by newest first
 
         // Calculate statistics
@@ -46,10 +48,14 @@ exports.createHackathon = async (req, res) => {
             prizes
         } = req.body;
 
+        // Get organizer ID from authenticated user
+        const organizerId = req.user._id;
+
         // Create new hackathon instance
         const hackathon = new Hackathon({
             title,
             organizerName,
+            organizerId,
             description,
             theme,
             bannerImageUrl,
@@ -80,16 +86,10 @@ exports.createHackathon = async (req, res) => {
 // Get all hackathons for an organizer
 exports.getOrganizerHackathons = async (req, res) => {
     try {
-        const { organizerName } = req.params;
+        const organizerId = req.user._id;
 
-        if (!organizerName) {
-            return res.status(400).json({
-                success: false,
-                message: 'Organizer name is required'
-            });
-        }
-
-        const hackathons = await Hackathon.find({ organizerName })
+        const hackathons = await Hackathon.find({ organizerId })
+            .populate('organizerId', 'displayName email photoURL')
             .sort({ createdAt: -1 }); // Sort by newest first
 
         // Calculate statistics
@@ -116,7 +116,7 @@ exports.getOrganizerHackathons = async (req, res) => {
             error: error.message
         });
     }
-}; 
+};
 
 exports.getHackathonById = async (req, res) => {
     try {
@@ -153,6 +153,7 @@ exports.getHackathonById = async (req, res) => {
         });
     }
 }
+
 // Update hackathon
 exports.updateHackathon = async (req, res) => {
     try {
