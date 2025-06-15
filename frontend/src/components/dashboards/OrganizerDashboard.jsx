@@ -26,6 +26,8 @@ import Profile from "./organizer/Profile";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import OrganizerProfile from "@/pages/CreateOrganizerProfile";
+import { signOut } from "firebase/auth";
+import { auth } from "@/config/firebase";// Adjust the import based on your firebase config file structure
 
 const OrganizerDashboard = () => {
   const [open, setOpen] = useState(false);

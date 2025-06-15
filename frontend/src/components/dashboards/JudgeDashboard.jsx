@@ -28,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import JudgeInvitations from "./judges/JudgeInvitation";
+import Profile from "./judges/Profile";
 
 const JudgeDashboard = () => {
   const [open, setOpen] = useState(false);
@@ -438,7 +439,7 @@ const JudgeDashboard = () => {
       case "hackathons":
         return renderComingSoon("Hackathons", "Your judging hackathons overview coming soon!");
       case "profile":
-        return renderComingSoon("Profile", "Judge profile management coming soon!");
+        return <Profile/>
       case "settings":
         return renderComingSoon("Settings", "Judging preferences and settings coming soon!");
       default:

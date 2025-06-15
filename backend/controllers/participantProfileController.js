@@ -28,6 +28,7 @@ const profileController = {
 
   // Update user profile
   async updateProfile(req, res) {
+    console.log("Update profile request body:", req.body);
     try {
       const {
         displayName,
@@ -36,6 +37,7 @@ const profileController = {
         bio,
         location,
         company,
+        organization,
         jobTitle,
         experience,
         skills,
