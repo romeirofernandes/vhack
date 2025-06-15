@@ -92,6 +92,9 @@ const profileController = {
         organization: typeof req.body.organization !== "undefined"
           ? req.body.organization
           : (currentUser.profile?.organization || ""),
+          about: typeof req.body.about !== "undefined"
+          ? req.body.about
+          : (currentUser.profile?.about || ""),
         yearsOfExperience: typeof req.body.yearsOfExperience !== "undefined"
           ? req.body.yearsOfExperience
           : (currentUser.profile?.yearsOfExperience || ""),

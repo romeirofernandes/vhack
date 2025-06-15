@@ -67,6 +67,7 @@ const userSchema = new mongoose.Schema(
       achievements: [achievementSchema],
       expertise: [String],
       organization: String,
+      about: String,
       yearsOfExperience: String,
       website: String,
       position: String,
