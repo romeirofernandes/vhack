@@ -10,7 +10,7 @@ const skillsRoutes = require("./routes/skillsRoutes");
 const achievementRoutes = require("./routes/achievementRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const hackathonRoutes = require("./routes/hackathonRoutes");
-const userRoutes = require('./routes/userRoutes');
+const userRoutes = require('./routes/judgeRoutes');
 
 dotenv.config();
 
