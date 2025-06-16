@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import HackathonDetails from './HackathonDetails';
+import { TbArrowLeft } from "react-icons/tb";
 
 const MyHackathons = ({ navigate }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -153,12 +154,24 @@ const MyHackathons = ({ navigate }) => {
 
   if (selectedHackathon) {
     return (
-      <HackathonDetails
-        hackathon={selectedHackathon}
-        onBack={handleBack}
-        onEdit={() => handleEdit(selectedHackathon)}
-        onDelete={() => handleDelete(selectedHackathon)}
-      />
+      <div className="min-h-screen bg-zinc-950">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <Button
+            onClick={handleBack}
+            variant="outline"
+            className="mb-6 border-zinc-700 text-white hover:bg-zinc-800 hover:text-white transition-all duration-200"
+          >
+            <TbArrowLeft className="w-4 h-4 mr-2" />
+            Back to My Hackathons
+          </Button>
+          <HackathonDetails
+            hackathon={selectedHackathon}
+            onBack={handleBack}
+            onEdit={() => handleEdit(selectedHackathon)}
+            onDelete={() => handleDelete(selectedHackathon)}
+          />
+        </div>
+      </div>
     );
   }
 
