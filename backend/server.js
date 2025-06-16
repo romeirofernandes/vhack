@@ -12,6 +12,7 @@ const skillsRoutes = require("./routes/skillsRoutes");
 const achievementRoutes = require("./routes/achievementRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const hackathonRoutes = require("./routes/hackathonRoutes");
+const adminRoutes = require('./routes/adminRoutes')
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use("/auth", authRoutes);
 app.use("/participant", participantRoutes);
 app.use("/organizer", organizerRoutes);
 app.use("/judge", judgeRoutes);
+app.use('/api/admin', adminRoutes)
 app.use("/profile", profileRoutes);
 app.use("/projects", projectRoutes);
 app.use("/skills", skillsRoutes);

@@ -6,24 +6,24 @@ const userController = {
   // Get all judges
   async getAllJudges(req, res) {
     try {
-      console.log('Fetching all judges...');
-      const judges = await User.find({ role: 'judge' })
-        .select('-password')
+      console.log("Fetching all judges...");
+      const judges = await User.find({ role: "judge" })
+        .select("-password")
         .lean();
 
       console.log(`Found ${judges.length} judges`);
-      
+
       res.status(200).json({
         success: true,
         judges: judges,
-        count: judges.length
+        count: judges.length,
       });
     } catch (error) {
-      console.error('Error fetching judges:', error);
+      console.error("Error fetching judges:", error);
       res.status(500).json({
         success: false,
-        error: 'Error fetching judges',
-        details: error.message
+        error: "Error fetching judges",
+        details: error.message,
       });
     }
   },
@@ -42,7 +42,7 @@ const userController = {
 
       // Build search query
       const query = {
-        email: { $regex: email, $options: 'i' }, // Case-insensitive search
+        email: { $regex: email, $options: "i" }, // Case-insensitive search
       };
 
       // Add role filter if specified
@@ -51,7 +51,7 @@ const userController = {
       }
 
       const users = await User.find(query)
-        .select('_id email displayName role profile')
+        .select("_id email displayName role profile")
         .limit(10);
 
       if (users.length === 0) {
@@ -101,7 +101,7 @@ const userController = {
       }
 
       // Check if judge exists and is actually a judge
-      const judge = await User.findOne({ _id: judgeId, role: 'judge' });
+      const judge = await User.findOne({ _id: judgeId, role: "judge" });
       if (!judge) {
         return res.status(404).json({
           success: false,
@@ -137,86 +137,90 @@ const userController = {
 
   // Add these methods to your userController.js
 
-// Get pending hackathon invitations for a judge
-async getJudgeInvitations(req, res) {
-  try {
-    const userId = req.user._id;
-    
-    // Get all hackathons where this user is in invitedJudges array but not in judges array
-    const hackathons = await Hackathon.find({
-      invitedJudges: userId,
-      judges: { $ne: userId }
-    }).select('title organizerName theme timelines');
-    
-    const invitations = hackathons.map(hackathon => ({
-      _id: new mongoose.Types.ObjectId(),
-      hackathon,
-      invitedAt: hackathon._id.getTimestamp() // Use document creation time as a fallback
-    }));
-    
-    res.status(200).json({
-      success: true,
-      invitations
-    });
-  } catch (error) {
-    console.error('Error fetching judge invitations:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch invitations'
-    });
-  }
-},
+  // Get pending hackathon invitations for a judge
+  async getJudgeInvitations(req, res) {
+    try {
+      const userId = req.user._id;
 
-// Respond to a hackathon invitation (accept or decline)
-async respondToInvitation(req, res) {
-  try {
-    const { hackathonId } = req.params;
-    const { accept } = req.body;
-    const userId = req.user._id;
-    
-    // Find the hackathon
-    const hackathon = await Hackathon.findById(hackathonId);
-    if (!hackathon) {
-      return res.status(404).json({
+      // Get all hackathons where this user is in invitedJudges array but not in judges array
+      const hackathons = await Hackathon.find({
+        invitedJudges: userId,
+        judges: { $ne: userId },
+      }).select("title organizerName theme timelines");
+
+      const invitations = hackathons.map((hackathon) => ({
+        _id: new mongoose.Types.ObjectId(),
+        hackathon,
+        invitedAt: hackathon._id.getTimestamp(), // Use document creation time as a fallback
+      }));
+
+      res.status(200).json({
+        success: true,
+        invitations,
+      });
+    } catch (error) {
+      console.error("Error fetching judge invitations:", error);
+      res.status(500).json({
         success: false,
-        error: 'Hackathon not found'
+        error: "Failed to fetch invitations",
       });
     }
-    
-    // Check if the user is actually invited
-    if (!hackathon.invitedJudges.includes(userId)) {
-      return res.status(400).json({
-        success: false,
-        error: 'You are not invited to this hackathon'
-      });
-    }
-    
-    if (accept) {
-      // Add to judges array if not already there
-      if (!hackathon.judges.includes(userId)) {
-        hackathon.judges.push(userId);
+  },
+
+  // Respond to a hackathon invitation (accept or decline)
+  async respondToInvitation(req, res) {
+    try {
+      const { hackathonId } = req.params;
+      const { accept } = req.body;
+      const userId = req.user._id;
+
+      // Find the hackathon
+      const hackathon = await Hackathon.findById(hackathonId);
+      if (!hackathon) {
+        return res.status(404).json({
+          success: false,
+          error: "Hackathon not found",
+        });
       }
+
+      // Check if the user is actually invited
+      if (!hackathon.invitedJudges.includes(userId)) {
+        return res.status(400).json({
+          success: false,
+          error: "You are not invited to this hackathon",
+        });
+      }
+
+      if (accept) {
+        // Add to judges array if not already there
+        if (!hackathon.judges.includes(userId)) {
+          hackathon.judges.push(userId);
+        }
+      }
+
+      // Remove from invitedJudges array either way
+      hackathon.invitedJudges = hackathon.invitedJudges.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+
+      await hackathon.save(); // This will trigger the pre-save middleware
+
+      // Check if hackathon is now ready for approval
+      await hackathon.checkForApproval();
+
+      res.status(200).json({
+        success: true,
+        message: accept ? "Invitation accepted" : "Invitation declined",
+        hackathonStatus: hackathon.status, // Return the updated status
+      });
+    } catch (error) {
+      console.error("Error responding to invitation:", error);
+      res.status(500).json({
+        success: false,
+        error: "Failed to process your response",
+      });
     }
-    
-    // Remove from invitedJudges array either way
-    hackathon.invitedJudges = hackathon.invitedJudges.filter(
-      id => id.toString() !== userId.toString()
-    );
-    
-    await hackathon.save();
-    
-    res.status(200).json({
-      success: true,
-      message: accept ? 'Invitation accepted' : 'Invitation declined'
-    });
-  } catch (error) {
-    console.error('Error responding to invitation:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to process your response'
-    });
-  }
-}
+  },
 };
 
-module.exports = userController; 
+module.exports = userController;

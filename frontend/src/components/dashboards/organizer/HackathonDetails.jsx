@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { MdArrowBack, MdEdit, MdDelete } from "react-icons/md";
+import { useNavigate } from 'react-router-dom';
 
 const HackathonDetails = ({ hackathon, onBack, onEdit, onDelete }) => {
+  const navigate = useNavigate()
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}

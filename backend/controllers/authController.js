@@ -1,5 +1,6 @@
 const admin = require("../config/firebase-admin");
 const User = require("../models/User");
+const jwt = require("jsonwebtoken");
 
 const authController = {
   // Register method
@@ -256,6 +257,66 @@ const authController = {
       res.status(500).json({
         success: false,
         error: "Failed to update profile",
+      });
+    }
+  },
+
+  // Verify token method
+  async verifyToken(req, res) {
+    try {
+      const idToken = req.headers.authorization?.split(" ")[1];
+
+      if (!idToken) {
+        return res.status(401).json({
+          success: false,
+          message: "No token provided",
+        });
+      }
+
+      // Verify Firebase token
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      const { uid, email } = decodedToken;
+
+      // Find or create user in your database
+      let user = await User.findOne({ firebaseUid: uid });
+
+      if (!user) {
+        // Create new user if doesn't exist
+        user = new User({
+          firebaseUid: uid,
+          email: email,
+          name: decodedToken.name || email.split("@")[0],
+          role: "participant", // Default role
+        });
+        await user.save();
+      }
+
+      // Generate JWT token for your backend
+      const token = jwt.sign(
+        {
+          id: user._id,
+          email: user.email,
+          role: user.role,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      res.json({
+        success: true,
+        token,
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+      });
+    } catch (error) {
+      console.error("Token verification error:", error);
+      res.status(401).json({
+        success: false,
+        message: "Invalid token",
       });
     }
   },

@@ -29,6 +29,7 @@ import { auth } from "../../config/firebase";
 import Profile from "./participants/Profile";
 import Projects from "./participants/Projects";
 import Achievements from "./participants/Achievements";
+import Hackathons from "./participants/Hackathons";
 
 const ParticipantDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -439,14 +440,7 @@ const ParticipantDashboard = () => {
       case "dashboard":
         return renderDashboardContent();
       case "hackathons":
-        return renderHackathonsContent();
-      case "teams":
-        return (
-          <ComingSoon
-            title="Teams"
-            description="Team management and collaboration tools coming soon!"
-          />
-        );
+        return <Hackathons />;
       case "projects":
         return <Projects />;
       case "achievements":
@@ -583,118 +577,6 @@ const StatsCard = ({ title, value, icon: Icon, color, trend }) => (
       <div className="flex items-end justify-between">
         <div className="text-2xl font-bold text-white">{value}</div>
         {trend && <div className="text-xs text-white/50">{trend}</div>}
-      </div>
-    </CardContent>
-  </Card>
-);
-
-// Hackathon Card Component
-const HackathonCard = ({ hackathon, onJoin }) => (
-  <Card className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors group">
-    <CardHeader>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <CardTitle className="text-white text-lg mb-2 group-hover:text-white/90 transition-colors">
-            {hackathon.title}
-          </CardTitle>
-          <p className="text-white/70 text-sm line-clamp-2">
-            {hackathon.description}
-          </p>
-        </div>
-        <Badge
-          className={`ml-3 ${
-            hackathon.status === "upcoming"
-              ? "bg-blue-900/50 text-blue-200"
-              : hackathon.status === "ongoing"
-              ? "bg-green-900/50 text-green-200"
-              : "bg-gray-900/50 text-gray-200"
-          }`}
-        >
-          {hackathon.status}
-        </Badge>
-      </div>
-    </CardHeader>
-    <CardContent className="space-y-4">
-      {/* Dates */}
-      <div className="space-y-2 text-sm">
-        <div className="flex justify-between text-white/60">
-          <span>Start:</span>
-          <span>{new Date(hackathon.startDate).toLocaleDateString()}</span>
-        </div>
-        <div className="flex justify-between text-white/60">
-          <span>End:</span>
-          <span>{new Date(hackathon.endDate).toLocaleDateString()}</span>
-        </div>
-        <div className="flex justify-between text-white/60">
-          <span>Participants:</span>
-          <span>
-            {hackathon.participantCount}
-            {hackathon.maxParticipants ? `/${hackathon.maxParticipants}` : ""}
-          </span>
-        </div>
-      </div>
-
-      {/* Prizes */}
-      {hackathon.prizes && hackathon.prizes.length > 0 && (
-        <div className="text-sm">
-          <p className="text-white/70 mb-1">Prizes:</p>
-          <p className="text-green-400 font-medium">
-            $
-            {hackathon.prizes
-              .reduce((total, prize) => total + prize.amount, 0)
-              .toLocaleString()}
-            + in total
-          </p>
-        </div>
-      )}
-
-      {/* Themes */}
-      {hackathon.themes && hackathon.themes.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {hackathon.themes.slice(0, 3).map((theme, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="bg-white/10 text-white/80 text-xs"
-            >
-              {theme}
-            </Badge>
-          ))}
-          {hackathon.themes.length > 3 && (
-            <Badge
-              variant="secondary"
-              className="bg-white/10 text-white/80 text-xs"
-            >
-              +{hackathon.themes.length - 3} more
-            </Badge>
-          )}
-        </div>
-      )}
-
-      {/* Action Button */}
-      <div className="pt-2">
-        {hackathon.isJoined ? (
-          <Button
-            disabled
-            className="w-full bg-green-900/50 text-green-200 cursor-not-allowed"
-          >
-            ✓ Joined
-          </Button>
-        ) : hackathon.canJoin ? (
-          <Button
-            onClick={onJoin}
-            className="w-full bg-white text-zinc-950 hover:bg-white/90"
-          >
-            Join Hackathon
-          </Button>
-        ) : (
-          <Button
-            disabled
-            className="w-full bg-gray-900/50 text-gray-400 cursor-not-allowed"
-          >
-            Registration Closed
-          </Button>
-        )}
       </div>
     </CardContent>
   </Card>

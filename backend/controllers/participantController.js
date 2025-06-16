@@ -229,14 +229,17 @@ async function getRecentActivity(userId) {
       .populate("hackathon", "title");
 
     recentTeams.forEach((team) => {
-      activities.push({
-        type: "team",
-        message: `${team.leader.equals(userId) ? "Created" : "Joined"} team "${
-          team.name
-        }" for ${team.hackathon.title}`,
-        timestamp: team.createdAt,
-        link: `/teams/${team._id}`,
-      });
+      // Add null check for hackathon
+      if (team.hackathon && team.hackathon.title) {
+        activities.push({
+          type: "team",
+          message: `${
+            team.leader.equals(userId) ? "Created" : "Joined"
+          } team "${team.name}" for ${team.hackathon.title}`,
+          timestamp: team.createdAt,
+          link: `/teams/${team._id}`,
+        });
+      }
     });
 
     // Get recent project submissions
@@ -249,13 +252,16 @@ async function getRecentActivity(userId) {
       .populate("hackathon", "title");
 
     recentProjects.forEach((project) => {
-      activities.push({
-        type: "project",
-        message: `Submitted project "${project.title}" to ${project.hackathon.title}`,
-        timestamp: project.submittedAt,
-        link: `/projects/${project._id}`,
-      });
-    });
+      // Add null check for hackathon and project
+      if (project && project.hackathon && project.hackathon.title) {
+        activities.push({
+          type: "project",
+          message: `Submitted project "${project.title}" to ${project.hackathon.title}`,
+          timestamp: project.submittedAt,
+          link: `/projects/${project._id}`,
+        });
+      }
+    })
 
     // Sort by timestamp and return latest 5
     return activities

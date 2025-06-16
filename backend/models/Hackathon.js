@@ -13,8 +13,8 @@ const hackathonSchema = new mongoose.Schema({
   },
   organizerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: "User",
+    required: true,
   },
   description: {
     type: String,
@@ -22,7 +22,14 @@ const hackathonSchema = new mongoose.Schema({
   },
   theme: {
     type: String,
-    enum: ["AI", "Fintech", "Healthcare", "Education", "Sustainability", "Other"],
+    enum: [
+      "AI",
+      "Fintech",
+      "Healthcare",
+      "Education",
+      "Sustainability",
+      "Other",
+    ],
     default: "Other",
   },
   bannerImageUrl: {
@@ -85,18 +92,24 @@ const hackathonSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["draft", "published", "ongoing", "completed"],
+    enum: ["draft", "pending_approval", "published", "cancelled"],
     default: "draft",
   },
-  invitedJudges: [{ // Add this field
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  }],
-  
-  judges: [{ // Add this field for accepted judges
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  }],
+  invitedJudges: [
+    {
+      // Add this field
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+
+  judges: [
+    {
+      // Add this field for accepted judges
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
@@ -105,11 +118,58 @@ const hackathonSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  approvedAt: {
+    type: Date,
+  },
+  approvedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  rejectedAt: {
+    type: Date,
+  },
+  rejectedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  rejectionReason: {
+    type: String,
+  },
 });
 
 // Update the updatedAt timestamp before saving
 hackathonSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
+  next();
+});
+
+// Method to check if hackathon is ready for approval
+hackathonSchema.methods.checkForApproval = function () {
+  // Check if hackathon has at least one judge and all invited judges have accepted
+  const hasJudges = this.judges && this.judges.length > 0;
+  const noInvitedJudges =
+    !this.invitedJudges || this.invitedJudges.length === 0;
+
+  if (hasJudges && noInvitedJudges && this.status === "draft") {
+    this.status = "pending_approval";
+    return this.save();
+  }
+
+  return Promise.resolve(this);
+};
+
+// Add a middleware to automatically check for approval when judges array is modified
+hackathonSchema.pre("save", function (next) {
+  if (this.isModified("judges") || this.isModified("invitedJudges")) {
+    // Check if all judges have accepted (no pending invitations)
+    const hasJudges = this.judges && this.judges.length > 0;
+    const noInvitedJudges =
+      !this.invitedJudges || this.invitedJudges.length === 0;
+
+    if (hasJudges && noInvitedJudges && this.status === "draft") {
+      this.status = "pending_approval";
+    }
+  }
   next();
 });
 

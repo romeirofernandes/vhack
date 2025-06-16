@@ -1,396 +1,316 @@
 import React, { useState, useEffect } from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import {
-  MdDashboard,
-  MdSettings,
-  MdPerson,
-  MdGroup,
-  MdCalendarToday,
-  MdSecurity,
-  MdBarChart,
-  MdLogout,
-} from "react-icons/md";
 import { motion } from "framer-motion";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
-const ADMIN_PASSWORD = "vhack2025admin"; 
+  Trophy,
+  Clock,
+  CheckCircle,
+  FileText,
+  Users,
+  Activity,
+  LogOut,
+} from "lucide-react";
+import { toast } from "react-hot-toast";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth"; 
+import { auth } from "../../config/firebase"; 
+import PendingHackathons from "./admin/PendingHackathons";
 
 const AdminDashboard = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [open, setOpen] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
+  const { user } = useAuth(); 
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if admin is already authenticated in this session
-    const adminAuth = sessionStorage.getItem("vhack_admin_auth");
-    if (adminAuth === "true") {
-      setIsAuthenticated(true);
+    if (user && user.role === "admin") {
+      fetchDashboardData();
     }
-  }, []);
+  }, [user]);
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true);
-      sessionStorage.setItem("vhack_admin_auth", "true");
-      setError("");
-    } else {
-      setError("Invalid password");
+  // FIX THE LOGOUT FUNCTION
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate("/");
+      toast.success("Logged out successfully");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to logout");
     }
   };
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    sessionStorage.removeItem("vhack_admin_auth");
+  const fetchDashboardData = async () => {
+    try {
+      if (!user) {
+        toast.error("User not authenticated");
+        return;
+      }
+
+      const idToken = await user.getIdToken();
+      const response = await fetch(
+        "http://localhost:8000/api/admin/dashboard",
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 401) {
+        toast.error("Authentication failed. Please login again.");
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch dashboard data");
+      }
+
+      const data = await response.json();
+      setDashboardData(data);
+    } catch (error) {
+      toast.error("Failed to fetch dashboard data");
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (!isAuthenticated) {
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "published":
+        return "bg-green-500/20 text-green-300 border-green-500/30";
+      case "pending_approval":
+        return "bg-yellow-500/20 text-yellow-300 border-yellow-500/30";
+      case "draft":
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
+      default:
+        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md bg-white/5 border-white/10">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl text-white">Admin Access</CardTitle>
-            <CardDescription className="text-white/70">
-              Enter the admin password to continue
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {error && (
-              <Alert className="mb-4 bg-red-900/20 border-red-800/50">
-                <AlertDescription className="text-red-200">
-                  {error}
-                </AlertDescription>
-              </Alert>
-            )}
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-white">
-                  Password
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter admin password"
-                  className="bg-white/5 border-white/20 text-white placeholder:text-white/40"
-                  required
-                />
-              </div>
-              <Button
-                type="submit"
-                className="w-full bg-white text-zinc-950 hover:bg-white/90"
-              >
-                Access Dashboard
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-zinc-950 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  const links = [
-    {
-      label: "Dashboard",
-      href: "#",
-      icon: <MdDashboard className="text-white/70 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "User Management",
-      href: "#",
-      icon: <MdGroup className="text-white/70 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Hackathons",
-      href: "#",
-      icon: <MdCalendarToday className="text-white/70 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Analytics",
-      href: "#",
-      icon: <MdBarChart className="text-white/70 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Security",
-      href: "#",
-      icon: <MdSecurity className="text-white/70 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Settings",
-      href: "#",
-      icon: <MdSettings className="text-white/70 h-5 w-5 flex-shrink-0" />,
-    },
-    {
-      label: "Logout",
-      href: "#",
-      icon: <MdLogout className="text-white/70 h-5 w-5 flex-shrink-0" />,
-      onClick: handleLogout,
-    },
-  ];
-
-  const platformStats = {
-    totalUsers: 12847,
-    totalHackathons: 156,
-    activeEvents: 8,
-    totalSubmissions: 3421,
-    revenueThisMonth: 48500,
-    growthRate: 23.5,
-  };
-
-  const recentActivity = [
-    {
-      type: "user",
-      message: "New user registered: john.doe@email.com",
-      time: "5 min ago",
-    },
-    {
-      type: "hackathon",
-      message: "AI Hackathon 2025 published by TechCorp",
-      time: "12 min ago",
-    },
-    {
-      type: "submission",
-      message: "Project 'EcoTracker' submitted to Climate Tech Challenge",
-      time: "18 min ago",
-    },
-    {
-      type: "payment",
-      message: "Premium subscription activated by InnovateLab",
-      time: "25 min ago",
-    },
-  ];
-
   return (
-    <div className="bg-zinc-950 min-h-screen flex">
-      <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            <Logo />
-            <div className="mt-8 flex flex-col gap-2">
-              {links.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
-              ))}
-            </div>
-          </div>
-          <div>
-            <SidebarLink
-              link={{
-                label: "Admin User",
-                href: "#",
-                icon: (
-                  <div className="h-7 w-7 flex-shrink-0 rounded-full bg-red-600 flex items-center justify-center">
-                    <MdSecurity className="h-4 w-4 text-white" />
-                  </div>
-                ),
-              }}
-            />
-          </div>
-        </SidebarBody>
-      </Sidebar>
-
-      <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+    <div className="min-h-screen bg-zinc-950 text-white">
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
         {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-          <p className="text-white/70">Platform overview and management</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-between items-center"
+        >
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              Admin Dashboard
+            </h1>
+            <p className="text-gray-400 mt-2">
+              Manage hackathons and oversee platform activity
+            </p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white hover:bg-white/10 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Logout
+          </button>
+        </motion.div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Total Users
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {platformStats.totalUsers.toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Hackathons
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {platformStats.totalHackathons}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Active Events
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {platformStats.activeEvents}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Submissions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                {platformStats.totalSubmissions.toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Revenue
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                ${platformStats.revenueThisMonth.toLocaleString()}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-white/70">
-                Growth
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">
-                +{platformStats.growthRate}%
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Navigation Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="border-b border-white/10"
+        >
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === "overview"
+                  ? "border-white text-white"
+                  : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab("approvals")}
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors relative ${
+                activeTab === "approvals"
+                  ? "border-white text-white"
+                  : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600"
+              }`}
+            >
+              Pending Approvals
+              {dashboardData?.stats?.pendingApprovals > 0 && (
+                <span className="absolute -top-1 -right-3 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                  {dashboardData.stats.pendingApprovals}
+                </span>
+              )}
+            </button>
+          </nav>
+        </motion.div>
 
-        {/* Management Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Recent Activity</CardTitle>
-              <CardDescription className="text-white/70">
-                Live platform activity feed
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div
-                    className={`w-2 h-2 rounded-full mt-2 ${
-                      activity.type === "user"
-                        ? "bg-blue-400"
-                        : activity.type === "hackathon"
-                        ? "bg-green-400"
-                        : activity.type === "submission"
-                        ? "bg-purple-400"
-                        : "bg-yellow-400"
-                    }`}
-                  ></div>
-                  <div className="flex-1">
-                    <p className="text-sm text-white/80">{activity.message}</p>
-                    <p className="text-xs text-white/50">{activity.time}</p>
+        {/* Tab Content */}
+        {activeTab === "overview" && (
+          <div className="space-y-8">
+            {/* Stats Grid */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            >
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-yellow-500/20 rounded-lg">
+                    <Trophy className="h-6 w-6 text-yellow-400" />
                   </div>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+                <div className="text-3xl font-bold text-white mb-1">
+                  {dashboardData?.stats?.totalHackathons || 0}
+                </div>
+                <p className="text-gray-400 text-sm">Total Hackathons</p>
+              </div>
 
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Quick Actions</CardTitle>
-              <CardDescription className="text-white/70">
-                Common administrative tasks
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                <MdGroup className="w-4 h-4 mr-2" />
-                Moderate Users
-              </Button>
-              <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                <MdCalendarToday className="w-4 h-4 mr-2" />
-                Review Hackathons
-              </Button>
-              <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                <MdBarChart className="w-4 h-4 mr-2" />
-                Generate Reports
-              </Button>
-              <Button className="w-full justify-start bg-white/5 border border-white/20 text-white hover:bg-white/10">
-                <MdSecurity className="w-4 h-4 mr-2" />
-                Security Settings
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-yellow-500/20 rounded-lg">
+                    <Clock className="h-6 w-6 text-yellow-400" />
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-yellow-400 mb-1">
+                  {dashboardData?.stats?.pendingApprovals || 0}
+                </div>
+                <p className="text-gray-400 text-sm">Pending Approvals</p>
+              </div>
 
-        {/* User Overview */}
-        <Card className="bg-white/5 border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white">User Overview</CardTitle>
-            <CardDescription className="text-white/70">
-              Breakdown of users by role
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="text-center p-4 bg-white/5 rounded-lg">
-                <div className="text-2xl font-bold text-white">8,542</div>
-                <Badge className="bg-blue-900/50 text-blue-200 mt-2">
-                  Participants
-                </Badge>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-green-500/20 rounded-lg">
+                    <CheckCircle className="h-6 w-6 text-green-400" />
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-green-400 mb-1">
+                  {dashboardData?.stats?.publishedHackathons || 0}
+                </div>
+                <p className="text-gray-400 text-sm">Published</p>
               </div>
-              <div className="text-center p-4 bg-white/5 rounded-lg">
-                <div className="text-2xl font-bold text-white">1,205</div>
-                <Badge className="bg-green-900/50 text-green-200 mt-2">
-                  Organizers
-                </Badge>
+
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-2 bg-gray-500/20 rounded-lg">
+                    <FileText className="h-6 w-6 text-gray-400" />
+                  </div>
+                </div>
+                <div className="text-3xl font-bold text-white mb-1">
+                  {dashboardData?.stats?.draftHackathons || 0}
+                </div>
+                <p className="text-gray-400 text-sm">Drafts</p>
               </div>
-              <div className="text-center p-4 bg-white/5 rounded-lg">
-                <div className="text-2xl font-bold text-white">3,100</div>
-                <Badge className="bg-purple-900/50 text-purple-200 mt-2">
-                  Judges
-                </Badge>
+            </motion.div>
+
+            {/* Recent Activity */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white/5 border border-white/10 rounded-xl p-6"
+            >
+              <div className="flex items-center mb-6">
+                <Activity className="h-6 w-6 text-blue-400 mr-3" />
+                <h3 className="text-xl font-semibold text-white">
+                  Recent Activity
+                </h3>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+
+              {dashboardData?.recentActivity?.length > 0 ? (
+                <div className="space-y-4">
+                  {dashboardData.recentActivity.map((hackathon) => (
+                    <div
+                      key={hackathon._id}
+                      className="flex items-center justify-between py-4 border-b border-white/10 last:border-b-0"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        <div>
+                          <p className="font-medium text-white">
+                            {hackathon.title}
+                          </p>
+                          <p className="text-sm text-gray-400">
+                            by {hackathon.organizer.name} •{" "}
+                            {formatDate(hackathon.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                          hackathon.status
+                        )}`}
+                      >
+                        {hackathon.status.replace("_", " ")}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Activity className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No recent activity</p>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Quick Actions */}
+            {dashboardData?.stats?.pendingApprovals > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-white/5 border border-white/10 rounded-xl p-6"
+              >
+                <h3 className="text-xl font-semibold text-white mb-4">
+                  Quick Actions
+                </h3>
+                <button
+                  onClick={() => setActiveTab("approvals")}
+                  className="w-full sm:w-auto bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center"
+                >
+                  <Clock className="h-5 w-5 mr-2" />
+                  Review {dashboardData.stats.pendingApprovals} Pending Approval
+                  {dashboardData.stats.pendingApprovals !== 1 ? "s" : ""}
+                </button>
+              </motion.div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "approvals" && <PendingHackathons />}
       </div>
-    </div>
-  );
-};
-
-const Logo = () => {
-  return (
-    <div className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20">
-      <div className="h-5 w-6 bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium text-white whitespace-pre"
-      >
-        VHack Admin
-      </motion.span>
     </div>
   );
 };
