@@ -5,8 +5,8 @@ const uploadController = require("../controllers/uploadController");
 
 const router = express.Router();
 
-// Configure multer for memory storage
-const upload = multer({
+// Configure multer for image uploads
+const uploadImage = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
@@ -31,17 +31,34 @@ const upload = multer({
   },
 });
 
+// Configure multer for PDF uploads
+const uploadPDF = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 25 * 1024 * 1024, // 25MB limit for PDFs
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "application/pdf") {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid file type. Only PDF files are allowed."));
+    }
+  },
+});
+
 // Routes
 router.post(
   "/image",
   authMiddleware,
-  upload.single("image"),
+  uploadImage.single("image"),
   uploadController.uploadImage
 );
 
-// Test route
-router.get("/test", (req, res) => {
-  res.json({ success: true, message: "Upload route is working" });
-});
+router.post(
+  "/pdf",
+  authMiddleware,
+  uploadPDF.single("pdf"),
+  uploadController.uploadPDF
+);
 
 module.exports = router;
