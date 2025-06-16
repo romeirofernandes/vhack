@@ -151,7 +151,7 @@ const TeamDashboard = () => {
         >
           <div className="flex items-center space-x-4">
             <Button
-              onClick={() => navigate("/participant/hackathons")}
+              onClick={() => navigate("/dashboard")}
               variant="outline"
               className="border-white/20 text-white hover:bg-white/10"
             >
