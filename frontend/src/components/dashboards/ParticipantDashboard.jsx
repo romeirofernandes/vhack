@@ -31,6 +31,7 @@ import Projects from "./participants/Projects";
 import Achievements from "./participants/Achievements";
 import Hackathons from "./participants/HackathonDetailsPage";
 import ParticipantHackathons from "./participants/ParticipantHackathons";
+import MyHackathonsAndTeams from "./participants/MyHackathonsAndTeams";
 
 const ParticipantDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -55,6 +56,12 @@ const ParticipantDashboard = () => {
       href: "#",
       icon: <MdCode className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("hackathons"),
+    },
+    {
+      label: "My Hackathons & Teams",
+      href: "#",
+      icon: <MdGroup className="text-white h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("my-hackathons"),
     },
     {
       label: "Projects",
@@ -377,6 +384,8 @@ const ParticipantDashboard = () => {
         return renderDashboardContent();
       case "hackathons":
         return <ParticipantHackathons />;
+      case "my-hackathons":
+        return <MyHackathonsAndTeams />;
       case "projects":
         return <Projects />;
       case "achievements":

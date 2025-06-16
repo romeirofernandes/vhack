@@ -94,3 +94,15 @@ exports.getMyTeamForHackathon = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+exports.getMyTeams = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const teams = await Team.find({ "members.user": userId })
+      .populate("hackathon")
+      .populate("members.user", "displayName email");
+    res.json({ success: true, data: teams });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};

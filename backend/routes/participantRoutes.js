@@ -8,7 +8,5 @@ router.use(authMiddleware);
 
 // Dashboard routes
 router.get("/dashboard", participantController.getParticipantDashboard);
-router.get("/hackathons", participantController.getHackathons);
-router.post("/hackathons/:hackathonId/join", participantController.joinHackathon);
 
 module.exports = router;
