@@ -493,6 +493,51 @@ const HackathonDetailsPage = () => {
               </Card>
             </motion.div>
 
+            {/* Problem Statements */}
+            {team && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <Card className="bg-zinc-950 border-white/5">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Target className="w-5 h-5 text-green-400" />
+                      Problem Statements
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {new Date() >= new Date(hackathon.timelines?.hackathonStart) ? (
+                      <div className="space-y-4">
+                        <p className="text-white/80 leading-relaxed">
+                          {hackathon.problemStatements}
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-green-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Problem statements are now available for registered participants</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                          <div className="flex items-center gap-3">
+                            <Clock className="w-5 h-5 text-blue-400" />
+                            <div>
+                              <p className="text-white font-medium">Problem statements will be available when the hackathon starts</p>
+                              <p className="text-white/60 text-sm mt-1">
+                                Starting on {new Date(hackathon.timelines?.hackathonStart).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
             {/* Prizes */}
             {hackathon.prizes && (
               <motion.div

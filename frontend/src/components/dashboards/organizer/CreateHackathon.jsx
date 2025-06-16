@@ -19,6 +19,7 @@ const CreateHackathon = () => {
         title: '',
         organizerName: user?.displayName || '',
         description: '',
+        problemStatements: '',
         theme: 'Other',
         bannerImageUrl: '',
         timelines: {
@@ -324,6 +325,41 @@ const CreateHackathon = () => {
                                                 className="w-5 h-5 rounded border-zinc-700/50 bg-zinc-800/50 text-green-500 focus:ring-green-500/20 focus:ring-offset-zinc-900"
                                             />
                                             <label className="text-sm font-medium text-zinc-200">Allow Solo Participants</label>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+
+                        {/* Problem Statements Section */}
+                        <motion.div
+                            variants={cardVariants}
+                            initial="hidden"
+                            animate="visible"
+                            transition={{ delay: 0.35 }}
+                        >
+                            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-orange-500/20 transition-all duration-300">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center space-x-3 text-xl">
+                                        <div className="p-2.5 bg-gradient-to-br from-orange-500/20 to-orange-600/10 rounded-lg border border-orange-500/20">
+                                            <TbCode className="w-6 h-6 text-orange-300" />
+                                        </div>
+                                        <span className="bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent">Problem Statements</span>
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-6">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-2 text-zinc-200">Problem Statements *</label>
+                                            <Textarea
+                                                name="problemStatements"
+                                                value={formData.problemStatements}
+                                                onChange={handleChange}
+                                                required
+                                                rows="6"
+                                                placeholder="Describe the problem statements for participants..."
+                                                className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-orange-500/50 focus:ring-orange-500/20"
+                                            />
                                         </div>
                                     </div>
                                 </CardContent>

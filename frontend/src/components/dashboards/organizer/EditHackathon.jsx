@@ -7,7 +7,8 @@ import {
   TbTrophy,
   TbUsers,
   TbDeviceFloppy,
-  TbLoader
+  TbLoader,
+  TbCode
 } from 'react-icons/tb';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,7 @@ const EditHackathon = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    problemStatements: '',
     theme: 'AI',
     bannerImageUrl: '',
     timelines: {
@@ -80,6 +82,7 @@ const EditHackathon = () => {
         setFormData({
           title: hackathon.title || '',
           description: hackathon.description || '',
+          problemStatements: hackathon.problemStatements || '',
           theme: hackathon.theme || 'AI',
           bannerImageUrl: hackathon.bannerImageUrl || '',
           timelines: {
@@ -421,6 +424,31 @@ const EditHackathon = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Problem Statements */}
+            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-zinc-700/60 transition-colors duration-200">
+              <CardHeader className="border-b border-zinc-800/60 py-4">
+                <CardTitle className="text-white flex items-center gap-2 text-base font-semibold">
+                  <div className="p-1.5 rounded-lg bg-orange-500/10">
+                    <TbCode className="w-4 h-4 text-orange-400" />
+                  </div>
+                  Problem Statements
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="problemStatements" className="text-zinc-300 text-sm font-medium">Problem Statements</Label>
+                  <Textarea
+                    id="problemStatements"
+                    value={formData.problemStatements}
+                    onChange={(e) => handleInputChange('problemStatements', e.target.value)}
+                    className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 min-h-[150px] text-sm font-medium resize-none"
+                    placeholder="Describe the problem statements for participants..."
+                    required
+                  />
                 </div>
               </CardContent>
             </Card>

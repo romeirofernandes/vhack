@@ -20,6 +20,10 @@ const hackathonSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  problemStatements: {
+    type: String,
+    required: true,
+  },
   theme: {
     type: String,
     enum: [
