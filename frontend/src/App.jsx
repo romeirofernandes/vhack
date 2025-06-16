@@ -94,7 +94,6 @@ const App = () => {
           />
           <Route path="/organizer/hackathon/:hackathonId" element={<ViewHackathonDetails />} />
           <Route path="/organizer/hackathon/:hackathonId/edit" element={<EditHackathon />} />
-          <Route path="/participant/hackathons" element={<ParticipantHackathons />} />
           <Route path="/participant/hackathon/:hackathonId" element={<HackathonDetailsPage />} />
           <Route path="/participant/hackathon/:hackathonId/team" element={<TeamDashboard />} />
           <Route
