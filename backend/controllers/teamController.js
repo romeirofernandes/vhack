@@ -73,7 +73,11 @@ exports.joinTeam = async (req, res) => {
 exports.getTeamsForHackathon = async (req, res) => {
   try {
     const { hackathonId } = req.params;
-    const teams = await Team.find({ hackathon: hackathonId }).populate("members.user", "displayName email");
+    const teams = await Team.find({ hackathon: hackathonId })
+      .populate("members.user", "displayName email photoURL")
+      .populate("hackathon", "title")
+      .sort({ createdAt: -1 });
+    
     res.json({ success: true, data: teams });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
