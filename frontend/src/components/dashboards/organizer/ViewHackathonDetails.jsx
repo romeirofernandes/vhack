@@ -21,6 +21,7 @@ import {
   TbCode,
   TbCrown,
   TbCalendarStats,
+  TbFlag,
 } from "react-icons/tb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -885,89 +886,147 @@ const ViewHackathonDetails = () => {
 
           {/* Timeline Tab */}
           {activeTab === "timeline" && (
-            <Card className="bg-zinc-950 border-zinc-800">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-white flex items-center text-xl">
-                  <TbCalendar className="w-5 h-5 mr-2" />
+            <Card className="bg-zinc-950 border-zinc-800 overflow-hidden">
+              <CardHeader className="pb-4 border-b border-zinc-800">
+                <CardTitle className="text-white text-xl flex items-center gap-2">
+                  <TbCalendar className="w-5 h-5 text-blue-400" />
                   Hackathon Timeline
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {hackathon.timelines && (
-                  <>
-                    <div className="flex justify-between items-center p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
-                      <div>
-                        <p className="font-semibold text-white mb-1">
-                          Registration Opens
-                        </p>
+              <CardContent className="p-6">
+                <div className="relative">
+                  {/* Timeline Line */}
+                  <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-red-500" />
+
+                  <div className="space-y-6">
+                    {/* Registration Opens */}
+                    <div className="relative pl-16 group">
+                      <div className="absolute left-0 w-16 h-16 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 border-2 border-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <TbCalendar className="w-4 h-4 text-blue-400" />
+                        </div>
+                      </div>
+                      <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-blue-500/50 transition-colors duration-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-white">Registration Opens</h3>
+                            <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/50 px-2 py-0.5 text-xs">
+                              Start
+                            </Badge>
+                          </div>
+                          <span className="text-zinc-400 text-sm">
+                            {formatDate(hackathon.timelines.registrationStart)}
+                          </span>
+                        </div>
                         <p className="text-zinc-400 text-sm">
-                          {formatDate(hackathon.timelines.registrationStart)}
+                          Teams can begin registering for the hackathon
                         </p>
                       </div>
-                      <Badge className="bg-green-600 text-white border border-green-500 px-2 py-1 text-xs">
-                        Start
-                      </Badge>
                     </div>
 
-                    <div className="flex justify-between items-center p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
-                      <div>
-                        <p className="font-semibold text-white mb-1">
-                          Registration Ends
-                        </p>
+                    {/* Registration Ends */}
+                    <div className="relative pl-16 group">
+                      <div className="absolute left-0 w-16 h-16 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-yellow-500/20 border-2 border-yellow-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <TbClock className="w-4 h-4 text-yellow-400" />
+                        </div>
+                      </div>
+                      <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-yellow-500/50 transition-colors duration-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-white">Registration Ends</h3>
+                            <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 px-2 py-0.5 text-xs">
+                              Deadline
+                            </Badge>
+                          </div>
+                          <span className="text-zinc-400 text-sm">
+                            {formatDate(hackathon.timelines.registrationEnd)}
+                          </span>
+                        </div>
                         <p className="text-zinc-400 text-sm">
-                          {formatDate(hackathon.timelines.registrationEnd)}
+                          Last day for teams to register for the hackathon
                         </p>
                       </div>
-                      <Badge className="bg-yellow-600 text-white border border-yellow-500 px-2 py-1 text-xs">
-                        Deadline
-                      </Badge>
                     </div>
 
-                    <div className="flex justify-between items-center p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
-                      <div>
-                        <p className="font-semibold text-white mb-1">
-                          Hackathon Starts
-                        </p>
+                    {/* Hackathon Starts */}
+                    <div className="relative pl-16 group">
+                      <div className="absolute left-0 w-16 h-16 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-purple-500/20 border-2 border-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <TbCode className="w-4 h-4 text-purple-400" />
+                        </div>
+                      </div>
+                      <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-purple-500/50 transition-colors duration-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-white">Hackathon Starts</h3>
+                            <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/50 px-2 py-0.5 text-xs">
+                              Event
+                            </Badge>
+                          </div>
+                          <span className="text-zinc-400 text-sm">
+                            {formatDate(hackathon.timelines.hackathonStart)}
+                          </span>
+                        </div>
                         <p className="text-zinc-400 text-sm">
-                          {formatDate(hackathon.timelines.hackathonStart)}
+                          The hackathon officially begins
                         </p>
                       </div>
-                      <Badge className="bg-blue-600 text-white border border-blue-500 px-2 py-1 text-xs">
-                        Event
-                      </Badge>
                     </div>
 
-                    <div className="flex justify-between items-center p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
-                      <div>
-                        <p className="font-semibold text-white mb-1">
-                          Hackathon Ends
-                        </p>
+                    {/* Hackathon Ends */}
+                    <div className="relative pl-16 group">
+                      <div className="absolute left-0 w-16 h-16 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-red-500/20 border-2 border-red-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                          <TbFlag className="w-4 h-4 text-red-400" />
+                        </div>
+                      </div>
+                      <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-red-500/50 transition-colors duration-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-white">Hackathon Ends</h3>
+                            <Badge className="bg-red-500/20 text-red-400 border border-red-500/50 px-2 py-0.5 text-xs">
+                              End
+                            </Badge>
+                          </div>
+                          <span className="text-zinc-400 text-sm">
+                            {formatDate(hackathon.timelines.hackathonEnd)}
+                          </span>
+                        </div>
                         <p className="text-zinc-400 text-sm">
-                          {formatDate(hackathon.timelines.hackathonEnd)}
+                          Final submission deadline and hackathon conclusion
                         </p>
                       </div>
-                      <Badge className="bg-red-600 text-white border border-red-500 px-2 py-1 text-xs">
-                        End
-                      </Badge>
                     </div>
 
+                    {/* Results Announcement */}
                     {hackathon.timelines.resultsDate && (
-                      <div className="flex justify-between items-center p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
-                        <div>
-                          <p className="font-semibold text-white mb-1">
-                            Results Announcement
-                          </p>
+                      <div className="relative pl-16 group">
+                        <div className="absolute left-0 w-16 h-16 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-green-500/20 border-2 border-green-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <TbTrophy className="w-4 h-4 text-green-400" />
+                          </div>
+                        </div>
+                        <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-green-500/50 transition-colors duration-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-white">Results Announcement</h3>
+                              <Badge className="bg-green-500/20 text-green-400 border border-green-500/50 px-2 py-0.5 text-xs">
+                                Results
+                              </Badge>
+                            </div>
+                            <span className="text-zinc-400 text-sm">
+                              {formatDate(hackathon.timelines.resultsDate)}
+                            </span>
+                          </div>
                           <p className="text-zinc-400 text-sm">
-                            {formatDate(hackathon.timelines.resultsDate)}
+                            Winners and final results will be announced
                           </p>
                         </div>
-                        <Badge className="bg-purple-600 text-white border border-purple-500 px-2 py-1 text-xs">
-                          Results
-                        </Badge>
                       </div>
                     )}
-                  </>
-                )}
+                  </div>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -975,81 +1034,123 @@ const ViewHackathonDetails = () => {
           {/* Settings Tab */}
           {activeTab === "settings" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="bg-zinc-950 border-zinc-800">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-white text-xl">
+              {/* Status Card */}
+              <Card className="bg-zinc-950 border-zinc-800 overflow-hidden">
+                <CardHeader className="pb-4 border-b border-zinc-800">
+                  <CardTitle className="text-white text-xl flex items-center gap-2">
+                    <TbSettings className="w-5 h-5 text-blue-400" />
                     Hackathon Status
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-zinc-400 text-sm font-medium">
-                      Current Status
-                    </span>
-                    <Badge
-                      className={`${getStatusColor(
-                        hackathon.status
-                      )} border px-2 py-1 text-xs`}
-                    >
-                      {hackathon.status.charAt(0).toUpperCase() +
-                        hackathon.status.slice(1)}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-zinc-400 text-sm font-medium">
-                      Created
-                    </span>
-                    <span className="text-white text-sm">
-                      {formatDate(hackathon.createdAt)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-zinc-400 text-sm font-medium">
-                      Last Updated
-                    </span>
-                    <span className="text-white text-sm">
-                      {formatDate(hackathon.updatedAt)}
-                    </span>
+                <CardContent className="p-6 space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-zinc-800 rounded-lg">
+                          <TbChartBar className="w-5 h-5 text-blue-400" />
+                        </div>
+                        <div>
+                          <p className="text-zinc-400 text-sm font-medium">Current Status</p>
+                          <p className="text-white font-medium mt-0.5">
+                            {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge className={`${getStatusColor(hackathon.status)} border px-3 py-1 text-xs font-medium`}>
+                        {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
+                      </Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-zinc-800 rounded-lg">
+                          <TbCalendarStats className="w-5 h-5 text-purple-400" />
+                        </div>
+                        <div>
+                          <p className="text-zinc-400 text-sm font-medium">Created</p>
+                          <p className="text-white font-medium mt-0.5">
+                            {formatDate(hackathon.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors duration-200">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-zinc-800 rounded-lg">
+                          <TbClock className="w-5 h-5 text-green-400" />
+                        </div>
+                        <div>
+                          <p className="text-zinc-400 text-sm font-medium">Last Updated</p>
+                          <p className="text-white font-medium mt-0.5">
+                            {formatDate(hackathon.updatedAt)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-zinc-950 border-zinc-800">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-white text-xl">
+              {/* Management Actions Card */}
+              <Card className="bg-zinc-950 border-zinc-800 overflow-hidden">
+                <CardHeader className="pb-4 border-b border-zinc-800">
+                  <CardTitle className="text-white text-xl flex items-center gap-2">
+                    <TbSettings className="w-5 h-5 text-purple-400" />
                     Management Actions
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() =>
-                      navigate(`/organizer/hackathon/${hackathonId}/edit`)
-                    }
-                  >
-                    <TbEdit className="w-4 h-4 mr-2" />
-                    Edit Hackathon Details
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-800"
-                    onClick={() =>
-                      navigate(
-                        `/organizer/hackathon/${hackathonId}/allot-judges`
-                      )
-                    }
-                  >
-                    <TbUserPlus className="w-4 h-4 mr-2" />
-                    Manage Judges
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
-                    onClick={handleDeleteHackathon}
-                  >
-                    <TbTrash className="w-4 h-4 mr-2" />
-                    Delete Hackathon
-                  </Button>
+                <CardContent className="p-6 space-y-4">
+                  <div className="space-y-3">
+                    <Button
+                      onClick={() => navigate(`/organizer/hackathon/${hackathonId}/edit`)}
+                      className="w-full relative overflow-hidden bg-zinc-900 border border-purple-500/20 text-purple-400 hover:text-white transition-all duration-300 group"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-purple-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                      <div className="relative flex items-center justify-center">
+                        <TbEdit className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110" />
+                        Edit Hackathon Details
+                      </div>
+                    </Button>
+
+                    <Button
+                      onClick={() => navigate(`/organizer/hackathon/${hackathonId}/allot-judges`)}
+                      className="w-full relative overflow-hidden bg-zinc-900 border border-blue-500/20 text-blue-400 hover:text-white transition-all duration-300 group"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-blue-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                      <div className="relative flex items-center justify-center">
+                        <TbUserPlus className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110" />
+                        Manage Judges
+                      </div>
+                    </Button>
+
+                    <Button
+                      onClick={handleDeleteHackathon}
+                      disabled={actionLoading}
+                      className="w-full relative overflow-hidden bg-zinc-900 border border-red-500/20 text-red-400 hover:text-white transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-red-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                      <div className="relative flex items-center justify-center">
+                        <TbTrash className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110" />
+                        {actionLoading ? "Deleting..." : "Delete Hackathon"}
+                      </div>
+                    </Button>
+                  </div>
+
+                  <div className="mt-6 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                    <div className="flex items-start gap-3">
+                      <TbAlertTriangle className="w-5 h-5 text-yellow-400 mt-0.5" />
+                      <div>
+                        <p className="text-yellow-400 font-medium text-sm">Warning</p>
+                        <p className="text-zinc-400 text-sm mt-1">
+                          Deleting a hackathon is permanent and cannot be undone. All associated data including teams, submissions, and judge assignments will be permanently removed.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
