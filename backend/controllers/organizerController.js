@@ -1,93 +1,85 @@
 const Hackathon = require("../models/Hackathon");
 const User = require("../models/User");
 
-
 async function getOrganizerDashboard(req, res) {
-    console.log("Fetching organizer dashboard data...");
   try {
-    console.log("Request user:", req.user);
     const userId = req.user._id;
-    console.log("User ID:", userId);
 
     // Fetch hackathons organized by this user
-    const hackathons = await Hackathon.find({ organizer: userId })
-      .populate("participants")
-      .populate("projects");
+    const hackathons = await Hackathon.find({ organizerId: userId }).sort({ createdAt: -1 });
 
-    // Recent Activity (last 5 actions)
-    const recentActivity = [];
-    hackathons.forEach(h => {
-      if (h.projects && h.projects.length > 0) {
-        h.projects.slice(-2).forEach(p => {
-          recentActivity.push({
-            type: "submission",
-            message: `Project "${p.title}" submitted to ${h.title}`,
-            timestamp: p.createdAt,
-          });
-        });
-      }
-      if (h.participants && h.participants.length > 0) {
-        recentActivity.push({
-          type: "participant",
-          message: `${h.participants[h.participants.length-1].displayName} joined ${h.title}`,
-          timestamp: h.participants[h.participants.length-1].createdAt,
-        });
-      }
-    });
-    recentActivity.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    // Upcoming Events (next 3)
+    // Stats
+    const totalHackathons = hackathons.length;
     const now = new Date();
+    const activeEvents = hackathons.filter(h =>
+      h.timelines &&
+      h.timelines.hackathonStart &&
+      h.timelines.hackathonEnd &&
+      now >= h.timelines.hackathonStart &&
+      now <= h.timelines.hackathonEnd
+    ).length;
+
+    // For demo: participants = maxTeamSize * hackathons (since no participants array)
+    const totalParticipants = hackathons.reduce(
+      (sum, h) => sum + (h.teamSettings?.maxTeamSize || 0),
+      0
+    );
+
+    // Success rate: completed hackathons / total
+    const completed = hackathons.filter(h => h.status === "completed").length;
+    const successRate = totalHackathons > 0 ? Math.round((completed / totalHackathons) * 100) : 0;
+
+    // Recent Activity: show last 5 created hackathons
+    const recentActivity = hackathons.slice(0, 5).map(h => ({
+      type: "hackathon",
+      message: `Hackathon "${h.title}" created`,
+      timestamp: h.createdAt,
+    }));
+
+    // Upcoming Events: hackathons with start date in future
     const upcomingEvents = hackathons
-      .filter(h => new Date(h.startDate) > now)
-      .sort((a, b) => new Date(a.startDate) - new Date(b.startDate))
+      .filter(h => h.timelines?.hackathonStart && h.timelines.hackathonStart > now)
+      .sort((a, b) => a.timelines.hackathonStart - b.timelines.hackathonStart)
       .slice(0, 3)
       .map(h => ({
         title: h.title,
-        startDate: h.startDate,
-        endDate: h.endDate,
+        startDate: h.timelines.hackathonStart,
+        endDate: h.timelines.hackathonEnd,
       }));
 
-    // To-Do List (example: pending approvals, incomplete setup)
+    // To-Do List: missing banner or no judges
     const todoList = [];
     hackathons.forEach(h => {
-      if (!h.bannerImageUrl) todoList.push({ task: `Add banner to ${h.title}` });
-      if (!h.judges || h.judges.length === 0) todoList.push({ task: `Invite judges for ${h.title}` });
+      if (!h.bannerImageUrl) todoList.push({ task: `Add banner to "${h.title}"` });
+      if (!h.judges || h.judges.length === 0) todoList.push({ task: `Invite judges for "${h.title}"` });
     });
 
-    // Insights/Charts (example: participant count per event)
+    // Insights: show team size per hackathon
     const insights = hackathons.map(h => ({
       title: h.title,
-      participants: h.participants.length,
-      submissions: h.projects.length,
+      maxTeamSize: h.teamSettings?.maxTeamSize || 0,
+      minTeamSize: h.teamSettings?.minTeamSize || 0,
     }));
 
-    // Leaderboard (top 3 participants by submissions)
-    const participantMap = {};
-    hackathons.forEach(h => {
-      h.participants.forEach(p => {
-        participantMap[p._id] = participantMap[p._id] || { ...p._doc, submissions: 0 };
-      });
-      h.projects.forEach(pr => {
-        pr.builders.forEach(b => {
-          if (participantMap[b.user]) participantMap[b.user].submissions += 1;
-        });
-      });
-    });
-    const leaderboard = Object.values(participantMap)
-      .sort((a, b) => b.submissions - a.submissions)
-      .slice(0, 3);
+    // Leaderboard: not possible without participants, so show top hackathons by team size
+    const leaderboard = hackathons
+      .sort((a, b) => (b.teamSettings?.maxTeamSize || 0) - (a.teamSettings?.maxTeamSize || 0))
+      .slice(0, 3)
+      .map(h => ({
+        title: h.title,
+        maxTeamSize: h.teamSettings?.maxTeamSize || 0,
+      }));
 
     res.json({
       success: true,
       data: {
         stats: {
-          totalHackathons: hackathons.length,
-          activeEvents: hackathons.filter(h => h.status === "ongoing").length,
-          totalParticipants: hackathons.reduce((acc, h) => acc + h.participants.length, 0),
-          successRate: 100, // Placeholder
+          totalHackathons,
+          activeEvents,
+          totalParticipants,
+          successRate,
         },
-        recentActivity: recentActivity.slice(0, 5),
+        recentActivity,
         upcomingEvents,
         todoList,
         insights,

@@ -156,7 +156,7 @@ const OrganizerDashboard = () => {
       label: "Create Event",
       href: "/organizer/create-hackathon",
       icon: <MdAdd className="text-white/70 h-5 w-5 flex-shrink-0" />,
-      onClick: () => setActiveSection("create-event"),
+      onClick: () => navigate("/organizer/create-hackathon"),
     },
     {
       label: "Participants",
@@ -311,7 +311,7 @@ const OrganizerDashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button className="w-full bg-blue-600 text-white" onClick={() => setActiveSection("create-event")}>
+                  <Button className="w-full bg-blue-600 text-white" onClick={() => navigate("/organizer/create-hackathon")}>
                     + Create Hackathon
                   </Button>
                   <Button className="w-full bg-green-600 text-white" onClick={() => setActiveSection("participants")}>
