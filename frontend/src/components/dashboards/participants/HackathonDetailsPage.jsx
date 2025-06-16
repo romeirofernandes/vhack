@@ -494,7 +494,7 @@ const HackathonDetailsPage = () => {
             </motion.div>
 
             {/* Problem Statements */}
-            {team && (
+            {(team || hackathon.judges?.some(judge => judge._id === user.uid)) && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -508,7 +508,17 @@ const HackathonDetailsPage = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {new Date() >= new Date(hackathon.timelines?.hackathonStart) ? (
+                    {hackathon.judges?.some(judge => judge._id === user.uid) ? (
+                      <div className="space-y-4">
+                        <p className="text-white/80 leading-relaxed">
+                          {hackathon.problemStatements}
+                        </p>
+                        <div className="flex items-center gap-2 text-sm text-blue-400">
+                          <Info className="w-4 h-4" />
+                          <span>As a judge, you have full access to the problem statements</span>
+                        </div>
+                      </div>
+                    ) : new Date() >= new Date(hackathon.timelines?.hackathonStart) ? (
                       <div className="space-y-4">
                         <p className="text-white/80 leading-relaxed">
                           {hackathon.problemStatements}
