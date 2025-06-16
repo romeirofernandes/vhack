@@ -16,6 +16,9 @@ import CreateHackathon from "./components/dashboards/organizer/CreateHackathon";
 import AllotJudges from "./components/dashboards/organizer/AllotJudges";
 import ViewHackathonDetails from "./components/dashboards/organizer/ViewHackathonDetails";
 import EditHackathon from "./components/dashboards/organizer/EditHackathon";
+import ParticipantHackathons from "./components/dashboards/participants/ParticipantHackathons";
+import HackathonDetailsPage from "./components/dashboards/participants/HackathonDetailsPage";
+import TeamDashboard from "./components/dashboards/participants/TeamDashboard";
 
 const App = () => {
   return (
@@ -91,6 +94,9 @@ const App = () => {
           />
           <Route path="/organizer/hackathon/:hackathonId" element={<ViewHackathonDetails />} />
           <Route path="/organizer/hackathon/:hackathonId/edit" element={<EditHackathon />} />
+          <Route path="/participant/hackathons" element={<ParticipantHackathons />} />
+          <Route path="/participant/hackathon/:hackathonId" element={<HackathonDetailsPage />} />
+          <Route path="/participant/hackathon/:hackathonId/team" element={<TeamDashboard />} />
           <Route
             path="/judge/dashboard"
             element={

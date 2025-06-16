@@ -12,7 +12,8 @@ const skillsRoutes = require("./routes/skillsRoutes");
 const achievementRoutes = require("./routes/achievementRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const hackathonRoutes = require("./routes/hackathonRoutes");
-const adminRoutes = require('./routes/adminRoutes')
+const adminRoutes = require('./routes/adminRoutes');
+const teamRoutes = require('./routes/teamRoutes');
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ app.use("/achievements", achievementRoutes);
 app.use("/upload", uploadRoutes);
 app.use("/hackathons", hackathonRoutes);
 app.use('/auth', authRoutes);
+app.use('/teams',teamRoutes);
 
 
 app.listen(PORT, () => {

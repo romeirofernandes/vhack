@@ -29,7 +29,8 @@ import { auth } from "../../config/firebase";
 import Profile from "./participants/Profile";
 import Projects from "./participants/Projects";
 import Achievements from "./participants/Achievements";
-import Hackathons from "./participants/Hackathons";
+import Hackathons from "./participants/HackathonDetailsPage";
+import ParticipantHackathons from "./participants/ParticipantHackathons";
 
 const ParticipantDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -194,33 +195,6 @@ const ParticipantDashboard = () => {
     }
   };
 
-  const joinHackathon = async (hackathonId) => {
-    try {
-      const idToken = await user.getIdToken();
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_API_URL
-        }/participant/hackathons/${hackathonId}/join`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-      if (data.success) {
-        fetchHackathons();
-        fetchDashboardData();
-      } else {
-        setError(data.error || "Failed to join hackathon");
-      }
-    } catch (error) {
-      console.error("Join hackathon error:", error);
-      setError("Something went wrong. Please try again.");
-    }
-  };
 
   const renderDashboardContent = () => {
     if (!dashboardData) return null;
@@ -396,51 +370,13 @@ const ParticipantDashboard = () => {
     );
   };
 
-  const renderHackathonsContent = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Hackathons</h1>
-          <p className="text-white/70">Discover and join exciting hackathons</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <MdSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
-            <input
-              type="text"
-              placeholder="Search hackathons..."
-              className="w-64 h-10 pl-10 pr-4 bg-white/5 border border-white/20 rounded-md text-white placeholder:text-white/40 focus:border-white/40 focus:outline-none"
-            />
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-white/20 text-white hover:bg-white/10"
-          >
-            <MdFilterList className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {hackathons.map((hackathon) => (
-          <HackathonCard
-            key={hackathon._id}
-            hackathon={hackathon}
-            onJoin={() => joinHackathon(hackathon._id)}
-          />
-        ))}
-      </div>
-    </div>
-  );
 
   const renderContent = () => {
     switch (activeSection) {
       case "dashboard":
         return renderDashboardContent();
       case "hackathons":
-        return <Hackathons />;
+        return <ParticipantHackathons />;
       case "projects":
         return <Projects />;
       case "achievements":

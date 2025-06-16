@@ -66,6 +66,7 @@ const teamSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Project",
   },
+  joinCode: { type: String, unique: true },
   createdAt: {
     type: Date,
     default: Date.now,
