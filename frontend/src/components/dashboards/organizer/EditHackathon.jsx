@@ -61,7 +61,7 @@ const EditHackathon = () => {
       setLoading(true);
       const idToken = await user.getIdToken();
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/hackathons/${hackathonId}`,
+        `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
         {
           headers: { Authorization: `Bearer ${idToken}` }
         }
@@ -158,7 +158,7 @@ const EditHackathon = () => {
       };
 
       const response = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/hackathons/${hackathonId}`,
+        `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
         updateData,
         {
           headers: { Authorization: `Bearer ${idToken}` }

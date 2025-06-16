@@ -45,7 +45,7 @@ const ViewHackathonDetails = () => {
       setLoading(true);
       const idToken = await user.getIdToken();
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/hackathons/${hackathonId}`, // Fixed URL
+        `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`, // Fixed URL
         {
           headers: { Authorization: `Bearer ${idToken}` },
         }
@@ -77,7 +77,7 @@ const ViewHackathonDetails = () => {
       setActionLoading(true);
       const idToken = await user.getIdToken();
       const response = await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/hackathons/${hackathonId}`,
+        `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
         {
           headers: { Authorization: `Bearer ${idToken}` },
         }
@@ -112,7 +112,7 @@ const ViewHackathonDetails = () => {
       setActionLoading(true);
       const idToken = await user.getIdToken();
       const response = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/hackathons/${hackathonId}`,
+        `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
         { status: "pending_approval" },
         {
           headers: { Authorization: `Bearer ${idToken}` },

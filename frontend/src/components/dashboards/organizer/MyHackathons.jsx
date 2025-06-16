@@ -26,14 +26,14 @@ const MyHackathons = ({ navigate }) => {
       setLoading(true);
       const idToken = await user.getIdToken();
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/hackathons/organizer/hackathons`,
+        `${import.meta.env.VITE_API_URL}/hackathons/my/hackathons`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`
           }
         }
       );
-
+      console.log('Fetched hackathons:', response.data);
       if (response.data.success) {
         setHackathons(response.data.data.hackathons);
       }
@@ -120,9 +120,6 @@ const MyHackathons = ({ navigate }) => {
 
   const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-  const handleViewDetails = (hackathon) => {
-    setSelectedHackathon(hackathon);
-  };
 
   const handleBack = () => {
     setSelectedHackathon(null);
@@ -137,7 +134,7 @@ const MyHackathons = ({ navigate }) => {
       try {
         const idToken = await user.getIdToken();
         await axios.delete(
-          `${import.meta.env.VITE_API_URL}/api/hackathons/${hackathon._id}`,
+          `${import.meta.env.VITE_API_URL}/hackathons/${hackathon._id}`,
           {
             headers: {
               Authorization: `Bearer ${idToken}`
@@ -330,7 +327,7 @@ const MyHackathons = ({ navigate }) => {
                             size="sm"
                             variant="outline"
                             className="border-white/20 text-white hover:bg-white/10"
-                            onClick={() => handleViewDetails(hackathon)}
+                            onClick={() => navigate(`/organizer/hackathon/${hackathon._id}`)}
                           >
                             View Details
                           </Button>
@@ -427,7 +424,7 @@ const MyHackathons = ({ navigate }) => {
                         <Button
                           size="sm"
                           className="bg-blue-600 text-white hover:bg-blue-700"
-                          onClick={() => handleViewDetails(hackathon)}
+                          onClick={() => navigate(`/organizer/hackathon/${hackathon._id}`)}
                         >
                           View Details
                         </Button>
@@ -530,7 +527,7 @@ const MyHackathons = ({ navigate }) => {
                       size="sm"
                       variant="outline"
                       className="border-white/20 text-white hover:bg-white/10"
-                      onClick={() => handleViewDetails(hackathon)}
+                      onClick={() => navigate(`/organizer/hackathon/${hackathon._id}`)}
                     >
                       View Details
                     </Button>
