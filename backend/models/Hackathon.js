@@ -96,7 +96,15 @@ const hackathonSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["draft", "pending_approval", "published", "cancelled"],
+    enum: [
+    "draft",
+    "pending_approval",
+    "published",
+    "upcoming",
+    "ongoing",
+    "completed",
+    "cancelled"
+  ],
     default: "draft",
   },
   invitedJudges: [

@@ -18,10 +18,12 @@ import {
   User,
   FileText,
   CheckCircle,
+  Edit,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import ProjectEditor from "./ProjectEditor"; // <-- Make sure this exists
 
 const TeamDashboard = () => {
   const { user } = useAuth();
@@ -29,15 +31,18 @@ const TeamDashboard = () => {
   const navigate = useNavigate();
   const [team, setTeam] = useState(null);
   const [hackathon, setHackathon] = useState(null);
+  const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [showProjectEditor, setShowProjectEditor] = useState(false);
 
+  // Fetch team, hackathon, and project
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const idToken = await user.getIdToken();
-        
+
         // Fetch team data
         const teamRes = await fetch(
           `${import.meta.env.VITE_API_URL}/teams/hackathon/${hackathonId}/my`,
@@ -49,7 +54,7 @@ const TeamDashboard = () => {
           }
         );
         const teamData = await teamRes.json();
-        
+
         // Fetch hackathon data
         const hackRes = await fetch(
           `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
@@ -62,9 +67,28 @@ const TeamDashboard = () => {
         );
         const hackData = await hackRes.json();
 
+        // Fetch team project for this hackathon
+        let projectData = null;
+        if (teamData.success) {
+          const projRes = await fetch(
+            `${import.meta.env.VITE_API_URL}/teams/${hackathonId}/project`,
+            {
+              headers: {
+                Authorization: `Bearer ${idToken}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          const projJson = await projRes.json();
+          if (projJson.success && projJson.data) {
+            projectData = projJson.data;
+          }
+        }
+
         if (teamData.success) setTeam(teamData.data);
         if (hackData.success) setHackathon(hackData.data);
-        
+        setProject(projectData);
+
         if (!teamData.success) toast.error("Failed to load team");
         if (!hackData.success) toast.error("Failed to load hackathon");
       } catch (err) {
@@ -74,7 +98,13 @@ const TeamDashboard = () => {
       }
     };
     if (user) fetchData();
-  }, [user, hackathonId]);
+  }, [user, hackathonId, showProjectEditor]);
+
+  // Helpers
+  const now = new Date();
+  const hackStart = new Date(hackathon?.timelines?.hackathonStart);
+  const hackEnd = new Date(hackathon?.timelines?.hackathonEnd);
+  const canEditOrSubmit = now >= hackStart && now <= hackEnd;
 
   const handleCopy = () => {
     if (team?.joinCode) {
@@ -84,20 +114,39 @@ const TeamDashboard = () => {
     }
   };
 
-  const handleSubmitProject = () => {
-    toast.success("Project submission coming soon!");
+  const handleSubmitProject = async () => {
+    if (!project) {
+      toast.error("Create your project first!");
+      return;
+    }
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/projects/${project._id}/submit`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Project submitted!");
+        setProject({ ...project, status: "submitted" });
+      } else {
+        toast.error(data.error || "Submission failed");
+      }
+    } catch (err) {
+      toast.error("Submission failed");
+    }
   };
 
   const getTimeLeft = (endDate) => {
     const now = new Date();
     const end = new Date(endDate);
     const diff = end - now;
-    
     if (diff <= 0) return "Ended";
-    
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
     if (days > 0) return `${days}d ${hours}h left`;
     return `${hours}h left`;
   };
@@ -165,14 +214,55 @@ const TeamDashboard = () => {
               <p className="text-white/60 mt-1">Manage your team and submissions</p>
             </div>
           </div>
-          <Button
-            onClick={handleSubmitProject}
-            className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-          >
-            <Send className="w-4 h-4 mr-2" />
-            Submit Project
-          </Button>
+          <div className="flex gap-2">
+            {!project && (
+              <Button
+                onClick={() => setShowProjectEditor(true)}
+                disabled={!canEditOrSubmit}
+                className="bg-blue-600 text-white"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Create Project
+              </Button>
+            )}
+            {project && (
+              <>
+                <Button
+                  onClick={() => setShowProjectEditor(true)}
+                  disabled={!canEditOrSubmit}
+                  className="bg-yellow-600 text-white"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Project
+                </Button>
+                <Button
+                  onClick={handleSubmitProject}
+                  disabled={!canEditOrSubmit}
+                  className="bg-green-600 text-white"
+                >
+                  <Send className="w-4 h-4 mr-2" />
+                  {project.status === "submitted" ? "Resubmit" : "Submit Project"}
+                </Button>
+              </>
+            )}
+          </div>
         </motion.div>
+
+        {/* Project Editor Modal */}
+        {showProjectEditor && (
+          <ProjectEditor
+            isOpen={showProjectEditor}
+            onClose={() => setShowProjectEditor(false)}
+            project={project}
+            hackathonId={hackathonId}
+            teamId={team._id}
+            onUpdate={() => {}}
+            onSuccess={() => {
+              setShowProjectEditor(false);
+              setTimeout(() => window.location.reload(), 500);
+            }}
+          />
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Team Info & Hackathon Details */}
@@ -192,7 +282,6 @@ const TeamDashboard = () => {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-white/80">{team.description}</p>
-                  
                   {/* Team Code */}
                   <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
                     <div>
@@ -209,7 +298,6 @@ const TeamDashboard = () => {
                       {copied ? "Copied!" : "Copy"}
                     </Button>
                   </div>
-
                   {/* Team Members */}
                   <div>
                     <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
@@ -248,7 +336,6 @@ const TeamDashboard = () => {
                 </CardContent>
               </Card>
             </motion.div>
-
             {/* Hackathon Details */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -275,7 +362,6 @@ const TeamDashboard = () => {
                       />
                     </div>
                   )}
-
                   {/* Basic Info */}
                   <div>
                     <h3 className="text-2xl font-bold text-white mb-2">{hackathon.title}</h3>
@@ -288,7 +374,6 @@ const TeamDashboard = () => {
                     </div>
                     <p className="text-white/80 leading-relaxed">{hackathon.description}</p>
                   </div>
-
                   {/* Timeline */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
@@ -311,7 +396,6 @@ const TeamDashboard = () => {
                       </p>
                     </div>
                   </div>
-
                   {/* Prizes */}
                   {hackathon.prizes && (
                     <div>
@@ -351,7 +435,6 @@ const TeamDashboard = () => {
               </Card>
             </motion.div>
           </div>
-
           {/* Right Column - Quick Actions & Stats */}
           <div className="space-y-6">
             {/* Quick Actions */}
@@ -365,13 +448,36 @@ const TeamDashboard = () => {
                   <CardTitle className="text-white">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <Button
-                    onClick={handleSubmitProject}
-                    className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    Submit Project
-                  </Button>
+                  {!project && (
+                    <Button
+                      onClick={() => setShowProjectEditor(true)}
+                      className="w-full bg-blue-600 text-white"
+                      disabled={!canEditOrSubmit}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Create Project
+                    </Button>
+                  )}
+                  {project && (
+  <Button
+    onClick={() => setShowProjectEditor(true)}
+    disabled={!canEditOrSubmit}
+    className="bg-yellow-600 text-white"
+  >
+    <Edit className="w-4 h-4 mr-2" />
+    Edit Project
+  </Button>
+)}
+{project && project.status === "draft" && (
+  <Button
+    onClick={handleSubmitProject}
+    disabled={!canEditOrSubmit}
+    className="bg-green-600 text-white"
+  >
+    <Send className="w-4 h-4 mr-2" />
+    Submit Project
+  </Button>
+)}
                   <Button
                     variant="outline"
                     className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
@@ -391,7 +497,6 @@ const TeamDashboard = () => {
                 </CardContent>
               </Card>
             </motion.div>
-
             {/* Team Stats */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -415,9 +520,13 @@ const TeamDashboard = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-white/70">Project Status</span>
-                    <Badge className="bg-yellow-500/20 text-yellow-300">
+                    <Badge className={project && project.status === "submitted"
+                      ? "bg-green-500/20 text-green-300"
+                      : "bg-yellow-500/20 text-yellow-300"}>
                       <FileText className="w-3 h-3 mr-1" />
-                      Not Submitted
+                      {project
+                        ? (project.status === "submitted" ? "Submitted" : "Not Submitted")
+                        : "Not Created"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
@@ -430,7 +539,6 @@ const TeamDashboard = () => {
                 </CardContent>
               </Card>
             </motion.div>
-
             {/* Important Dates */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}

@@ -35,7 +35,7 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../../../contexts/AuthContext";
 
-const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
+const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError,hackathonId,teamId }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -177,6 +177,8 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError }) => {
         },
         isPublic: formData.isPublic,
         images: formData.images,
+        hackathonId, // <-- add this
+        teamId, // <-- add this if applicable
       };
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/projects`, {

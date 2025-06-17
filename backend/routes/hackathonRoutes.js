@@ -37,4 +37,5 @@ router.get('/my/hackathons', authMiddleware, hackathonController.getOrganizerHac
 router.put('/:hackathonId', authMiddleware, hackathonController.updateHackathon);
 router.delete('/:hackathonId', authMiddleware, hackathonController.deleteHackathon);
 
+
 module.exports = router; 

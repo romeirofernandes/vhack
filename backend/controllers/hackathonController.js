@@ -1,12 +1,32 @@
 const Hackathon = require('../models/Hackathon');
 const User = require('../models/User');
 
+const updateHackathonStatus = async (hackathon) => {
+  const now = new Date();
+  const start = new Date(hackathon.timelines.hackathonStart);
+  const end = new Date(hackathon.timelines.hackathonEnd);
+
+  if (hackathon.status === "published" || ["upcoming", "ongoing", "completed"].includes(hackathon.status)) {
+    let newStatus = hackathon.status;
+    if (now < start) newStatus = "upcoming";
+    else if (now >= start && now <= end) newStatus = "ongoing";
+    else if (now > end) newStatus = "completed";
+    if (hackathon.status !== newStatus) {
+      hackathon.status = newStatus;
+      await hackathon.save();
+    }
+  }
+};
 // Get all hackathons
 exports.getAllHackathons = async (req, res) => {
     try {
-        const hackathons = await Hackathon.find()
-            .populate('organizerId', 'displayName email photoURL')
-            .sort({ createdAt: -1 }); // Sort by newest first
+        let hackathons = await Hackathon.find({ status: { $ne: "draft" } });
+        // Update status for each hackathon
+        await Promise.all(hackathons.map(updateHackathonStatus));
+        // Filter for users
+        hackathons = hackathons.filter(h =>
+            ["upcoming", "ongoing", "completed"].includes(h.status)
+        );
 
         // Calculate statistics
         const stats = {
@@ -141,7 +161,7 @@ exports.getHackathonById = async (req, res) => {
                 message: 'Hackathon not found'
             });
         }
-
+        await updateHackathonStatus(hackathon);
         res.status(200).json({
             success: true,
             data: hackathon
@@ -241,3 +261,5 @@ exports.deleteHackathon = async (req, res) => {
         });
     }
 };
+
+

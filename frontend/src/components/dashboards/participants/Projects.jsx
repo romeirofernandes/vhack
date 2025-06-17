@@ -313,6 +313,8 @@ const Projects = () => {
           setSuccess(message);
         }}
         onError={setError}
+        hackathonId={null}
+        teamId={null}
       />
 
       {/* Project Editor Modal */}

@@ -45,6 +45,8 @@ const ProjectEditor = ({
   onUpdate,
   onSuccess,
   onError,
+  hackathonId,
+  teamId,
 }) => {
   const [formData, setFormData] = useState({
     title: "",
@@ -225,6 +227,8 @@ const ProjectEditor = ({
         },
         isPublic: formData.isPublic,
         images: formData.images,
+        hackathonId: hackathonId || null, // <-- add this
+        teamId: teamId || null, // <-- add this
       };
 
       const url = project

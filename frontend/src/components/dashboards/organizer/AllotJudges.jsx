@@ -28,7 +28,7 @@ const AllotJudges = () => {
             try {
                 const idToken = await user.getIdToken();
                 const response = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/api/hackathons`,
+                    `${import.meta.env.VITE_API_URL}/hackathons`,
                     {
                         headers: {
                             Authorization: `Bearer ${idToken}`,

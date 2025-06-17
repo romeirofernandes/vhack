@@ -2,6 +2,7 @@ const Team = require("../models/Team");
 const Hackathon = require("../models/Hackathon");
 const User = require("../models/User");
 const crypto = require("crypto");
+const Project = require("../models/Project"); 
 
 // Create a team
 exports.createTeam = async (req, res) => {
@@ -108,5 +109,36 @@ exports.getMyTeams = async (req, res) => {
     res.json({ success: true, data: teams });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+exports.getTeamProject = async (req, res) => {
+  try {
+    const hackathonId = req.params.hackathonId;
+    const userId = req.user._id;
+
+    // Find the team for this user in this hackathon
+    const team = await Team.findOne({
+      hackathon: hackathonId,
+      "members.user": userId,
+    });
+
+    if (!team) {
+      return res.status(404).json({ success: false, error: "Team not found" });
+    }
+
+    // Find the project for this team and hackathon
+    const project = await Project.findOne({
+      hackathon: hackathonId,
+      team: team._id,
+    });
+
+    if (!project) {
+      return res.status(200).json({ success: true, data: null });
+    }
+
+    res.json({ success: true, data: project });
+  } catch (err) {
+    res.status(500).json({ success: false, error: "Server error" });
   }
 };
