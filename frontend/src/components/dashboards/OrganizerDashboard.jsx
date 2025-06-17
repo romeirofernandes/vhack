@@ -34,6 +34,8 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import MyHackathons from "./organizer/MyHackathons";
 import { getIdToken } from "firebase/auth";
+import Analytics from "./organizer/Analytics";
+
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -51,11 +53,8 @@ const Participants = () => (
   </div>
 );
 
-const Analytics = () => (
-  <div className="text-white text-xl text-center py-20">
-    <MdBarChart className="mx-auto mb-4 w-10 h-10" />
-    <p>Analytics dashboard coming soon!</p>
-  </div>
+const DashboardAnalytics = () => (
+  <Analytics />
 );
 
 const Settings = () => (
@@ -390,7 +389,7 @@ const OrganizerDashboard = () => {
       return <Participants />;
     }
     if (activeSection === "analytics") {
-      return <Analytics />;
+      return <DashboardAnalytics />;
     }
     if (activeSection === "profile") {
       return <Profile />;
