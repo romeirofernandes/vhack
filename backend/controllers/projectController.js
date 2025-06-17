@@ -609,7 +609,7 @@ const projectController = {
     })
     .populate("team", "name members")
     .populate("builders.user", "displayName email photoURL")
-    .populate("scores.judge", "displayName email")
+    .populate("scores.judge", "_id displayName email")
     .sort({ submittedAt: -1 });
 
     res.json({ 

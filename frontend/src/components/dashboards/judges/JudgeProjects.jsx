@@ -17,12 +17,41 @@ import {
   MdInfo
 } from "react-icons/md";
 
-const JudgeProjects = ({ hackathon }) => {
+const JudgeProjects = ({ hackathon,onBack }) => {
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [judgingOpen, setJudgingOpen] = useState(false);
+  const [mongoUserId, setMongoUserId] = useState(null);
+
+useEffect(() => {
+  const getMongoId = async () => {
+    try {
+      const idToken = await user.getIdToken();
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/mongo-id`, {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMongoUserId(data.mongoId);
+      }
+    } catch (error) {
+      console.error("Error getting mongo ID:", error);
+    }
+  };
+
+  if (user) {
+    getMongoId();
+  }
+}, [user]);
+  if (!hackathon) {
+    return (
+      <div className="text-zinc-400 p-8 text-center">
+        No hackathon selected.
+      </div>
+    );
+  }
 
   useEffect(() => {
     fetchProjects();
@@ -54,12 +83,20 @@ const JudgeProjects = ({ hackathon }) => {
   };
 
   const getProjectStatus = (project) => {
-    const judgeScore = project.scores?.find(
-      score => score.judge._id === user._id || score.judge === user._id
-    );
-    return judgeScore ? "scored" : "pending";
-  };
-
+  if (!mongoUserId) return "pending"; // Wait for ID
+  
+  const judgeScore = project.scores?.find(score => {
+    if (!score?.judge) return false;
+    
+    const judgeId = typeof score.judge === "object" 
+      ? score.judge._id?.toString() 
+      : score.judge?.toString();
+      
+    return judgeId === mongoUserId;
+  });
+  
+  return judgeScore ? "scored" : "pending";
+};
   const handleScoreSubmitted = () => {
     fetchProjects();
     setSelectedProject(null);
@@ -77,14 +114,6 @@ const JudgeProjects = ({ hackathon }) => {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            onClick={() => setSelectedProject(null)}
-            className="text-white hover:bg-white/10"
-          >
-            <MdArrowBack className="w-4 h-4 mr-2" />
-            Back to Projects
-          </Button>
           <h2 className="text-2xl font-bold text-white">Score Project</h2>
         </div>
         

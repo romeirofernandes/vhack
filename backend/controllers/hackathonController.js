@@ -271,4 +271,14 @@ exports.deleteHackathon = async (req, res) => {
     }
 };
 
+exports.getAssignedHackathons = async (req, res) => {
+  try {
+    const judgeId = req.user._id;
+    const hackathons = await Hackathon.find({ judges: judgeId });
+    res.json({ success: true, data: hackathons });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Failed to fetch assigned hackathons' });
+  }
+};
+
 

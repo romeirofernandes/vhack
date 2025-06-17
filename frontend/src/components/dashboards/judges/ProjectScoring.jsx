@@ -30,28 +30,66 @@ const ProjectScoring = ({ project, hackathon, onScoreSubmitted }) => {
   const [loading, setLoading] = useState(false);
   const [hasScored, setHasScored] = useState(false);
   const [existingScore, setExistingScore] = useState(null);
+  const [mongoUserId, setMongoUserId] = useState(null);
+
+useEffect(() => {
+  const getMongoId = async () => {
+    try {
+      const idToken = await user.getIdToken();
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/mongo-id`, {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMongoUserId(data.mongoId);
+      }
+    } catch (error) {
+      console.error("Error getting mongo ID:", error);
+    }
+  };
+
+  if (user) {
+    getMongoId();
+  }
+}, [user]);
+  if (!hackathon || !Array.isArray(hackathon.judgingCriteria) || hackathon.judgingCriteria.length === 0) {
+  return (
+    <div className="text-zinc-400 p-8 text-center">
+      No judging criteria defined for this hackathon.
+    </div>
+  );
+}
 
   useEffect(() => {
-    // Check if judge has already scored this project
-    const judgeScore = project.scores?.find(
-      score => score.judge._id === user._id || score.judge === user._id
-    );
+  if (!mongoUserId) return; // Wait for mongo ID
+  
+  const judgeScore = project.scores?.find(score => {
+    if (!score?.judge) return false;
+    
+    const judgeId = typeof score.judge === "object" 
+      ? score.judge._id?.toString() 
+      : score.judge?.toString();
+      
+    return judgeId === mongoUserId;
+  });
 
-    if (judgeScore) {
-      setHasScored(true);
-      setExistingScore(judgeScore);
-      setScores(judgeScore.criteria || []);
-      setFeedback(judgeScore.feedback || "");
-    } else {
-      // Initialize scores based on judging criteria
-      const initialScores = hackathon.judgingCriteria.map(criteria => ({
-        title: criteria.title,
-        score: 0,
-        maxScore: criteria.maxScore || 10
-      }));
-      setScores(initialScores);
-    }
-  }, [project, hackathon, user]);
+  if (judgeScore) {
+    setHasScored(true);
+    setExistingScore(judgeScore);
+    setScores(judgeScore.criteria || []);
+    setFeedback(judgeScore.feedback || "");
+  } else {
+    // Initialize new scores
+    const initialScores = hackathon.judgingCriteria?.map(criteria => ({
+      title: criteria.title,
+      description: criteria.description || "",
+      weight: criteria.weight || 1,
+      score: 0,
+      maxScore: criteria.maxScore ?? 10
+    })) || [];
+    setScores(initialScores);
+  }
+}, [project, hackathon, mongoUserId]); // Add mongoUserId dependency
 
   const handleScoreChange = (index, value) => {
     setScores(scores.map((score, i) => 

@@ -52,15 +52,12 @@ const JudgeDashboard = () => {
       console.error("Logout error:", error);
     }
   };
-
+  
   useEffect(() => {
-    if (activeSection === "dashboard") {
-      fetchDashboardData();
-    } else if (activeSection === "projects") {
-      fetchJudgeHackathons();
-    }
-  }, [activeSection, user]);
-
+    if(activeSection === "dashboard" && !dashboardData) {
+    fetchDashboardData();
+  }
+  }, [activeSection, dashboardData]);
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -134,68 +131,35 @@ const JudgeDashboard = () => {
       setLoading(false);
     }
   };
-
-  const fetchJudgeHackathons = async () => {
-    try {
-      setLoading(true);
-      const idToken = await user.getIdToken();
-      
-      // Fetch hackathons where user is a judge
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/hackathons/judge/assigned`,
-        {
-          headers: { Authorization: `Bearer ${idToken}` },
-        }
-      );
-
-      if (response.data.success) {
-        setHackathons(response.data.data);
-      } else {
-        // Mock data for development
-        setHackathons([
-          {
-            _id: "1",
-            title: "AI Innovation Challenge",
-            theme: "AI",
-            status: "ongoing",
-            organizerId: { displayName: "TechCorp", email: "tech@corp.com" },
-            timelines: {
-              hackathonStart: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-              hackathonEnd: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-            },
-            judgingCriteria: [
-              { title: "Innovation", maxScore: 10 },
-              { title: "Technical Implementation", maxScore: 10 },
-              { title: "Impact", maxScore: 10 },
-              { title: "Presentation", maxScore: 10 }
-            ]
-          },
-          {
-            _id: "2",
-            title: "Fintech Revolution",
-            theme: "Fintech",
-            status: "completed",
-            organizerId: { displayName: "FinanceHub", email: "info@financehub.com" },
-            timelines: {
-              hackathonStart: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-              hackathonEnd: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-            },
-            judgingCriteria: [
-              { title: "Innovation", maxScore: 10 },
-              { title: "Business Viability", maxScore: 10 },
-              { title: "User Experience", maxScore: 10 }
-            ]
-          }
-        ]);
+const fetchJudgeHackathons = async () => {
+  try {
+    setLoading(true);
+    const idToken = await user.getIdToken();
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/hackathons/judge/assigned`,
+      {
+        headers: { Authorization: `Bearer ${idToken}` },
       }
-    } catch (error) {
-      console.error("Error fetching judge hackathons:", error);
-      toast.error("Failed to fetch hackathons");
-    } finally {
-      setLoading(false);
+    );
+    if (response.data.success) {
+      setHackathons(response.data.data);
+    } else {
+      toast.error("Failed to fetch assigned hackathons");
     }
-  };
+  } catch (error) {
+    console.error("Error fetching judge hackathons:", error);
+    toast.error("Error fetching assigned hackathons");
+  } finally {
+    setLoading(false);
+  }
+};
 
+useEffect(() => {
+  if (activeSection === "projects") {
+    fetchJudgeHackathons();
+  }
+  return () => setSelectedHackathon(null);
+}, [activeSection]);
   const sidebarLinks = [
     {
       label: "Dashboard",
@@ -503,128 +467,6 @@ const JudgeDashboard = () => {
     );
   };
 
-  const renderProjectsSection = () => {
-    if (loading) {
-      return (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold text-white mb-2">Judge Projects</h2>
-          <p className="text-zinc-400">
-            Select a hackathon to review and score submitted projects
-          </p>
-        </div>
-
-        {hackathons.length > 0 ? (
-          <div className="grid gap-4">
-            {hackathons.map((hackathon) => {
-              const now = new Date();
-              const submissionDeadline = new Date(hackathon.timelines.hackathonEnd);
-              const isJudgingOpen = now >= submissionDeadline;
-              
-              return (
-                <Card key={hackathon._id} className="bg-zinc-950 border-zinc-800 hover:border-zinc-700 transition-colors">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-xl font-semibold text-white">
-                            {hackathon.title}
-                          </h3>
-                          <Badge className={`${
-                            hackathon.status === "ongoing" ? "bg-green-600" :
-                            hackathon.status === "completed" ? "bg-blue-600" :
-                            "bg-gray-600"
-                          } text-white`}>
-                            {hackathon.status}
-                          </Badge>
-                          <Badge variant="outline" className="text-zinc-300">
-                            {hackathon.theme}
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center gap-4 text-zinc-400 text-sm">
-                            <div className="flex items-center gap-1">
-                              <MdPerson className="w-4 h-4" />
-                              <span>Organizer: {hackathon.organizerId?.displayName}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <MdTimer className="w-4 h-4" />
-                              <span>
-                                Ends: {new Date(hackathon.timelines.hackathonEnd).toLocaleDateString()}
-                              </span>
-                            </div>
-                          </div>
-
-                          {hackathon.judgingCriteria && (
-                            <div>
-                              <p className="text-zinc-400 text-sm mb-1">Judging Criteria:</p>
-                              <div className="flex flex-wrap gap-2">
-                                {hackathon.judgingCriteria.slice(0, 3).map((criteria, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    {criteria.title} ({criteria.maxScore}pts)
-                                  </Badge>
-                                ))}
-                                {hackathon.judgingCriteria.length > 3 && (
-                                  <Badge variant="outline" className="text-xs">
-                                    +{hackathon.judgingCriteria.length - 3} more
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {!isJudgingOpen && (
-                          <Alert className="bg-yellow-950/40 border-yellow-800/50 mb-3">
-                            <MdTimer className="w-4 h-4" />
-                            <AlertDescription className="text-yellow-300 text-sm">
-                              Judging will open after the submission deadline
-                            </AlertDescription>
-                          </Alert>
-                        )}
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          onClick={() => setSelectedHackathon(hackathon)}
-                          disabled={!isJudgingOpen}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          <MdAssignment className="w-4 h-4 mr-2" />
-                          {isJudgingOpen ? "Judge Projects" : "View Details"}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        ) : (
-          <Card className="bg-zinc-950 border-zinc-800">
-            <CardContent className="p-8 text-center">
-              <MdInfo className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">
-                No Hackathons Assigned
-              </h3>
-              <p className="text-zinc-400">
-                You haven't been assigned to judge any hackathons yet.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    );
-  };
-
   const renderComingSoon = (title, description) => (
     <div className="flex flex-col items-center justify-center h-64 space-y-4">
       <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center">
@@ -644,7 +486,52 @@ const JudgeDashboard = () => {
       case "invitations":
         return <JudgeInvitation />;
       case "projects":
-        return renderProjectsSection();
+  // If no hackathon is selected, show a list to pick from
+  if (!selectedHackathon) {
+    return (
+      <div>
+        <h2 className="text-2xl font-bold text-white mb-4">Select a Hackathon</h2>
+        <div className="space-y-4">
+          {hackathons.length === 0 && (
+            <div className="text-zinc-400">No assigned hackathons.</div>
+          )}
+          {hackathons.map(h => (
+            <Card
+              key={h._id}
+              className="bg-zinc-950 border-zinc-800 hover:border-blue-600 cursor-pointer"
+              onClick={() => setSelectedHackathon(h)}
+            >
+              <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-white font-semibold">{h.title}</h3>
+                  <p className="text-zinc-400 text-sm">{h.theme}</p>
+                </div>
+                <Badge className="bg-blue-600 text-white">{h.status}</Badge>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  // If a hackathon is selected, show its projects
+  return (
+    <>
+    <Button
+      variant="ghost"
+      className="mb-4 text-zinc-400 hover:text-white"
+      onClick={() => setSelectedHackathon(null)}
+    >
+      <MdArrowBack className="inline-block mr-2" />
+      Back to Hackathons
+    </Button>
+    
+    <JudgeProjects
+      hackathon={selectedHackathon}
+      onBack={() => setSelectedHackathon(null)}
+      />
+      </>
+  );
       case "queue":
         return renderComingSoon("Judging Queue", "Project review queue coming soon!");
       case "reviews":
