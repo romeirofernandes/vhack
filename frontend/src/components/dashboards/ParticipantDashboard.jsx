@@ -19,6 +19,7 @@ import {
   MdTimer,
   MdSearch,
   MdFilterList,
+  MdBarChart,
 } from "react-icons/md";
 import { TbCode, TbSparkles } from "react-icons/tb";
 import { useAuth } from "../../contexts/AuthContext";
@@ -32,6 +33,7 @@ import Achievements from "./participants/Achievements";
 import Hackathons from "./participants/HackathonDetailsPage";
 import ParticipantHackathons from "./participants/ParticipantHackathons";
 import MyHackathonsAndTeams from "./participants/MyHackathonsAndTeams";
+import ParticipantAnalytics from "./participants/Analytics";
 
 const ParticipantDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
@@ -74,6 +76,12 @@ const ParticipantDashboard = () => {
       href: "#",
       icon: <MdEmojiEvents className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("achievements"),
+    },
+    {
+    label: "Analytics", // Add this new item
+    href: "#",
+    icon: <MdBarChart className="text-white/70 h-5 w-5 flex-shrink-0" />,
+    onClick: () => setActiveSection("analytics"),
     },
     {
       label: "Profile",
@@ -390,6 +398,8 @@ const ParticipantDashboard = () => {
         return <Projects />;
       case "achievements":
         return <Achievements />;
+      case "analytics":
+        return <ParticipantAnalytics />
       case "profile":
         return <Profile />;
       default:

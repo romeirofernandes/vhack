@@ -8,5 +8,6 @@ router.use(authMiddleware);
 
 // Dashboard routes
 router.get("/dashboard", participantController.getParticipantDashboard);
+router.get("/analytics", authMiddleware, participantController.getParticipantAnalytics);
 
 module.exports = router;
