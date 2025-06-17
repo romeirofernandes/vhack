@@ -23,11 +23,13 @@ import {
   TbCalendarStats,
   TbFlag,
 } from "react-icons/tb";
+import { MdAssignment, MdArrowBack } from "react-icons/md";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import JudgeProjects from "../judges/JudgeProjects";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
@@ -38,6 +40,7 @@ const ViewHackathonDetails = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [showProjects, setShowProjects] = useState(false);
   const { hackathonId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -239,6 +242,27 @@ const ViewHackathonDetails = () => {
             <TbArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // If showing projects view
+  if (showProjects) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => setShowProjects(false)}
+              className="text-white hover:bg-white/10"
+            >
+              <MdArrowBack className="w-4 h-4 mr-2" />
+              Back to Hackathon Details
+            </Button>
+          </div>
+          <JudgeProjects hackathon={hackathon} />
         </div>
       </div>
     );
@@ -552,6 +576,32 @@ const ViewHackathonDetails = () => {
                       )}
                   </CardContent>
                 </Card>
+
+                {/* Submitted Projects Section */}
+                {(hackathon.status === "ongoing" || hackathon.status === "completed") && (
+                  <Card className="bg-zinc-950 border-zinc-800">
+                    <CardHeader>
+                      <CardTitle className="text-white flex items-center gap-2">
+                        <MdAssignment className="w-5 h-5" />
+                        Submitted Projects
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <p className="text-zinc-400">
+                          View and manage projects submitted by teams
+                        </p>
+                        <Button
+                          onClick={() => setShowProjects(true)}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <MdAssignment className="w-4 h-4 mr-2" />
+                          View Submitted Projects
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Team Settings */}
                 <Card className="bg-zinc-950 border-zinc-800">

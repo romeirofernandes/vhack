@@ -3,6 +3,7 @@ const router = express.Router();
 const projectController = require("../controllers/projectController");
 const authMiddleware = require("../middleware/auth");
 
+
 // All project routes require authentication
 router.use(authMiddleware);
 
@@ -23,5 +24,11 @@ router.delete(
   "/:projectId/images/:imageId",
   projectController.removeProjectImage
 );
+
+// Get submitted projects for judging
+router.get("/hackathon/:hackathonId/submitted", authMiddleware, projectController.getSubmittedProjects);
+
+// Submit judge score
+router.post("/:projectId/score", authMiddleware, projectController.submitJudgeScore);
 
 module.exports = router;

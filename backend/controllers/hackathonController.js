@@ -188,7 +188,14 @@ exports.updateHackathon = async (req, res) => {
                 message: 'Hackathon ID is required'
             });
         }
-
+        const hackathon = await Hackathon.findById(hackathonId);
+        const now = new Date();
+        if(now > new Date(hackathon.timelines.hackathonStart)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot update hackathon after it has started'
+            });
+        }
         // Find and update the hackathon
         const updatedHackathon = await Hackathon.findByIdAndUpdate(
             hackathonId,

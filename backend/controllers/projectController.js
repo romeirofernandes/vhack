@@ -571,6 +571,139 @@ const projectController = {
       });
     }
   },
+
+  async getSubmittedProjects (req, res) {
+  try {
+    const { hackathonId } = req.params;
+    const userId = req.user._id;
+
+    // Find hackathon and check permissions
+    const hackathon = await Hackathon.findById(hackathonId);
+    if (!hackathon) {
+      return res.status(404).json({ success: false, error: "Hackathon not found" });
+    }
+
+    // Check if user is organizer or judge
+    const isOrganizer = hackathon.organizerId.toString() === userId.toString();
+    const isJudge = hackathon.judges.includes(userId);
+
+    if (!isOrganizer && !isJudge) {
+      return res.status(403).json({ success: false, error: "Access denied" });
+    }
+
+    // Check if judging period has started (after submission deadline)
+    const now = new Date();
+    const submissionDeadline = new Date(hackathon.timelines.hackathonEnd);
+    
+    if (now < submissionDeadline && isJudge) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Judging not open yet. Wait until submission deadline." 
+      });
+    }
+
+    // Get submitted projects
+    const projects = await Project.find({
+      hackathon: hackathonId,
+      status: { $in: ["submitted", "judging", "judged"] }
+    })
+    .populate("team", "name members")
+    .populate("builders.user", "displayName email photoURL")
+    .populate("scores.judge", "displayName email")
+    .sort({ submittedAt: -1 });
+
+    res.json({ 
+      success: true, 
+      data: { 
+        projects,
+        hackathon: {
+          title: hackathon.title,
+          judgingCriteria: hackathon.judgingCriteria || [],
+          submissionDeadline: hackathon.timelines.hackathonEnd,
+          judgingOpen: now >= submissionDeadline
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching submitted projects:", error);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+},
+
+// Submit judge score
+async submitJudgeScore (req, res) {
+  try {
+    const { projectId } = req.params;
+    const { scores, feedback } = req.body;
+    const judgeId = req.user._id;
+
+    // Find project and populate hackathon
+    const project = await Project.findById(projectId).populate("hackathon");
+    if (!project) {
+      return res.status(404).json({ success: false, error: "Project not found" });
+    }
+
+    // Check if user is a judge for this hackathon
+    if (!project.hackathon.judges.includes(judgeId)) {
+      return res.status(403).json({ success: false, error: "You are not a judge for this hackathon" });
+    }
+
+    // Check if judging period has started
+    const now = new Date();
+    const submissionDeadline = new Date(project.hackathon.timelines.hackathonEnd);
+    
+    if (now < submissionDeadline) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Judging not open yet" 
+      });
+    }
+
+    // Check if judge has already scored this project
+    const existingScoreIndex = project.scores.findIndex(
+      score => score.judge.toString() === judgeId.toString()
+    );
+
+    // Calculate total score
+    const totalScore = scores.reduce((sum, score) => sum + score.score, 0);
+
+    const judgeScore = {
+      judge: judgeId,
+      criteria: scores,
+      totalScore,
+      feedback,
+      submittedAt: new Date()
+    };
+
+    if (existingScoreIndex >= 0) {
+      // Update existing score
+      project.scores[existingScoreIndex] = judgeScore;
+    } else {
+      // Add new score
+      project.scores.push(judgeScore);
+    }
+
+    // Update project status
+    if (project.status === "submitted") {
+      project.status = "judging";
+    }
+
+    await project.save();
+
+    res.json({ 
+      success: true, 
+      message: "Score submitted successfully",
+      data: project
+    });
+
+  } catch (error) {
+    console.error("Error submitting judge score:", error);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+}
+  
 };
+
+
 
 module.exports = projectController;

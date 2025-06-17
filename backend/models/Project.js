@@ -77,34 +77,21 @@ const projectSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
-  scores: [{
-    judge: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
-    },
-    criteria: [{
-      name: { type: String, required: true },
-      score: { type: Number, required: true, min: 0, max: 10 },
-      feedback: { type: String, default: '' }
-    }],
-    totalScore: {
-      type: Number,
-      default: 0
-    },
-    feedback: {
-      type: String,
-      default: ''
-    },
-    scoredAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-  finalScore: {
-    type: Number,
-    default: 0
-  },
+  scores: [
+  {
+    judge: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    criteria: [
+      {
+        title: String,
+        score: Number,
+        maxScore: { type: Number, default: 10 }
+      }
+    ],
+    totalScore: Number,
+    feedback: String,
+    submittedAt: { type: Date, default: Date.now }
+  }
+],
   rank: {
     type: Number,
     default: null

@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { TbCode, TbCalendar, TbUsers, TbTrophy } from 'react-icons/tb';
+import { MdAdd, MdRemove, MdGavel } from 'react-icons/md';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 
 const CreateHackathon = () => {
@@ -42,6 +44,31 @@ const CreateHackathon = () => {
         }
     });
 
+    // Judging Criteria State
+    const [judgingCriteria, setJudgingCriteria] = useState([
+        { title: "Innovation", description: "How creative and innovative is the solution?", weight: 1, maxScore: 10 },
+        { title: "Technical Implementation", description: "Quality of code and technical execution", weight: 1, maxScore: 10 },
+        { title: "Impact", description: "Potential impact and usefulness of the solution", weight: 1, maxScore: 10 },
+        { title: "Presentation", description: "Quality of presentation and demonstration", weight: 1, maxScore: 10 }
+    ]);
+
+    // Judging Criteria Handlers
+    const addCriteria = () => {
+        setJudgingCriteria([...judgingCriteria, { title: "", description: "", weight: 1, maxScore: 10 }]);
+    };
+
+    const removeCriteria = (index) => {
+        if (judgingCriteria.length > 1) {
+            setJudgingCriteria(judgingCriteria.filter((_, i) => i !== index));
+        }
+    };
+
+    const updateCriteria = (index, field, value) => {
+        setJudgingCriteria(judgingCriteria.map((criteria, i) => 
+            i === index ? { ...criteria, [field]: value } : criteria
+        ));
+    };
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         
@@ -68,9 +95,16 @@ const CreateHackathon = () => {
 
         try {
             const idToken = await user.getIdToken();
+            
+            // Include judging criteria in the payload
+            const payload = {
+                ...formData,
+                judgingCriteria: judgingCriteria.filter(criteria => criteria.title.trim() !== '')
+            };
+
             const response = await axios.post(
                 `${import.meta.env.VITE_API_URL}/hackathons/create`,
-                formData,
+                payload,
                 {
                     headers: {
                         Authorization: `Bearer ${idToken}`,
@@ -117,10 +151,11 @@ const CreateHackathon = () => {
                     </div>
                     <Button
                         onClick={() => navigate('/organizer/dashboard')}
-                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-lg transition-colors duration-200"
+                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 mb-6"
                     >
-                    <span className="text-sm text-zinc-400 ml-2">Back to Dashboard</span>
+                        <span className="text-sm text-zinc-300">Back to Dashboard</span>
                     </Button>
+                    
                     <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Hackathon Details Section */}
                         <motion.div
@@ -366,12 +401,95 @@ const CreateHackathon = () => {
                             </Card>
                         </motion.div>
 
-                        {/* Prizes Section */}
+                        {/* Judging Criteria Section */}
                         <motion.div
                             variants={cardVariants}
                             initial="hidden"
                             animate="visible"
                             transition={{ delay: 0.4 }}
+                        >
+                            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-indigo-500/20 transition-all duration-300">
+                                <CardHeader>
+                                    <CardTitle className="flex items-center space-x-3 text-xl">
+                                        <div className="p-2.5 bg-gradient-to-br from-indigo-500/20 to-indigo-600/10 rounded-lg border border-indigo-500/20">
+                                            <MdGavel className="w-6 h-6 text-indigo-300" />
+                                        </div>
+                                        <span className="bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">Judging Criteria</span>
+                                    </CardTitle>
+                                    <p className="text-zinc-400 text-sm mt-2">
+                                        Define how projects will be evaluated by judges
+                                    </p>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {judgingCriteria.map((criteria, index) => (
+                                        <Card key={index} className="bg-zinc-800/30 border-zinc-700/30">
+                                            <CardContent className="p-4 space-y-3">
+                                                <div className="flex gap-3">
+                                                    <div className="flex-1">
+                                                        <Label className="text-zinc-300 text-sm">Criteria Title *</Label>
+                                                        <Input
+                                                            value={criteria.title}
+                                                            onChange={(e) => updateCriteria(index, "title", e.target.value)}
+                                                            placeholder="e.g., Innovation"
+                                                            className="bg-zinc-800/50 border-zinc-700/50 text-white mt-1"
+                                                            required
+                                                        />
+                                                    </div>
+                                                    <div className="w-24">
+                                                        <Label className="text-zinc-300 text-sm">Max Score</Label>
+                                                        <Input
+                                                            type="number"
+                                                            value={criteria.maxScore}
+                                                            onChange={(e) => updateCriteria(index, "maxScore", parseInt(e.target.value) || 10)}
+                                                            min={1}
+                                                            max={100}
+                                                            className="bg-zinc-800/50 border-zinc-700/50 text-white mt-1"
+                                                        />
+                                                    </div>
+                                                    <div className="flex items-end">
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => removeCriteria(index)}
+                                                            disabled={judgingCriteria.length <= 1}
+                                                        >
+                                                            <MdRemove className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <Label className="text-zinc-300 text-sm">Description (Optional)</Label>
+                                                    <Textarea
+                                                        value={criteria.description}
+                                                        onChange={(e) => updateCriteria(index, "description", e.target.value)}
+                                                        placeholder="Describe what judges should look for..."
+                                                        className="bg-zinc-800/50 border-zinc-700/50 text-white mt-1 min-h-[60px]"
+                                                    />
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                    
+                                    <Button
+                                        type="button"
+                                        onClick={addCriteria}
+                                        variant="outline"
+                                        className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-800/50"
+                                    >
+                                        <MdAdd className="w-4 h-4 mr-2" />
+                                        Add Criteria
+                                    </Button>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+
+                        {/* Prizes Section */}
+                        <motion.div
+                            variants={cardVariants}
+                            initial="hidden"
+                            animate="visible"
+                            transition={{ delay: 0.5 }}
                         >
                             <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-yellow-500/20 transition-all duration-300">
                                 <CardHeader>
@@ -440,7 +558,7 @@ const CreateHackathon = () => {
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
+                            transition={{ delay: 0.6 }}
                             className="flex justify-end"
                         >
                             <Button
@@ -458,4 +576,4 @@ const CreateHackathon = () => {
     );
 };
 
-export default CreateHackathon; 
+export default CreateHackathon;

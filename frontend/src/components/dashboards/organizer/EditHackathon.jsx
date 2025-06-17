@@ -8,7 +8,10 @@ import {
   TbUsers,
   TbDeviceFloppy,
   TbLoader,
-  TbCode
+  TbCode,
+  TbStar,
+  TbPlus,
+  TbTrash
 } from 'react-icons/tb';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,6 +50,13 @@ const EditHackathon = () => {
     },
     status: 'draft'
   });
+
+  const [judgingCriteria, setJudgingCriteria] = useState([
+    { title: "Innovation", description: "How creative and innovative is the solution?", weight: 1, maxScore: 10 },
+    { title: "Technical Implementation", description: "Quality of code and technical execution", weight: 1, maxScore: 10 },
+    { title: "Impact", description: "Potential impact and usefulness of the solution", weight: 1, maxScore: 10 },
+    { title: "Presentation", description: "Quality of presentation and demonstration", weight: 1, maxScore: 10 }
+  ]);
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -57,6 +67,24 @@ const EditHackathon = () => {
   useEffect(() => {
     fetchHackathonData();
   }, [hackathonId]);
+
+  const addCriteria = () => {
+    setJudgingCriteria([...judgingCriteria, { title: "", description: "", weight: 1, maxScore: 10 }]);
+  };
+
+  const removeCriteria = (index) => {
+    if (judgingCriteria.length <= 1) {
+      toast.error("At least one judging criteria is required");
+      return;
+    }
+    setJudgingCriteria(judgingCriteria.filter((_, i) => i !== index));
+  };
+
+  const updateCriteria = (index, field, value) => {
+    setJudgingCriteria(judgingCriteria.map((criteria, i) => 
+      i === index ? { ...criteria, [field]: value } : criteria
+    ));
+  };
 
   const fetchHackathonData = async () => {
     try {
@@ -105,6 +133,11 @@ const EditHackathon = () => {
           },
           status: hackathon.status || 'draft'
         });
+
+        // Load judging criteria
+        if (hackathon.judgingCriteria && hackathon.judgingCriteria.length > 0) {
+          setJudgingCriteria(hackathon.judgingCriteria);
+        }
       } else {
         toast.error('Failed to fetch hackathon data');
         navigate('/dashboard');
@@ -139,6 +172,13 @@ const EditHackathon = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // Validate judging criteria
+    const validCriteria = judgingCriteria.filter(criteria => criteria.title.trim() !== '');
+    if (validCriteria.length === 0) {
+      toast.error('At least one judging criteria is required');
+      return;
+    }
+
     try {
       setSaving(true);
       const idToken = await user.getIdToken();
@@ -157,7 +197,8 @@ const EditHackathon = () => {
           hackathonStart: formatDateForAPI(formData.timelines.hackathonStart),
           hackathonEnd: formatDateForAPI(formData.timelines.hackathonEnd),
           resultsDate: formatDateForAPI(formData.timelines.resultsDate)
-        }
+        },
+        judgingCriteria: validCriteria
       };
 
       const response = await axios.put(
@@ -176,7 +217,11 @@ const EditHackathon = () => {
       }
     } catch (error) {
       console.error('Error updating hackathon:', error);
-      toast.error(error.response?.data?.message || 'Error updating hackathon');
+      if (error.response?.status === 400 && error.response?.data?.error?.includes('criteria')) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error(error.response?.data?.message || 'Error updating hackathon');
+      }
     } finally {
       setSaving(false);
     }
@@ -450,6 +495,83 @@ const EditHackathon = () => {
                     required
                   />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Judging Criteria */}
+            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-zinc-700/60 transition-colors duration-200">
+              <CardHeader className="border-b border-zinc-800/60 py-4">
+                <CardTitle className="text-white flex items-center gap-2 text-base font-semibold">
+                  <div className="p-1.5 rounded-lg bg-amber-500/10">
+                    <TbStar className="w-4 h-4 text-amber-400" />
+                  </div>
+                  Judging Criteria
+                </CardTitle>
+                <p className="text-zinc-400 text-sm mt-1">
+                  Define how projects will be evaluated by judges
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                {judgingCriteria.map((criteria, index) => (
+                  <Card key={index} className="bg-zinc-800/30 border-zinc-700/30 hover:border-zinc-600/50 transition-colors duration-200">
+                    <CardContent className="p-4 space-y-3">
+                      <div className="flex gap-3">
+                        <div className="flex-1">
+                          <Label className="text-zinc-300 text-sm font-medium">Criteria Title</Label>
+                          <Input
+                            value={criteria.title}
+                            onChange={(e) => updateCriteria(index, "title", e.target.value)}
+                            placeholder="e.g., Innovation"
+                            className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 mt-1 h-9 text-sm font-medium"
+                            required
+                          />
+                        </div>
+                        <div className="w-24">
+                          <Label className="text-zinc-300 text-sm font-medium">Max Score</Label>
+                          <Input
+                            type="number"
+                            value={criteria.maxScore}
+                            onChange={(e) => updateCriteria(index, "maxScore", parseInt(e.target.value) || 10)}
+                            min={1}
+                            max={100}
+                            className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 mt-1 h-9 text-sm font-medium"
+                          />
+                        </div>
+                        <div className="flex items-end">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => removeCriteria(index)}
+                            disabled={judgingCriteria.length <= 1}
+                            className="h-9"
+                          >
+                            <TbTrash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-zinc-300 text-sm font-medium">Description (Optional)</Label>
+                        <Textarea
+                          value={criteria.description}
+                          onChange={(e) => updateCriteria(index, "description", e.target.value)}
+                          placeholder="Describe what judges should look for..."
+                          className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 mt-1 min-h-[60px] text-sm font-medium resize-none"
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                
+                <Button
+                  type="button"
+                  onClick={addCriteria}
+                  variant="outline"
+                  className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-800/50 hover:text-white hover:border-zinc-500 transition-all duration-200"
+                >
+                  <TbPlus className="w-4 h-4 mr-2" />
+                  Add Criteria
+                </Button>
               </CardContent>
             </Card>
 

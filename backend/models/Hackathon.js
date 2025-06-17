@@ -94,6 +94,14 @@ const hackathonSchema = new mongoose.Schema({
       required: true,
     },
   },
+  judgingCriteria: [
+  {
+    title: { type: String, required: true },
+    description: { type: String },
+    weight: { type: Number, default: 1 },
+    maxScore: { type: Number, default: 10 }
+  }
+],
   status: {
     type: String,
     enum: [
