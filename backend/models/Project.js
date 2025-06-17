@@ -102,10 +102,27 @@ const projectSchema = new mongoose.Schema({
 
 // Calculate final score when scores are updated
 projectSchema.pre('save', function(next) {
+  console.log('Pre-save hook triggered. Scores:', this.scores?.length || 0);
+  
   if (this.scores && this.scores.length > 0) {
-    const totalScore = this.scores.reduce((sum, score) => sum + score.totalScore, 0);
-    this.finalScore = totalScore / this.scores.length;
+    // Calculate average score from all judges
+    const totalScore = this.scores.reduce((sum, score) => {
+      console.log('Judge score:', score.totalScore);
+      return sum + (score.totalScore || 0);
+    }, 0);
+    
+    this.finalScore = Number((totalScore / this.scores.length).toFixed(2));
+    console.log('Calculated final score:', this.finalScore);
+    
+    // Update status if all judges have scored
+    if (this.status !== 'judged') {
+      // You can add logic here to check if all assigned judges have scored
+      this.status = 'judging'; // Keep as judging until all judges complete
+    }
+  } else {
+    this.finalScore = 0;
   }
+  
   next();
 });
 

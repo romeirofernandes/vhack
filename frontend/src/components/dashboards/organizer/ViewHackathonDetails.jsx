@@ -32,6 +32,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import JudgeProjects from "../judges/JudgeProjects";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import SubmittedProjects from "./SubmittedProjects";
 
 const ViewHackathonDetails = () => {
   const [hackathon, setHackathon] = useState(null);
@@ -249,24 +250,13 @@ const ViewHackathonDetails = () => {
 
   // If showing projects view
   if (showProjects) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => setShowProjects(false)}
-              className="text-white hover:bg-white/10"
-            >
-              <MdArrowBack className="w-4 h-4 mr-2" />
-              Back to Hackathon Details
-            </Button>
-          </div>
-          <JudgeProjects hackathon={hackathon} />
-        </div>
-      </div>
-    );
-  }
+  return (
+    <SubmittedProjects
+      hackathon={hackathon}
+      onBack={() => setShowProjects(false)}
+    />
+  );
+}
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">

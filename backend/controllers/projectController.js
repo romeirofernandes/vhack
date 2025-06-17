@@ -631,7 +631,7 @@ const projectController = {
 },
 
 // Submit judge score
-async submitJudgeScore (req, res) {
+async submitJudgeScore(req, res) {
   try {
     const { projectId } = req.params;
     const { scores, feedback } = req.body;
@@ -688,7 +688,18 @@ async submitJudgeScore (req, res) {
       project.status = "judging";
     }
 
+    // **MANUAL FINAL SCORE CALCULATION**
+    if (project.scores && project.scores.length > 0) {
+      const totalFinalScore = project.scores.reduce((sum, score) => sum + score.totalScore, 0);
+      project.finalScore = Number((totalFinalScore / project.scores.length).toFixed(2));
+      console.log('Manually calculated final score:', project.finalScore);
+    }
+
+    // Save the project (this should also trigger the pre-save hook)
     await project.save();
+
+    // Populate the response
+    await project.populate("scores.judge", "_id displayName email");
 
     res.json({ 
       success: true, 
