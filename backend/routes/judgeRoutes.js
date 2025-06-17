@@ -1,23 +1,27 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controllers/judgeController");
+const judgeController = require("../controllers/judgeController");
 const authMiddleware = require("../middleware/auth");
 
 // Get all judges
-router.get("/", authMiddleware, userController.getAllJudges);
+router.get("/", authMiddleware, judgeController.getAllJudges);
 
 // Search users
-router.get("/search", authMiddleware, userController.searchUsers);
+router.get("/search", authMiddleware, judgeController.searchUsers);
 
 // Send judge invite
-router.post("/hackathon/:hackathonId/invite", authMiddleware, userController.sendJudgeInvite);
+router.post("/hackathon/:hackathonId/invite", authMiddleware, judgeController.sendJudgeInvite);
 
-// Add these routes to your userRoutes.js
+// Get judge dashboard
+router.get("/dashboard", authMiddleware, judgeController.getJudgeDashboard);
+
+// Get judge analytics
+router.get("/analytics", authMiddleware, judgeController.getJudgeAnalytics);
 
 // Get judge invitations
-router.get('/invitations', authMiddleware, userController.getJudgeInvitations);
+router.get('/invitations', authMiddleware, judgeController.getJudgeInvitations);
 
 // Respond to an invitation
-router.post('/invitations/:hackathonId/respond', authMiddleware, userController.respondToInvitation);
+router.post('/invitations/:hackathonId/respond', authMiddleware, judgeController.respondToInvitation);
 
 module.exports = router; 
