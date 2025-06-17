@@ -400,6 +400,7 @@ const ViewHackathonDetails = () => {
         <div className="flex space-x-1 bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
           {[
             { id: "overview", label: "Overview", icon: TbEye },
+            { id: "problem-statement", label: "Problem Statement", icon: TbCode },
             { id: "teams", label: "Teams", icon: TbUsers },
             { id: "participants", label: "Participants", icon: TbUsers },
             { id: "timeline", label: "Timeline", icon: TbCalendar },
@@ -745,6 +746,41 @@ const ViewHackathonDetails = () => {
             </div>
           )}
 
+          {/* Problem Statement Tab */}
+          {activeTab === "problem-statement" && (
+            <Card className="bg-zinc-950 border-zinc-800">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-white flex items-center gap-2 text-xl">
+                  <TbCode className="w-5 h-5" />
+                  Problem Statement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {hackathon.problemStatements ? (
+                  <div className="prose prose-invert max-w-none">
+                    <div className="p-6 bg-zinc-900 border border-zinc-800 rounded-lg">
+                      <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-base">
+                        {hackathon.problemStatements}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <TbCode className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
+                    <p className="text-zinc-400">No problem statement defined yet</p>
+                    <Button
+                      onClick={() => navigate(`/organizer/hackathon/${hackathonId}/edit`)}
+                      className="mt-4 bg-blue-600 hover:bg-blue-700"
+                    >
+                      <TbEdit className="w-4 h-4 mr-2" />
+                      Add Problem Statement
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+          
           {/* Teams Tab */}
           {activeTab === "teams" && (
             <Card className="bg-zinc-950 border-zinc-800">
