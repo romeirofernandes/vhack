@@ -27,12 +27,25 @@ import {
   MdPending,
   MdGavel,
 } from "react-icons/md";
+import { signOut } from "firebase/auth";
+import { auth } from "../../config/firebase";
+import { useNavigate } from "react-router-dom";
 
 const JudgeDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+      try {
+        await signOut(auth);
+        navigate("/");
+      } catch (error) {
+        console.error("Logout error:", error);
+      }
+    };
 
   useEffect(() => {
     if (activeSection === "dashboard") {
@@ -177,7 +190,7 @@ const JudgeDashboard = () => {
       label: "Logout",
       href: "#",
       icon: <MdLogout className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
-      onClick: logout,
+      onClick: handleLogout,
     },
   ];
 

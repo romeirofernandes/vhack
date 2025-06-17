@@ -178,7 +178,7 @@ const ParticipantDashboard = () => {
 
       const idToken = await user.getIdToken();
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/participant/hackathons`,
+        `${import.meta.env.VITE_API_URL}/hackathons`,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,

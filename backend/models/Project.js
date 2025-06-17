@@ -1,122 +1,125 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const projectSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    trim: true,
+    trim: true
   },
   description: {
     type: String,
     required: true,
+    trim: true
   },
-  thumbnailImage: {
-    type: String,
-    default: "https://via.placeholder.com/400x300?text=Project+Thumbnail",
-  },
-  images: [
-    {
-      url: {
-        type: String,
-        required: true,
-      },
-      publicId: String, // Cloudinary public ID for potential deletion
-      caption: String,
-      filename: String,
-      uploadedBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-      uploadedAt: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
   problemStatement: {
     type: String,
-    default: "",
+    trim: true
   },
   challenges: {
     type: String,
-    default: "",
+    trim: true
   },
-  technologies: [
-    {
-      type: String,
-    },
-  ],
+  technologies: [{
+    type: String,
+    trim: true
+  }],
   links: {
-    github: String,
-    demo: String,
-    live: String,
-    video: String,
-    presentation: String,
-    other: [String],
+    github: { type: String, trim: true },
+    live: { type: String, trim: true },
+    video: { type: String, trim: true },
+    presentation: { type: String, trim: true }
+  },
+  images: [{
+    url: { type: String, required: true },
+    caption: { type: String, default: '' }
+  }],
+  hackathon: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Hackathon',
+    default: null // null for personal projects, hackathon ID for hackathon submissions
   },
   team: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Team",
+    ref: 'Team',
+    default: null // null for solo projects, team ID for team projects
   },
-  hackathon: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Hackathon",
-  },
-  builders: [
-    {
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-      role: String,
-    },
-  ],
   creator: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+    ref: 'User',
+    required: true
   },
+  builders: [{
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    role: {
+      type: String,
+      enum: ['creator', 'collaborator'],
+      default: 'collaborator'
+    },
+    joinedAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   status: {
     type: String,
-    enum: ["draft", "submitted", "judging", "judged"],
-    default: "draft",
+    enum: ['draft', 'submitted', 'judging', 'judged'],
+    default: 'draft'
   },
-  scores: [
-    {
-      judge: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-      criteria: [
-        {
-          name: String,
-          score: Number,
-          feedback: String,
-        },
-      ],
-      totalScore: Number,
-      overallFeedback: String,
-      createdAt: {
-        type: Date,
-        default: Date.now,
-      },
-    },
-  ],
-  finalScore: Number,
-  rank: Number,
   isPublic: {
     type: Boolean,
-    default: true,
+    default: true
   },
-  createdAt: {
+  submittedAt: {
     type: Date,
-    default: Date.now,
+    default: null
   },
-  submittedAt: Date,
-  updatedAt: {
-    type: Date,
-    default: Date.now,
+  scores: [{
+    judge: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    criteria: [{
+      name: { type: String, required: true },
+      score: { type: Number, required: true, min: 0, max: 10 },
+      feedback: { type: String, default: '' }
+    }],
+    totalScore: {
+      type: Number,
+      default: 0
+    },
+    feedback: {
+      type: String,
+      default: ''
+    },
+    scoredAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  finalScore: {
+    type: Number,
+    default: 0
   },
+  rank: {
+    type: Number,
+    default: null
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model("Project", projectSchema);
+// Calculate final score when scores are updated
+projectSchema.pre('save', function(next) {
+  if (this.scores && this.scores.length > 0) {
+    const totalScore = this.scores.reduce((sum, score) => sum + score.totalScore, 0);
+    this.finalScore = totalScore / this.scores.length;
+  }
+  next();
+});
+
+module.exports = mongoose.model('Project', projectSchema);
