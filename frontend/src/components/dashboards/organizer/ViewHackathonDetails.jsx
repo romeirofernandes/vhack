@@ -640,6 +640,102 @@ const ViewHackathonDetails = () => {
                     </div>
                   </CardContent>
                 </Card>
+                <Card className="bg-zinc-950 border-zinc-800">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-white flex items-center gap-2 text-xl">
+            <TbChartBar className="w-5 h-5" />
+            Judging Criteria
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {hackathon.judgingCriteria && hackathon.judgingCriteria.length > 0 ? (
+            <div className="space-y-4">
+              {hackathon.judgingCriteria.map((criteria, index) => (
+                <div
+                  key={index}
+                  className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors duration-200"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-semibold text-white text-base">
+                          {criteria.title}
+                        </h4>
+                        <Badge className="bg-blue-600/20 text-blue-400 border border-blue-500/50 px-2 py-1 text-xs">
+                          Weight: {criteria.weight || 1}
+                        </Badge>
+                      </div>
+                      {criteria.description && (
+                        <p className="text-zinc-400 text-sm leading-relaxed">
+                          {criteria.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="ml-4 text-right">
+                      <div className="text-lg font-bold text-white">
+                        {criteria.maxScore || 10}
+                      </div>
+                      <div className="text-xs text-zinc-500">max points</div>
+                    </div>
+                  </div>
+                  
+                  {/* Progress bar showing weight distribution */}
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                      <span>Weight Distribution</span>
+                      <span>{criteria.weight || 1}x multiplier</span>
+                    </div>
+                    <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
+                        style={{ 
+                          width: `${((criteria.weight || 1) / Math.max(...hackathon.judgingCriteria.map(c => c.weight || 1))) * 100}%` 
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Summary */}
+              <div className="mt-6 p-4 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-xl font-bold text-white mb-1">
+                      {hackathon.judgingCriteria.length}
+                    </div>
+                    <div className="text-zinc-400 text-sm">Total Criteria</div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-white mb-1">
+                      {hackathon.judgingCriteria.reduce((sum, criteria) => sum + (criteria.maxScore || 10), 0)}
+                    </div>
+                    <div className="text-zinc-400 text-sm">Total Points</div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-white mb-1">
+                      {hackathon.judgingCriteria.reduce((sum, criteria) => sum + (criteria.weight || 1), 0)}
+                    </div>
+                    <div className="text-zinc-400 text-sm">Total Weight</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <TbChartBar className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
+              <p className="text-zinc-400 mb-4">No judging criteria defined yet</p>
+              <Button
+                onClick={() => navigate(`/organizer/hackathon/${hackathonId}/edit`)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                <TbEdit className="w-4 h-4 mr-2" />
+                Add Judging Criteria
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
               </div>
 
               {/* Right Column */}

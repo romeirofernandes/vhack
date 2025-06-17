@@ -66,7 +66,8 @@ exports.createHackathon = async (req, res) => {
             bannerImageUrl,
             timelines,
             teamSettings,
-            prizes
+            prizes,
+            judgingCriteria,
         } = req.body;
 
         // Get organizer ID from authenticated user
@@ -84,6 +85,7 @@ exports.createHackathon = async (req, res) => {
             timelines,
             teamSettings,
             prizes,
+            judgingCriteria,
             status: 'draft' // Set initial status as draft
         });
 

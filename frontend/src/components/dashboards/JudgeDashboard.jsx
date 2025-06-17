@@ -665,85 +665,85 @@ const JudgeDashboard = () => {
   // If a hackathon is selected and we're in projects section, show the judging interface
   if (selectedHackathon && activeSection === "projects") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950">
-        <div className="flex h-screen">
-          {/* Sidebar */}
-          <div className="w-64 bg-zinc-950 border-r border-zinc-800 flex flex-col">
-            {/* User Info */}
-            <div className="p-6 border-b border-zinc-800">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-semibold">
-                    {user?.displayName?.charAt(0) || 'J'}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-white font-medium">{user?.displayName || 'Judge'}</p>
-                  <p className="text-zinc-400 text-sm">Judge Panel</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 px-4 py-6">
-              <div className="space-y-2">
-                {sidebarLinks.map((link) => (
-                  <button
-                    key={link.label}
-                    onClick={link.onClick}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                      activeSection === link.label.toLowerCase().replace(' ', '')
-                        ? "bg-zinc-800 text-white"
-                        : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-                    }`}
-                  >
-                    {link.icon}
-                    <span className="font-medium">{link.label}</span>
-                  </button>
-                ))}
-              </div>
-            </nav>
-
-            {/* Bottom Links */}
-            <div className="px-4 py-6 border-t border-zinc-800">
-              <div className="space-y-2">
-                {bottomLinks.map((link) => (
-                  <button
-                    key={link.label}
-                    onClick={link.onClick}
-                    className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                      activeSection === link.label.toLowerCase()
-                        ? "bg-zinc-800 text-white"
-                        : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-                    }`}
-                  >
-                    {link.icon}
-                    <span className="font-medium">{link.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+  <div className="min-h-screen bg-zinc-950 flex">
+    {/* Sidebar */}
+    <div className="w-64 bg-zinc-950 border-r border-zinc-800 flex flex-col">
+      {/* User Info */}
+      <div className="p-6 border-b border-zinc-800">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+            <span className="text-white font-semibold">
+              {user?.displayName?.charAt(0) || 'J'}
+            </span>
           </div>
-
-          {/* Main Content */}
-          <div className="flex-1 overflow-hidden">
-            <div className="h-full overflow-y-auto p-8">
-              <div className="mb-6">
-                <Button
-                  variant="ghost"
-                  onClick={() => setSelectedHackathon(null)}
-                  className="text-white hover:bg-white/10"
-                >
-                  <MdArrowBack className="w-4 h-4 mr-2" />
-                  Back to Hackathons
-                </Button>
-              </div>
-              <JudgeProjects hackathon={selectedHackathon} />
-            </div>
+          <div>
+            <p className="text-white font-medium">{user?.displayName || 'Judge'}</p>
+            <p className="text-zinc-400 text-sm">Judge Panel</p>
           </div>
         </div>
       </div>
-    );
+
+      {/* Navigation */}
+      <nav className="flex-1 px-4 py-6">
+        <div className="space-y-2">
+          {sidebarLinks.map((link) => (
+            <button
+              key={link.label}
+              onClick={link.onClick}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                activeSection === link.label.toLowerCase().replace(' ', '')
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+              }`}
+            >
+              {link.icon}
+              <span className="font-medium">{link.label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {/* Bottom Links */}
+      <div className="px-4 py-6 border-t border-zinc-800">
+        <div className="space-y-2">
+          {bottomLinks.map((link) => (
+            <button
+              key={link.label}
+              onClick={link.onClick}
+              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                activeSection === link.label.toLowerCase()
+                  ? "bg-zinc-800 text-white"
+                  : "text-zinc-400 hover:text-white hover:bg-zinc-800"
+              }`}
+            >
+              {link.icon}
+              <span className="font-medium">{link.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div> {/* ← FIRST MISSING CLOSING DIV - closes the entire sidebar */}
+
+    {/* Main Content */}
+    <div className="flex-1 overflow-hidden">
+      <div className="h-full overflow-y-auto">
+        <div className="p-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  </div>
+);
   }
 
   return (
@@ -805,6 +805,7 @@ const JudgeDashboard = () => {
             ))}
           </div>
       </div>
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
@@ -824,7 +825,6 @@ const JudgeDashboard = () => {
           </div>
         </div>
       </div>
-    </div>
     </div>
   );
 };

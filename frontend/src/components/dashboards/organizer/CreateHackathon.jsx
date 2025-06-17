@@ -53,15 +53,29 @@ const CreateHackathon = () => {
     ]);
 
     // Judging Criteria Handlers
-    const addCriteria = () => {
-        setJudgingCriteria([...judgingCriteria, { title: "", description: "", weight: 1, maxScore: 10 }]);
-    };
+    const validateCriteria = () => {
+    const emptyCriteria = judgingCriteria.some(criteria => criteria.title.trim() === '');
+    return !emptyCriteria;
+};
 
-    const removeCriteria = (index) => {
-        if (judgingCriteria.length > 1) {
-            setJudgingCriteria(judgingCriteria.filter((_, i) => i !== index));
-        }
-    };
+// Update your addCriteria function:
+const addCriteria = () => {
+    setJudgingCriteria([...judgingCriteria, { 
+        title: "", 
+        description: "", 
+        weight: 1, 
+        maxScore: 10 
+    }]);
+};
+
+// Update your removeCriteria function:
+const removeCriteria = (index) => {
+    if (judgingCriteria.length > 1) {
+        setJudgingCriteria(judgingCriteria.filter((_, i) => i !== index));
+    } else {
+        toast.error('At least one judging criteria is required');
+    }
+};
 
     const updateCriteria = (index, field, value) => {
         setJudgingCriteria(judgingCriteria.map((criteria, i) => 
@@ -90,40 +104,59 @@ const CreateHackathon = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+    e.preventDefault();
+    setLoading(true);
 
-        try {
-            const idToken = await user.getIdToken();
-            
-            // Include judging criteria in the payload
-            const payload = {
-                ...formData,
-                judgingCriteria: judgingCriteria.filter(criteria => criteria.title.trim() !== '')
-            };
-
-            const response = await axios.post(
-                `${import.meta.env.VITE_API_URL}/hackathons/create`,
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${idToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            if (response.data.success) {
-                toast.success('Hackathon created successfully!');
-                navigate('/organizer/dashboard');
-            }
-        } catch (error) {
-            console.error('Error creating hackathon:', error);
-            toast.error(error.response?.data?.message || 'Error creating hackathon');
-        } finally {
+    try {
+        // Validate judging criteria
+        const validCriteria = judgingCriteria.filter(criteria => criteria.title.trim() !== '');
+        
+        if (validCriteria.length === 0) {
+            toast.error('At least one judging criteria is required');
             setLoading(false);
+            return;
         }
-    };
+
+        // Check if any criteria has empty title
+        const hasEmptyCriteria = judgingCriteria.some(criteria => criteria.title.trim() === '');
+        if (hasEmptyCriteria) {
+            toast.error('Please fill in all criteria titles or remove empty criteria');
+            setLoading(false);
+            return;
+        }
+
+        const idToken = await user.getIdToken();
+        
+        // Include ALL judging criteria in the payload (not filtered)
+        const payload = {
+            ...formData,
+            judgingCriteria: judgingCriteria  // Don't filter here
+        };
+
+        console.log('Submitting payload:', payload); // Debug log
+
+        const response = await axios.post(
+            `${import.meta.env.VITE_API_URL}/hackathons/create`,
+            payload,
+            {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        if (response.data.success) {
+            toast.success('Hackathon created successfully!');
+            navigate('/organizer/dashboard');
+        }
+    } catch (error) {
+        console.error('Error creating hackathon:', error);
+        toast.error(error.response?.data?.message || 'Error creating hackathon');
+    } finally {
+        setLoading(false);
+    }
+};
 
     const cardVariants = {
         hidden: { opacity: 0, y: 20 },
@@ -428,12 +461,14 @@ const CreateHackathon = () => {
                                                     <div className="flex-1">
                                                         <Label className="text-zinc-300 text-sm">Criteria Title *</Label>
                                                         <Input
-                                                            value={criteria.title}
-                                                            onChange={(e) => updateCriteria(index, "title", e.target.value)}
-                                                            placeholder="e.g., Innovation"
-                                                            className="bg-zinc-800/50 border-zinc-700/50 text-white mt-1"
-                                                            required
-                                                        />
+    value={criteria.title}
+    onChange={(e) => updateCriteria(index, "title", e.target.value)}
+    placeholder="e.g., Innovation"
+    className={`bg-zinc-800/50 border-zinc-700/50 text-white mt-1 ${
+        criteria.title.trim() === '' ? 'border-red-500/50' : ''
+    }`}
+    required
+/>
                                                     </div>
                                                     <div className="w-24">
                                                         <Label className="text-zinc-300 text-sm">Max Score</Label>
@@ -554,7 +589,14 @@ const CreateHackathon = () => {
                                 </CardContent>
                             </Card>
                         </motion.div>
-
+{/* Validation warning */}
+{judgingCriteria.some(criteria => criteria.title.trim() === '') && (
+    <div className="bg-red-950/40 border border-red-800/50 rounded-lg p-4 mb-4">
+        <p className="text-red-300 text-sm">
+            Please fill in all criteria titles or remove empty criteria before submitting.
+        </p>
+    </div>
+)}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
