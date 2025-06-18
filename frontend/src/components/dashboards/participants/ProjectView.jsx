@@ -284,9 +284,9 @@ const ProjectView = ({
             <Button
               variant="outline"
               onClick={() => onEdit(project)}
-              className="border-white/20 text-zinc-800 hover:bg-white/40 hover:text-white hover:border-white/30 transition-colors duration-200"
+              className="border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
             >
-              <MdEdit className="w-4 h-4 mr-2" />
+              <MdEdit className="w-4 h-4 mr-1" />
               Edit Details
             </Button>
           )}
@@ -469,60 +469,61 @@ const ProjectView = ({
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Project Links */}
-          <Card className="bg-white/5 border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Project Links</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {project.links?.github && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:border-white/30"
-                  onClick={() => window.open(project.links.github, "_blank")}
-                >
-                  <FaGithub className="w-4 h-4 mr-2" />
-                  View Code
-                </Button>
-              )}
-              {project.links?.live && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:border-white/30"
-                  onClick={() => window.open(project.links.live, "_blank")}
-                >
-                  <MdLaunch className="w-4 h-4 mr-2" />
-                  Live Demo
-                </Button>
-              )}
-              {project.links?.video && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:border-white/30"
-                  onClick={() => window.open(project.links.video, "_blank")}
-                >
-                  <FaVideo className="w-4 h-4 mr-2" />
-                  Video Demo
-                </Button>
-              )}
-              {project.links?.presentation && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:border-white/30"
-                  onClick={() =>
-                    window.open(project.links.presentation, "_blank")
-                  }
-                >
-                  <FaFileAlt className="w-4 h-4 mr-2" />
-                  Presentation
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+                <Card className="bg-white/5 border-white/10 gap-2">
+                <CardHeader>
+                  <CardTitle className="text-white">Project Links</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                  {project.links?.github && (
+                    <Button
+                    variant="outline"
+                    className="justify-center border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
+                    onClick={() => window.open(project.links.github, "_blank")}
+                    >
+                    <FaGithub className="w-4 h-4 mr-1" />
+                    Code
+                    </Button>
+                  )}
+                  {project.links?.live && (
+                    <Button
+                    variant="outline"
+                    className="justify-center border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
+                    onClick={() => window.open(project.links.live, "_blank")}
+                    >
+                    <MdLaunch className="w-4 h-4 mr-1" />
+                    Demo
+                    </Button>
+                  )}
+                  {project.links?.video && (
+                    <Button
+                    variant="outline"
+                    className="justify-center border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
+                    onClick={() => window.open(project.links.video, "_blank")}
+                    >
+                    <FaVideo className="w-4 h-4 mr-1" />
+                    Video
+                    </Button>
+                  )}
+                  {project.links?.presentation && (
+                    <Button
+                    variant="outline"
+                    className="justify-center border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
+                    onClick={() =>
+                      window.open(project.links.presentation, "_blank")
+                    }
+                    >
+                    <FaFileAlt className="w-4 h-4 mr-1" />
+                    Slides
+                    </Button>
+                  )}
+                  </div>
+                </CardContent>
+                </Card>
 
-          {/* Technologies */}
+                {/* Technologies */}
           {project.technologies?.length > 0 && (
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-white/5 border-white/10 gap-2">
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <MdCode className="w-5 h-5" />
@@ -603,10 +604,13 @@ const ProjectView = ({
 
           {/* Team Members */}
           {project.builders?.length > 0 && (
-            <Card className="bg-white/5 border-white/10">
+            <Card className="bg-white/5 border-white/10 gap-4">
               <CardHeader>
                 <CardTitle className="text-white">Team Members</CardTitle>
               </CardHeader>
+
+              <Separator className="bg-white/10" />
+
               <CardContent className="space-y-3">
                 {project.builders.map((builder, index) => (
                   <div key={index} className="flex items-center gap-3">
