@@ -11,7 +11,6 @@ import {
   Calendar,
   Trophy,
   Clock,
-  MapPin,
   ExternalLink,
   Crown,
   Share2,
@@ -19,11 +18,16 @@ import {
   FileText,
   CheckCircle,
   Edit,
+  Plus,
+  Target,
+  Gift,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import ProjectEditor from "./ProjectEditor"; // <-- Make sure this exists
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import ProjectEditor from "./ProjectEditor";
 
 const TeamDashboard = () => {
   const { user } = useAuth();
@@ -111,6 +115,7 @@ const TeamDashboard = () => {
       navigator.clipboard.writeText(team.joinCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
+      toast.success("Team code copied to clipboard!");
     }
   };
 
@@ -130,7 +135,7 @@ const TeamDashboard = () => {
       );
       const data = await res.json();
       if (data.success) {
-        toast.success("Project submitted!");
+        toast.success("Project submitted successfully!");
         setProject({ ...project, status: "submitted" });
       } else {
         toast.error(data.error || "Submission failed");
@@ -151,25 +156,35 @@ const TeamDashboard = () => {
     return `${hours}h left`;
   };
 
-  const getStatusColor = (status) => {
+  const getStatus = () => {
+    if (!hackathon?.timelines) return "upcoming";
+    const now = new Date();
+    const regEnd = new Date(hackathon.timelines.registrationEnd);
+    const hackEnd = new Date(hackathon.timelines.hackathonEnd);
+    if (regEnd > now) return "upcoming";
+    if (hackEnd > now) return "ongoing";
+    return "completed";
+  };
+
+  const getStatusVariant = (status) => {
     switch (status) {
       case "upcoming":
-        return "bg-blue-500/20 text-blue-300 border-blue-500/30";
+        return "secondary";
       case "ongoing":
-        return "bg-green-500/20 text-green-300 border-green-500/30";
+        return "default";
       case "completed":
-        return "bg-gray-500/20 text-gray-300 border-gray-500/30";
+        return "outline";
       default:
-        return "bg-purple-500/20 text-purple-300 border-purple-500/30";
+        return "secondary";
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-white/70">Loading your team dashboard...</p>
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-neutral-800 border-t-white mx-auto"></div>
+          <p className="text-neutral-400">Loading team dashboard...</p>
         </div>
       </div>
     );
@@ -178,10 +193,12 @@ const TeamDashboard = () => {
   if (!team || !hackathon) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Something went wrong</h2>
-          <p className="text-white/70 mb-6">Unable to load your team or hackathon data</p>
-          <Button onClick={() => navigate("/participant/hackathons")}>
+        <div className="text-center space-y-6">
+          <h2 className="text-2xl font-bold text-white">Team not found</h2>
+          <p className="text-neutral-400">
+            Unable to load your team or hackathon data
+          </p>
+          <Button onClick={() => navigate("/dashboard")}>
             Go Back to Hackathons
           </Button>
         </div>
@@ -189,61 +206,52 @@ const TeamDashboard = () => {
     );
   }
 
+  const status = getStatus();
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="max-w-7xl mx-auto p-6 space-y-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between"
         >
-          <div className="flex items-center space-x-4">
-            <Button
-              onClick={() => navigate("/dashboard")}
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent">
-                Team Dashboard
-              </h1>
-              <p className="text-white/60 mt-1">Manage your team and submissions</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {!project && (
+          <Button
+            onClick={() => navigate("/dashboard")}
+            variant="outline"
+            className="border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <div className="flex gap-3">
+            {!project && canEditOrSubmit && (
               <Button
                 onClick={() => setShowProjectEditor(true)}
-                disabled={!canEditOrSubmit}
-                className="bg-blue-600 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
-                <Edit className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4 mr-2" />
                 Create Project
               </Button>
             )}
-            {project && (
-              <>
-                <Button
-                  onClick={() => setShowProjectEditor(true)}
-                  disabled={!canEditOrSubmit}
-                  className="bg-yellow-600 text-white"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit Project
-                </Button>
-                <Button
-                  onClick={handleSubmitProject}
-                  disabled={!canEditOrSubmit}
-                  className="bg-green-600 text-white"
-                >
-                  <Send className="w-4 h-4 mr-2" />
-                  {project.status === "submitted" ? "Resubmit" : "Submit Project"}
-                </Button>
-              </>
+            {project && canEditOrSubmit && (
+              <Button
+                onClick={() => setShowProjectEditor(true)}
+                className="bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Project
+              </Button>
+            )}
+            {project && canEditOrSubmit && (
+              <Button
+                onClick={handleSubmitProject}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {project.status === "submitted" ? "Resubmit" : "Submit Project"}
+              </Button>
             )}
           </div>
         </motion.div>
@@ -264,67 +272,90 @@ const TeamDashboard = () => {
           />
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Team Info & Hackathon Details */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Content */}
+          <div className="lg:col-span-2 space-y-8">
             {/* Team Information */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <Card className="bg-zinc-950 border-white/5">
+              <Card className="bg-zinc-950 border-neutral-800">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <Users className="w-5 h-5 text-purple-400" />
-                    {team.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-white/80">{team.description}</p>
-                  {/* Team Code */}
-                  <div className="flex items-center justify-between p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
-                    <div>
-                      <p className="text-sm text-white/60">Team Join Code</p>
-                      <p className="font-mono text-lg text-purple-300">{team.joinCode}</p>
-                    </div>
-                    <Button
-                      onClick={handleCopy}
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Users className="w-5 h-5 text-blue-500" />
+                      {team.name}
+                    </CardTitle>
+                    <Badge
                       variant="outline"
-                      size="sm"
-                      className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                      className="border-green-600/30 text-green-400"
                     >
-                      <Copy className="w-4 h-4 mr-2" />
-                      {copied ? "Copied!" : "Copy"}
-                    </Button>
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Active Team
+                    </Badge>
                   </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <p className="text-neutral-300 leading-relaxed">
+                    {team.description}
+                  </p>
+
+                  {/* Team Join Code */}
+                  <div className="p-4 bg-neutral-900 rounded-lg border border-neutral-800">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-white mb-1">
+                          Team Join Code
+                        </p>
+                        <p className="font-mono text-lg text-blue-400">
+                          {team.joinCode}
+                        </p>
+                        <p className="text-xs text-neutral-400 mt-1">
+                          Share this code with your teammates
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleCopy}
+                        variant="outline"
+                        className="border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
+                      >
+                        <Copy className="w-4 h-4" />
+                        {copied ? "Copied!" : "Copy"}
+                      </Button>
+                    </div>
+                  </div>
+
                   {/* Team Members */}
                   <div>
-                    <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                    <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
                       <User className="w-4 h-4" />
                       Team Members ({team.members.length})
                     </h4>
-                    <div className="space-y-2">
-                      {team.members.map((member, index) => (
+                    <div className="space-y-3">
+                      {team.members.map((member) => (
                         <div
                           key={member.user._id}
-                          className="flex items-center justify-between p-3 bg-zinc-950 rounded-lg"
+                          className="flex items-center justify-between p-4 bg-neutral-900 rounded-lg border border-neutral-800"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center text-sm font-bold">
-                              {(member.user.displayName || member.user.email)[0].toUpperCase()}
+                            <div className="w-10 h-10 bg-neutral-800 rounded-full flex items-center justify-center text-white font-semibold border border-neutral-700">
+                              {(member.user.displayName ||
+                                member.user.email)[0].toUpperCase()}
                             </div>
                             <div>
                               <p className="text-white font-medium">
                                 {member.user.displayName || member.user.email}
                               </p>
-                              <p className="text-xs text-white/60">
-                                Joined {new Date(member.joinedAt).toLocaleDateString()}
+                              <p className="text-xs text-neutral-400">
+                                Joined{" "}
+                                {new Date(member.joinedAt).toLocaleDateString()}
                               </p>
                             </div>
                           </div>
                           {member.role === "leader" && (
-                            <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
+                            <Badge className="bg-yellow-600/20 text-yellow-400 border-yellow-600/30">
                               <Crown className="w-3 h-3 mr-1" />
                               Leader
                             </Badge>
@@ -336,96 +367,217 @@ const TeamDashboard = () => {
                 </CardContent>
               </Card>
             </motion.div>
-            {/* Hackathon Details */}
+
+            {/* Project Status */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card className="bg-zinc-950 border-white/5">
+              <Card className="bg-zinc-950 border-neutral-800">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-green-500" />
+                    Project Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {project ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-white font-medium">
+                            {project.title}
+                          </h3>
+                          <p className="text-neutral-400 text-sm">
+                            {project.description}
+                          </p>
+                        </div>
+                        <Badge
+                          variant={
+                            project.status === "submitted"
+                              ? "default"
+                              : "secondary"
+                          }
+                          className={
+                            project.status === "submitted"
+                              ? "bg-green-600/20 text-green-400 border-green-600/30"
+                              : "bg-yellow-600/20 text-yellow-400 border-yellow-600/30"
+                          }
+                        >
+                          {project.status === "submitted"
+                            ? "Submitted"
+                            : "Draft"}
+                        </Badge>
+                      </div>
+                      {project.status === "submitted" && (
+                        <Alert className="border-green-600/20 bg-green-600/10">
+                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <AlertDescription className="text-green-200">
+                            Your project has been successfully submitted and is
+                            under review.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      {!canEditOrSubmit && project.status !== "submitted" && (
+                        <Alert className="border-yellow-600/20 bg-yellow-600/10">
+                          <Clock className="h-4 w-4 text-yellow-500" />
+                          <AlertDescription className="text-yellow-200">
+                            Submission period has ended. Your project remains as
+                            a draft.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-neutral-400">
+                        No project created yet.
+                      </p>
+                      {canEditOrSubmit ? (
+                        <Button
+                          onClick={() => setShowProjectEditor(true)}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create Project
+                        </Button>
+                      ) : (
+                        <Alert className="border-yellow-200/20 bg-yellow-600/10">
+                          <Clock className="h-4 w-4 border-yellow-200" />
+                          <AlertDescription className="text-yellow-200">
+                            Project creation is only available during the
+                            hackathon period.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Hackathon Details */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <Card className="bg-zinc-950 border-neutral-800">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-white">Hackathon Details</CardTitle>
-                    <Badge className={`${getStatusColor(hackathon.status)} border`}>
-                      {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
+                    <CardTitle className="text-white">
+                      Hackathon Details
+                    </CardTitle>
+                    <Badge variant={getStatusVariant(status)}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Banner */}
                   {hackathon.bannerImageUrl && (
-                    <div className="rounded-lg overflow-hidden">
+                    <div className="h-48 relative overflow-hidden rounded-lg">
                       <img
                         src={hackathon.bannerImageUrl}
                         alt={hackathon.title}
-                        className="w-full h-40 object-cover"
+                        className="w-full h-full object-cover"
                       />
+                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/40 to-transparent" />
                     </div>
                   )}
+
                   {/* Basic Info */}
                   <div>
-                    <h3 className="text-2xl font-bold text-white mb-2">{hackathon.title}</h3>
-                    <div className="flex items-center gap-4 text-sm text-white/70 mb-4">
-                      <Badge className="bg-purple-500/20 text-purple-300">{hackathon.theme}</Badge>
-                      <span className="flex items-center gap-1">
-                        <Users className="w-4 h-4" />
-                        {hackathon.teamSettings?.minTeamSize} - {hackathon.teamSettings?.maxTeamSize} members
-                      </span>
-                    </div>
-                    <p className="text-white/80 leading-relaxed">{hackathon.description}</p>
-                  </div>
-                  {/* Timeline */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="w-4 h-4 text-blue-400" />
-                        <span className="text-sm font-medium text-blue-300">Hackathon Period</span>
+                    <h3 className="text-2xl font-bold text-white mb-3">
+                      {hackathon.title}
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center gap-3 p-4 bg-neutral-900 rounded-lg border border-neutral-800">
+                        <Target className="w-5 h-5 text-orange-500" />
+                        <div>
+                          <p className="text-sm font-medium text-white">
+                            Theme
+                          </p>
+                          <p className="text-orange-400">{hackathon.theme}</p>
+                        </div>
                       </div>
-                      <p className="text-white text-sm">
-                        {new Date(hackathon.timelines?.hackathonStart).toLocaleDateString()} - {" "}
-                        {new Date(hackathon.timelines?.hackathonEnd).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Clock className="w-4 h-4 text-green-400" />
-                        <span className="text-sm font-medium text-green-300">Time Remaining</span>
+                      <div className="flex items-center gap-3 p-4 bg-neutral-900 rounded-lg border border-neutral-800">
+                        <Users className="w-5 h-5 text-blue-500" />
+                        <div>
+                          <p className="text-sm font-medium text-white">
+                            Team Size
+                          </p>
+                          <p className="text-blue-400">
+                            {hackathon.teamSettings?.minTeamSize} -{" "}
+                            {hackathon.teamSettings?.maxTeamSize} members
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-white text-sm">
-                        {getTimeLeft(hackathon.timelines?.hackathonEnd)}
-                      </p>
                     </div>
+                    <p className="text-neutral-300 leading-relaxed mt-4">
+                      {hackathon.description}
+                    </p>
                   </div>
+
                   {/* Prizes */}
                   {hackathon.prizes && (
                     <div>
-                      <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                        <Trophy className="w-4 h-4 text-yellow-400" />
-                        Prizes
+                      <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-yellow-500" />
+                        Prizes & Rewards
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {hackathon.prizes.firstPrize && (
-                          <div className="p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
-                            <p className="font-medium text-yellow-300">🥇 First Prize</p>
-                            <p className="text-sm text-white/80">{hackathon.prizes.firstPrize}</p>
+                          <div className="p-4 bg-neutral-900 rounded-lg border border-neutral-800">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-2xl">🥇</span>
+                              <h4 className="font-semibold text-yellow-400">
+                                First Prize
+                              </h4>
+                            </div>
+                            <p className="text-neutral-300">
+                              {hackathon.prizes.firstPrize}
+                            </p>
                           </div>
                         )}
                         {hackathon.prizes.secondPrize && (
-                          <div className="p-3 bg-gray-500/10 rounded-lg border border-gray-500/20">
-                            <p className="font-medium text-gray-300">🥈 Second Prize</p>
-                            <p className="text-sm text-white/80">{hackathon.prizes.secondPrize}</p>
+                          <div className="p-4 bg-neutral-900 rounded-lg border border-neutral-800">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-2xl">🥈</span>
+                              <h4 className="font-semibold text-neutral-300">
+                                Second Prize
+                              </h4>
+                            </div>
+                            <p className="text-neutral-300">
+                              {hackathon.prizes.secondPrize}
+                            </p>
                           </div>
                         )}
                         {hackathon.prizes.thirdPrize && (
-                          <div className="p-3 bg-orange-500/10 rounded-lg border border-orange-500/20">
-                            <p className="font-medium text-orange-300">🥉 Third Prize</p>
-                            <p className="text-sm text-white/80">{hackathon.prizes.thirdPrize}</p>
+                          <div className="p-4 bg-neutral-900 rounded-lg border border-neutral-800">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-2xl">🥉</span>
+                              <h4 className="font-semibold text-orange-400">
+                                Third Prize
+                              </h4>
+                            </div>
+                            <p className="text-neutral-300">
+                              {hackathon.prizes.thirdPrize}
+                            </p>
                           </div>
                         )}
                         {hackathon.prizes.participantPrize && (
-                          <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                            <p className="font-medium text-blue-300">🎁 Participation Prize</p>
-                            <p className="text-sm text-white/80">{hackathon.prizes.participantPrize}</p>
+                          <div className="p-4 bg-neutral-900 rounded-lg border border-neutral-800">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Gift className="w-5 h-5 text-blue-400" />
+                              <h4 className="font-semibold text-blue-400">
+                                Participation Prize
+                              </h4>
+                            </div>
+                            <p className="text-neutral-300">
+                              {hackathon.prizes.participantPrize}
+                            </p>
                           </div>
                         )}
                       </div>
@@ -435,7 +587,8 @@ const TeamDashboard = () => {
               </Card>
             </motion.div>
           </div>
-          {/* Right Column - Quick Actions & Stats */}
+
+          {/* Right Column - Quick Info */}
           <div className="space-y-6">
             {/* Quick Actions */}
             <motion.div
@@ -443,52 +596,24 @@ const TeamDashboard = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card className="bg-zinc-950 border-white/5">
+              <Card className="bg-zinc-950 border-neutral-800">
                 <CardHeader>
                   <CardTitle className="text-white">Quick Actions</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {!project && (
-                    <Button
-                      onClick={() => setShowProjectEditor(true)}
-                      className="w-full bg-blue-600 text-white"
-                      disabled={!canEditOrSubmit}
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Create Project
-                    </Button>
-                  )}
-                  {project && (
-  <Button
-    onClick={() => setShowProjectEditor(true)}
-    disabled={!canEditOrSubmit}
-    className="bg-yellow-600 text-white"
-  >
-    <Edit className="w-4 h-4 mr-2" />
-    Edit Project
-  </Button>
-)}
-{project && project.status === "draft" && (
-  <Button
-    onClick={handleSubmitProject}
-    disabled={!canEditOrSubmit}
-    className="bg-green-600 text-white"
-  >
-    <Send className="w-4 h-4 mr-2" />
-    Submit Project
-  </Button>
-)}
                   <Button
                     variant="outline"
-                    className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
-                    onClick={() => navigate(`/participant/hackathon/${hackathonId}`)}
+                    className="w-full border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
+                    onClick={() =>
+                      navigate(`/participant/hackathon/${hackathonId}`)
+                    }
                   >
                     <ExternalLink className="w-4 h-4 mr-2" />
-                    View Hackathon
+                    View Hackathon Details
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full border-blue-500/30 text-blue-300 hover:bg-blue-500/20"
+                    className="w-full border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
                     onClick={handleCopy}
                   >
                     <Share2 className="w-4 h-4 mr-2" />
@@ -497,84 +622,132 @@ const TeamDashboard = () => {
                 </CardContent>
               </Card>
             </motion.div>
+
             {/* Team Stats */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Card className="bg-zinc-950 border-white/5">
+              <Card className="bg-zinc-950 border-neutral-800">
                 <CardHeader>
-                  <CardTitle className="text-white">Team Stats</CardTitle>
+                  <CardTitle className="text-white">Team Overview</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-white/70">Team Size</span>
-                    <span className="text-white font-semibold">{team.members.length}/{hackathon.teamSettings?.maxTeamSize}</span>
+                    <span className="text-neutral-400">Team Size</span>
+                    <span className="text-white font-medium">
+                      {team.members.length}/
+                      {hackathon.teamSettings?.maxTeamSize}
+                    </span>
                   </div>
+                  <Separator className="bg-neutral-800" />
                   <div className="flex items-center justify-between">
-                    <span className="text-white/70">Created</span>
-                    <span className="text-white font-semibold">
-                      {new Date(team.createdAt || Date.now()).toLocaleDateString()}
+                    <span className="text-neutral-400">Created</span>
+                    <span className="text-white font-medium">
+                      {new Date(
+                        team.createdAt || Date.now()
+                      ).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-white/70">Project Status</span>
-                    <Badge className={project && project.status === "submitted"
-                      ? "bg-green-500/20 text-green-300"
-                      : "bg-yellow-500/20 text-yellow-300"}>
+                    <span className="text-neutral-400">Project Status</span>
+                    <Badge
+                      variant={
+                        project?.status === "submitted"
+                          ? "default"
+                          : "secondary"
+                      }
+                      className={
+                        project?.status === "submitted"
+                          ? "bg-green-600/20 text-green-400 border-green-600/30"
+                          : project
+                          ? "bg-yellow-600/20 text-yellow-400 border-yellow-600/30"
+                          : "bg-neutral-600/20 text-neutral-400 border-neutral-600/30"
+                      }
+                    >
                       <FileText className="w-3 h-3 mr-1" />
                       {project
-                        ? (project.status === "submitted" ? "Submitted" : "Not Submitted")
+                        ? project.status === "submitted"
+                          ? "Submitted"
+                          : "Draft"
                         : "Not Created"}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-white/70">Registration Status</span>
-                    <Badge className="bg-green-500/20 text-green-300">
+                    <span className="text-neutral-400">Registration</span>
+                    <Badge
+                      variant="outline"
+                      className="border-green-600/30 text-green-400"
+                    >
                       <CheckCircle className="w-3 h-3 mr-1" />
-                      Registered
+                      Active
                     </Badge>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
+
             {/* Important Dates */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <Card className="bg-zinc-950 border-white/5">
+              <Card className="bg-zinc-950 border-neutral-800">
                 <CardHeader>
-                  <CardTitle className="text-white">Important Dates</CardTitle>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <Calendar className="w-5 h-5" />
+                    Important Dates
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/70">Registration Ends</span>
-                    <span className="text-white">
-                      {new Date(hackathon.timelines?.registrationEnd).toLocaleDateString()}
+                    <span className="text-neutral-400">Registration Ends</span>
+                    <span className="text-white font-medium">
+                      {new Date(
+                        hackathon.timelines?.registrationEnd
+                      ).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <Separator className="bg-neutral-800" />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-neutral-400">Hackathon Starts</span>
+                    <span className="text-white font-medium">
+                      {new Date(
+                        hackathon.timelines?.hackathonStart
+                      ).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/70">Hackathon Starts</span>
-                    <span className="text-white">
-                      {new Date(hackathon.timelines?.hackathonStart).toLocaleDateString()}
+                    <span className="text-neutral-400">
+                      Submission Deadline
+                    </span>
+                    <span className="text-white font-medium">
+                      {new Date(
+                        hackathon.timelines?.hackathonEnd
+                      ).toLocaleDateString()}
                     </span>
                   </div>
+                  <Separator className="bg-neutral-800" />
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/70">Submission Deadline</span>
-                    <span className="text-white">
-                      {new Date(hackathon.timelines?.hackathonEnd).toLocaleDateString()}
+                    <span className="text-neutral-400">Time Remaining</span>
+                    <span className="text-white font-medium">
+                      {getTimeLeft(hackathon.timelines?.hackathonEnd)}
                     </span>
                   </div>
                   {hackathon.timelines?.resultsDate && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-white/70">Results</span>
-                      <span className="text-white">
-                        {new Date(hackathon.timelines.resultsDate).toLocaleDateString()}
-                      </span>
-                    </div>
+                    <>
+                      <Separator className="bg-neutral-800" />
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-neutral-400">Results</span>
+                        <span className="text-white font-medium">
+                          {new Date(
+                            hackathon.timelines.resultsDate
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </>
                   )}
                 </CardContent>
               </Card>
