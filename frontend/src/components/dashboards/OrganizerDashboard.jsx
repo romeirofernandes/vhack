@@ -112,10 +112,12 @@ const OrganizerDashboard = () => {
 
   const fetchHackathons = async () => {
     try {
+      const idToken = await user.getIdToken();
       setLoading(true);
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/hackathons/my/hackathons`,
-        { withCredentials: true }
+        { headers: { Authorization: `Bearer ${idToken}` },
+          withCredentials: true }
       );
       if (response.data.success) {
         setHackathons(response.data.data.hackathons);

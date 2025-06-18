@@ -8,7 +8,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import HackathonDetails from './HackathonDetails';
-import { TbArrowLeft } from "react-icons/tb";
+import { TbArrowLeft,TbShare } from "react-icons/tb";
+import SharePoster from "./SharePoster";
 
 const MyHackathons = ({ navigate }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -16,11 +17,18 @@ const MyHackathons = ({ navigate }) => {
   const [hackathons, setHackathons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedHackathon, setSelectedHackathon] = useState(null);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedHackathonForShare, setSelectedHackathonForShare] = useState(null);
   const { user } = useAuth();
 
   useEffect(() => {
     fetchOrganizerHackathons();
   }, [user]);
+
+  const handleShare = (hackathon) => {
+  setSelectedHackathonForShare(hackathon);
+  setShowShareModal(true);
+};
 
   const fetchOrganizerHackathons = async () => {
     try {
@@ -536,6 +544,16 @@ const MyHackathons = ({ navigate }) => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 mt-4 md:mt-0 md:ml-4">
+                        {["published", "upcoming"].includes(hackathon.status) && (
+  <Button
+    size="sm"
+    className="bg-green-600 text-white hover:bg-green-700"
+    onClick={() => handleShare(hackathon)}
+  >
+    <TbShare className="w-4 h-4 mr-1" />
+    Share
+  </Button>
+)}
                     <Button
                       size="sm"
                       variant="outline"
@@ -555,6 +573,14 @@ const MyHackathons = ({ navigate }) => {
               ))}
             </div>
           )}
+          <SharePoster
+  hackathon={selectedHackathonForShare}
+  isOpen={showShareModal}
+  onClose={() => {
+    setShowShareModal(false);
+    setSelectedHackathonForShare(null);
+  }}
+/>
         </div>
       </CardContent>
     </Card>
