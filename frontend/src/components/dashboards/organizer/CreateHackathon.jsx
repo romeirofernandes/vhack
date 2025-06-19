@@ -251,8 +251,6 @@ const CreateHackathon = () => {
     }
   };
 
-  // Date and Time Picker Component (from shadcn docs)
-// Date and Time Picker Component (from shadcn docs)
 const DateTimePicker = ({ field, label, required = false, tooltip }) => {
     const state = datePickerStates[field];
 
