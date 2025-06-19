@@ -170,7 +170,7 @@ const HackathonDetailsPage = () => {
       case "ongoing":
         return "default";
       case "completed":
-        return "outline";
+        return "destructive";
       default:
         return "secondary";
     }
