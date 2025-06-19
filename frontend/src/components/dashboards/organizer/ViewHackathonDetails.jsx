@@ -29,7 +29,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
-import JudgeProjects from "../judges/JudgeProjects";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import SubmittedProjects from "./SubmittedProjects";
@@ -233,7 +232,7 @@ const ViewHackathonDetails = () => {
             The hackathon you're looking for doesn't exist or has been deleted.
           </p>
           <Button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => setActiveTab("hackathons")}
             className="bg-white text-zinc-950 hover:bg-zinc-200 border-2 border-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 hover:border-gradient-to-r hover:from-purple-600 hover:via-blue-600 hover:to-cyan-600 transition-all duration-300 shadow-lg hover:shadow-xl"
             style={{
               borderImage:
@@ -241,7 +240,7 @@ const ViewHackathonDetails = () => {
             }}
           >
             <TbArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            Back to My Hackathons
           </Button>
         </div>
       </div>
@@ -250,13 +249,13 @@ const ViewHackathonDetails = () => {
 
   // If showing projects view
   if (showProjects) {
-  return (
-    <SubmittedProjects
-      hackathon={hackathon}
-      onBack={() => setShowProjects(false)}
-    />
-  );
-}
+    return (
+      <SubmittedProjects
+        hackathon={hackathon}
+        onBack={() => setShowProjects(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
@@ -269,12 +268,11 @@ const ViewHackathonDetails = () => {
         >
           <div className="flex items-center space-x-4">
             <Button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/organizer/dashboard")}
               variant="ghost"
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all duration-200"
+              className="text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all duration-200 p-2"
             >
-              <TbArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
+              <TbArrowLeft className="w-5 h-5" />
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-white mb-1">
@@ -288,7 +286,9 @@ const ViewHackathonDetails = () => {
 
           <div className="flex items-center space-x-3">
             <Button
-              onClick={() => navigate(`/organizer/hackathon/${hackathonId}/allot-judges`)}
+              onClick={() =>
+                navigate(`/organizer/hackathon/${hackathonId}/allot-judges`)
+              }
               className="relative overflow-hidden bg-zinc-900 border border-blue-500/20 text-blue-400 hover:text-white transition-all duration-300 group"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-blue-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -299,7 +299,9 @@ const ViewHackathonDetails = () => {
               </div>
             </Button>
             <Button
-              onClick={() => navigate(`/organizer/hackathon/${hackathonId}/edit`)}
+              onClick={() =>
+                navigate(`/organizer/hackathon/${hackathonId}/edit`)
+              }
               className="relative overflow-hidden bg-zinc-900 border border-purple-500/20 text-purple-400 hover:text-white transition-all duration-300 group"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-purple-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -414,7 +416,11 @@ const ViewHackathonDetails = () => {
         <div className="flex space-x-1 bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
           {[
             { id: "overview", label: "Overview", icon: TbEye },
-            { id: "problem-statement", label: "Problem Statement", icon: TbCode },
+            {
+              id: "problem-statement",
+              label: "Problem Statement",
+              icon: TbCode,
+            },
             { id: "teams", label: "Teams", icon: TbUsers },
             { id: "participants", label: "Participants", icon: TbUsers },
             { id: "timeline", label: "Timeline", icon: TbCalendar },
@@ -568,7 +574,8 @@ const ViewHackathonDetails = () => {
                 </Card>
 
                 {/* Submitted Projects Section */}
-                {(hackathon.status === "ongoing" || hackathon.status === "completed") && (
+                {(hackathon.status === "ongoing" ||
+                  hackathon.status === "completed") && (
                   <Card className="bg-zinc-950 border-zinc-800">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
@@ -631,101 +638,130 @@ const ViewHackathonDetails = () => {
                   </CardContent>
                 </Card>
                 <Card className="bg-zinc-950 border-zinc-800">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-white flex items-center gap-2 text-xl">
-            <TbChartBar className="w-5 h-5" />
-            Judging Criteria
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {hackathon.judgingCriteria && hackathon.judgingCriteria.length > 0 ? (
-            <div className="space-y-4">
-              {hackathon.judgingCriteria.map((criteria, index) => (
-                <div
-                  key={index}
-                  className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors duration-200"
-                >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-white text-base">
-                          {criteria.title}
-                        </h4>
-                        <Badge className="bg-blue-600/20 text-blue-400 border border-blue-500/50 px-2 py-1 text-xs">
-                          Weight: {criteria.weight || 1}
-                        </Badge>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-white flex items-center gap-2 text-xl">
+                      <TbChartBar className="w-5 h-5" />
+                      Judging Criteria
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {hackathon.judgingCriteria &&
+                    hackathon.judgingCriteria.length > 0 ? (
+                      <div className="space-y-4">
+                        {hackathon.judgingCriteria.map((criteria, index) => (
+                          <div
+                            key={index}
+                            className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-zinc-700 transition-colors duration-200"
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h4 className="font-semibold text-white text-base">
+                                    {criteria.title}
+                                  </h4>
+                                  <Badge className="bg-blue-600/20 text-blue-400 border border-blue-500/50 px-2 py-1 text-xs">
+                                    Weight: {criteria.weight || 1}
+                                  </Badge>
+                                </div>
+                                {criteria.description && (
+                                  <p className="text-zinc-400 text-sm leading-relaxed">
+                                    {criteria.description}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="ml-4 text-right">
+                                <div className="text-lg font-bold text-white">
+                                  {criteria.maxScore || 10}
+                                </div>
+                                <div className="text-xs text-zinc-500">
+                                  max points
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Progress bar showing weight distribution */}
+                            <div className="mt-3">
+                              <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                                <span>Weight Distribution</span>
+                                <span>{criteria.weight || 1}x multiplier</span>
+                              </div>
+                              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
+                                  style={{
+                                    width: `${
+                                      ((criteria.weight || 1) /
+                                        Math.max(
+                                          ...hackathon.judgingCriteria.map(
+                                            (c) => c.weight || 1
+                                          )
+                                        )) *
+                                      100
+                                    }%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+
+                        {/* Summary */}
+                        <div className="mt-6 p-4 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                            <div>
+                              <div className="text-xl font-bold text-white mb-1">
+                                {hackathon.judgingCriteria.length}
+                              </div>
+                              <div className="text-zinc-400 text-sm">
+                                Total Criteria
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xl font-bold text-white mb-1">
+                                {hackathon.judgingCriteria.reduce(
+                                  (sum, criteria) =>
+                                    sum + (criteria.maxScore || 10),
+                                  0
+                                )}
+                              </div>
+                              <div className="text-zinc-400 text-sm">
+                                Total Points
+                              </div>
+                            </div>
+                            <div>
+                              <div className="text-xl font-bold text-white mb-1">
+                                {hackathon.judgingCriteria.reduce(
+                                  (sum, criteria) =>
+                                    sum + (criteria.weight || 1),
+                                  0
+                                )}
+                              </div>
+                              <div className="text-zinc-400 text-sm">
+                                Total Weight
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      {criteria.description && (
-                        <p className="text-zinc-400 text-sm leading-relaxed">
-                          {criteria.description}
+                    ) : (
+                      <div className="text-center py-12">
+                        <TbChartBar className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
+                        <p className="text-zinc-400 mb-4">
+                          No judging criteria defined yet
                         </p>
-                      )}
-                    </div>
-                    <div className="ml-4 text-right">
-                      <div className="text-lg font-bold text-white">
-                        {criteria.maxScore || 10}
+                        <Button
+                          onClick={() =>
+                            navigate(`/organizer/hackathon/${hackathonId}/edit`)
+                          }
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <TbEdit className="w-4 h-4 mr-2" />
+                          Add Judging Criteria
+                        </Button>
                       </div>
-                      <div className="text-xs text-zinc-500">max points</div>
-                    </div>
-                  </div>
-                  
-                  {/* Progress bar showing weight distribution */}
-                  <div className="mt-3">
-                    <div className="flex items-center justify-between text-xs text-zinc-500 mb-1">
-                      <span>Weight Distribution</span>
-                      <span>{criteria.weight || 1}x multiplier</span>
-                    </div>
-                    <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
-                        style={{ 
-                          width: `${((criteria.weight || 1) / Math.max(...hackathon.judgingCriteria.map(c => c.weight || 1))) * 100}%` 
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
-              {/* Summary */}
-              <div className="mt-6 p-4 bg-zinc-900/50 border border-zinc-800 rounded-lg">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                  <div>
-                    <div className="text-xl font-bold text-white mb-1">
-                      {hackathon.judgingCriteria.length}
-                    </div>
-                    <div className="text-zinc-400 text-sm">Total Criteria</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-white mb-1">
-                      {hackathon.judgingCriteria.reduce((sum, criteria) => sum + (criteria.maxScore || 10), 0)}
-                    </div>
-                    <div className="text-zinc-400 text-sm">Total Points</div>
-                  </div>
-                  <div>
-                    <div className="text-xl font-bold text-white mb-1">
-                      {hackathon.judgingCriteria.reduce((sum, criteria) => sum + (criteria.weight || 1), 0)}
-                    </div>
-                    <div className="text-zinc-400 text-sm">Total Weight</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <TbChartBar className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-              <p className="text-zinc-400 mb-4">No judging criteria defined yet</p>
-              <Button
-                onClick={() => navigate(`/organizer/hackathon/${hackathonId}/edit`)}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <TbEdit className="w-4 h-4 mr-2" />
-                Add Judging Criteria
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
 
               {/* Right Column */}
@@ -903,9 +939,13 @@ const ViewHackathonDetails = () => {
                 ) : (
                   <div className="text-center py-12">
                     <TbCode className="w-12 h-12 text-zinc-600 mx-auto mb-3" />
-                    <p className="text-zinc-400">No problem statement defined yet</p>
+                    <p className="text-zinc-400">
+                      No problem statement defined yet
+                    </p>
                     <Button
-                      onClick={() => navigate(`/organizer/hackathon/${hackathonId}/edit`)}
+                      onClick={() =>
+                        navigate(`/organizer/hackathon/${hackathonId}/edit`)
+                      }
                       className="mt-4 bg-blue-600 hover:bg-blue-700"
                     >
                       <TbEdit className="w-4 h-4 mr-2" />
@@ -916,7 +956,7 @@ const ViewHackathonDetails = () => {
               </CardContent>
             </Card>
           )}
-          
+
           {/* Teams Tab */}
           {activeTab === "teams" && (
             <Card className="bg-zinc-950 border-zinc-800">
@@ -1081,7 +1121,9 @@ const ViewHackathonDetails = () => {
                       <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-blue-500/50 transition-colors duration-200">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-white">Registration Opens</h3>
+                            <h3 className="font-semibold text-white">
+                              Registration Opens
+                            </h3>
                             <Badge className="bg-blue-500/20 text-blue-400 border border-blue-500/50 px-2 py-0.5 text-xs">
                               Start
                             </Badge>
@@ -1106,7 +1148,9 @@ const ViewHackathonDetails = () => {
                       <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-yellow-500/50 transition-colors duration-200">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-white">Registration Ends</h3>
+                            <h3 className="font-semibold text-white">
+                              Registration Ends
+                            </h3>
                             <Badge className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/50 px-2 py-0.5 text-xs">
                               Deadline
                             </Badge>
@@ -1131,7 +1175,9 @@ const ViewHackathonDetails = () => {
                       <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-purple-500/50 transition-colors duration-200">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-white">Hackathon Starts</h3>
+                            <h3 className="font-semibold text-white">
+                              Hackathon Starts
+                            </h3>
                             <Badge className="bg-purple-500/20 text-purple-400 border border-purple-500/50 px-2 py-0.5 text-xs">
                               Event
                             </Badge>
@@ -1156,7 +1202,9 @@ const ViewHackathonDetails = () => {
                       <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-red-500/50 transition-colors duration-200">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-white">Hackathon Ends</h3>
+                            <h3 className="font-semibold text-white">
+                              Hackathon Ends
+                            </h3>
                             <Badge className="bg-red-500/20 text-red-400 border border-red-500/50 px-2 py-0.5 text-xs">
                               End
                             </Badge>
@@ -1182,7 +1230,9 @@ const ViewHackathonDetails = () => {
                         <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800 hover:border-green-500/50 transition-colors duration-200">
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-white">Results Announcement</h3>
+                              <h3 className="font-semibold text-white">
+                                Results Announcement
+                              </h3>
                               <Badge className="bg-green-500/20 text-green-400 border border-green-500/50 px-2 py-0.5 text-xs">
                                 Results
                               </Badge>
@@ -1222,14 +1272,22 @@ const ViewHackathonDetails = () => {
                           <TbChartBar className="w-5 h-5 text-blue-400" />
                         </div>
                         <div>
-                          <p className="text-zinc-400 text-sm font-medium">Current Status</p>
+                          <p className="text-zinc-400 text-sm font-medium">
+                            Current Status
+                          </p>
                           <p className="text-white font-medium mt-0.5">
-                            {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
+                            {hackathon.status.charAt(0).toUpperCase() +
+                              hackathon.status.slice(1)}
                           </p>
                         </div>
                       </div>
-                      <Badge className={`${getStatusColor(hackathon.status)} border px-3 py-1 text-xs font-medium`}>
-                        {hackathon.status.charAt(0).toUpperCase() + hackathon.status.slice(1)}
+                      <Badge
+                        className={`${getStatusColor(
+                          hackathon.status
+                        )} border px-3 py-1 text-xs font-medium`}
+                      >
+                        {hackathon.status.charAt(0).toUpperCase() +
+                          hackathon.status.slice(1)}
                       </Badge>
                     </div>
 
@@ -1239,7 +1297,9 @@ const ViewHackathonDetails = () => {
                           <TbCalendarStats className="w-5 h-5 text-purple-400" />
                         </div>
                         <div>
-                          <p className="text-zinc-400 text-sm font-medium">Created</p>
+                          <p className="text-zinc-400 text-sm font-medium">
+                            Created
+                          </p>
                           <p className="text-white font-medium mt-0.5">
                             {formatDate(hackathon.createdAt)}
                           </p>
@@ -1253,7 +1313,9 @@ const ViewHackathonDetails = () => {
                           <TbClock className="w-5 h-5 text-green-400" />
                         </div>
                         <div>
-                          <p className="text-zinc-400 text-sm font-medium">Last Updated</p>
+                          <p className="text-zinc-400 text-sm font-medium">
+                            Last Updated
+                          </p>
                           <p className="text-white font-medium mt-0.5">
                             {formatDate(hackathon.updatedAt)}
                           </p>
@@ -1275,7 +1337,9 @@ const ViewHackathonDetails = () => {
                 <CardContent className="p-6 space-y-4">
                   <div className="space-y-3">
                     <Button
-                      onClick={() => navigate(`/organizer/hackathon/${hackathonId}/edit`)}
+                      onClick={() =>
+                        navigate(`/organizer/hackathon/${hackathonId}/edit`)
+                      }
                       className="w-full relative overflow-hidden bg-zinc-900 border border-purple-500/20 text-purple-400 hover:text-white transition-all duration-300 group"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-purple-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -1287,7 +1351,11 @@ const ViewHackathonDetails = () => {
                     </Button>
 
                     <Button
-                      onClick={() => navigate(`/organizer/hackathon/${hackathonId}/allot-judges`)}
+                      onClick={() =>
+                        navigate(
+                          `/organizer/hackathon/${hackathonId}/allot-judges`
+                        )
+                      }
                       className="w-full relative overflow-hidden bg-zinc-900 border border-blue-500/20 text-blue-400 hover:text-white transition-all duration-300 group"
                     >
                       <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-blue-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -1316,9 +1384,14 @@ const ViewHackathonDetails = () => {
                     <div className="flex items-start gap-3">
                       <TbAlertTriangle className="w-5 h-5 text-yellow-400 mt-0.5" />
                       <div>
-                        <p className="text-yellow-400 font-medium text-sm">Warning</p>
+                        <p className="text-yellow-400 font-medium text-sm">
+                          Warning
+                        </p>
                         <p className="text-zinc-400 text-sm mt-1">
-                          Deleting a hackathon is permanent and cannot be undone. All associated data including teams, submissions, and judge assignments will be permanently removed.
+                          Deleting a hackathon is permanent and cannot be
+                          undone. All associated data including teams,
+                          submissions, and judge assignments will be permanently
+                          removed.
                         </p>
                       </div>
                     </div>

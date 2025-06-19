@@ -413,7 +413,9 @@ const MyHackathons = ({ navigate }) => {
                           size="sm"
                           variant="outline"
                           className="bg-white text-zinc-950 hover:bg-zinc-200"
-                          onClick={() => setSelectedHackathon(hackathon)}
+                          onClick={() =>
+                            navigate(`/organizer/hackathon/${hackathon._id}`)
+                          }
                         >
                           View Details
                         </Button>
@@ -578,7 +580,9 @@ const MyHackathons = ({ navigate }) => {
                         size="sm"
                         variant="outline"
                         className="bg-white text-zinc-950 hover:bg-zinc-200"
-                        onClick={() => setSelectedHackathon(hackathon)}
+                        onClick={() =>
+                          navigate(`/organizer/hackathon/${hackathon._id}`)
+                        }
                       >
                         View Details
                       </Button>
