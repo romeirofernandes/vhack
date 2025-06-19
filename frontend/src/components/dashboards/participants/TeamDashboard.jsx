@@ -173,7 +173,7 @@ const TeamDashboard = () => {
       case "ongoing":
         return "default";
       case "completed":
-        return "outline";
+        return "destructive";
       default:
         return "secondary";
     }
