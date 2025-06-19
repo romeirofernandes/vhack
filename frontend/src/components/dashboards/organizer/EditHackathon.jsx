@@ -1,90 +1,103 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { motion } from "framer-motion";
+import { MdAdd, MdRemove, MdArrowBack, MdInfo } from "react-icons/md";
+import { ChevronDownIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
 import {
-  TbArrowLeft,
-  TbCalendar,
-  TbTrophy,
-  TbUsers,
-  TbDeviceFloppy,
-  TbLoader,
-  TbCode,
-  TbStar,
-  TbPlus,
-  TbTrash
-} from 'react-icons/tb';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
 
 const EditHackathon = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { hackathonId } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    problemStatements: '',
-    theme: 'AI',
-    bannerImageUrl: '',
+    title: "",
+    organizerName: "",
+    description: "",
+    problemStatements: "",
+    theme: "Other",
+    bannerImageUrl: "",
     timelines: {
-      registrationStart: '',
-      registrationEnd: '',
-      hackathonStart: '',
-      hackathonEnd: '',
-      resultsDate: ''
+      registrationStart: "",
+      registrationEnd: "",
+      hackathonStart: "",
+      hackathonEnd: "",
+      resultsDate: "",
     },
     teamSettings: {
       minTeamSize: 1,
       maxTeamSize: 4,
-      allowSolo: false
+      allowSolo: false,
     },
     prizes: {
-      firstPrize: '',
-      secondPrize: '',
-      thirdPrize: '',
-      participantPrize: ''
+      firstPrize: "",
+      secondPrize: "",
+      thirdPrize: "",
+      participantPrize: "",
     },
-    status: 'draft'
+    status: "draft",
   });
 
+  // Date and time states for the calendar components
+  const [datePickerStates, setDatePickerStates] = useState({
+    registrationStart: { open: false, date: undefined, time: "09:00" },
+    registrationEnd: { open: false, date: undefined, time: "23:59" },
+    hackathonStart: { open: false, date: undefined, time: "09:00" },
+    hackathonEnd: { open: false, date: undefined, time: "18:00" },
+    resultsDate: { open: false, date: undefined, time: "15:00" },
+  });
+
+  // Judging Criteria State
   const [judgingCriteria, setJudgingCriteria] = useState([
-    { title: "Innovation", description: "How creative and innovative is the solution?", weight: 1, maxScore: 10 },
-    { title: "Technical Implementation", description: "Quality of code and technical execution", weight: 1, maxScore: 10 },
-    { title: "Impact", description: "Potential impact and usefulness of the solution", weight: 1, maxScore: 10 },
-    { title: "Presentation", description: "Quality of presentation and demonstration", weight: 1, maxScore: 10 }
+    {
+      title: "Innovation",
+      description: "How creative and innovative is the solution?",
+      weight: 1,
+      maxScore: 10,
+    },
+    {
+      title: "Technical Implementation",
+      description: "Quality of code and technical execution",
+      weight: 1,
+      maxScore: 10,
+    },
+    {
+      title: "Impact",
+      description: "Potential impact and usefulness of the solution",
+      weight: 1,
+      maxScore: 10,
+    },
+    {
+      title: "Presentation",
+      description: "Quality of presentation and demonstration",
+      weight: 1,
+      maxScore: 10,
+    },
   ]);
-  
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const { hackathonId } = useParams();
-  const { user } = useAuth();
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchHackathonData();
   }, [hackathonId]);
-
-  const addCriteria = () => {
-    setJudgingCriteria([...judgingCriteria, { title: "", description: "", weight: 1, maxScore: 10 }]);
-  };
-
-  const removeCriteria = (index) => {
-    if (judgingCriteria.length <= 1) {
-      toast.error("At least one judging criteria is required");
-      return;
-    }
-    setJudgingCriteria(judgingCriteria.filter((_, i) => i !== index));
-  };
-
-  const updateCriteria = (index, field, value) => {
-    setJudgingCriteria(judgingCriteria.map((criteria, i) => 
-      i === index ? { ...criteria, [field]: value } : criteria
-    ));
-  };
 
   const fetchHackathonData = async () => {
     try {
@@ -93,45 +106,79 @@ const EditHackathon = () => {
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
         {
-          headers: { Authorization: `Bearer ${idToken}` }
+          headers: { Authorization: `Bearer ${idToken}` },
         }
       );
 
       if (response.data.success) {
         const hackathon = response.data.data;
-        
-        // Format dates for datetime-local input
-        const formatDateForInput = (dateString) => {
-          if (!dateString) return '';
+
+        // Parse datetime and split into date and time
+        const parseDateTime = (dateString) => {
+          if (!dateString) return { date: undefined, time: "09:00" };
           const date = new Date(dateString);
-          return date.toISOString().slice(0, 16);
+          const timeString = date.toTimeString().slice(0, 5);
+          return { date, time: timeString };
         };
 
+        // Update form data
         setFormData({
-          title: hackathon.title || '',
-          description: hackathon.description || '',
-          problemStatements: hackathon.problemStatements || '',
-          theme: hackathon.theme || 'AI',
-          bannerImageUrl: hackathon.bannerImageUrl || '',
+          title: hackathon.title || "",
+          organizerName: hackathon.organizerName || "",
+          description: hackathon.description || "",
+          problemStatements: hackathon.problemStatements || "",
+          theme: hackathon.theme || "Other",
+          bannerImageUrl: hackathon.bannerImageUrl || "",
           timelines: {
-            registrationStart: formatDateForInput(hackathon.timelines?.registrationStart),
-            registrationEnd: formatDateForInput(hackathon.timelines?.registrationEnd),
-            hackathonStart: formatDateForInput(hackathon.timelines?.hackathonStart),
-            hackathonEnd: formatDateForInput(hackathon.timelines?.hackathonEnd),
-            resultsDate: formatDateForInput(hackathon.timelines?.resultsDate)
+            registrationStart: hackathon.timelines?.registrationStart
+              ? new Date(hackathon.timelines.registrationStart)
+                  .toISOString()
+                  .slice(0, 16)
+              : "",
+            registrationEnd: hackathon.timelines?.registrationEnd
+              ? new Date(hackathon.timelines.registrationEnd)
+                  .toISOString()
+                  .slice(0, 16)
+              : "",
+            hackathonStart: hackathon.timelines?.hackathonStart
+              ? new Date(hackathon.timelines.hackathonStart)
+                  .toISOString()
+                  .slice(0, 16)
+              : "",
+            hackathonEnd: hackathon.timelines?.hackathonEnd
+              ? new Date(hackathon.timelines.hackathonEnd)
+                  .toISOString()
+                  .slice(0, 16)
+              : "",
+            resultsDate: hackathon.timelines?.resultsDate
+              ? new Date(hackathon.timelines.resultsDate)
+                  .toISOString()
+                  .slice(0, 16)
+              : "",
           },
           teamSettings: {
             minTeamSize: hackathon.teamSettings?.minTeamSize || 1,
             maxTeamSize: hackathon.teamSettings?.maxTeamSize || 4,
-            allowSolo: hackathon.teamSettings?.allowSolo || false
+            allowSolo: hackathon.teamSettings?.allowSolo || false,
           },
           prizes: {
-            firstPrize: hackathon.prizes?.firstPrize || '',
-            secondPrize: hackathon.prizes?.secondPrize || '',
-            thirdPrize: hackathon.prizes?.thirdPrize || '',
-            participantPrize: hackathon.prizes?.participantPrize || ''
+            firstPrize: hackathon.prizes?.firstPrize || "",
+            secondPrize: hackathon.prizes?.secondPrize || "",
+            thirdPrize: hackathon.prizes?.thirdPrize || "",
+            participantPrize: hackathon.prizes?.participantPrize || "",
           },
-          status: hackathon.status || 'draft'
+          status: hackathon.status || "draft",
+        });
+
+        // Update date picker states
+        setDatePickerStates({
+          registrationStart: parseDateTime(
+            hackathon.timelines?.registrationStart
+          ),
+          registrationEnd: parseDateTime(hackathon.timelines?.registrationEnd),
+          hackathonStart: parseDateTime(hackathon.timelines?.hackathonStart),
+          hackathonEnd: parseDateTime(hackathon.timelines?.hackathonEnd),
+          resultsDate: parseDateTime(hackathon.timelines?.resultsDate),
         });
 
         // Load judging criteria
@@ -139,533 +186,905 @@ const EditHackathon = () => {
           setJudgingCriteria(hackathon.judgingCriteria);
         }
       } else {
-        toast.error('Failed to fetch hackathon data');
-        navigate('/dashboard');
+        toast.error("Failed to fetch hackathon data");
+        navigate("/organizer/dashboard");
       }
     } catch (error) {
-      console.error('Error fetching hackathon:', error);
-      toast.error('Error fetching hackathon data');
-      navigate('/dashboard');
+      console.error("Error fetching hackathon:", error);
+      toast.error("Error fetching hackathon data");
+      navigate("/organizer/dashboard");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (field, value) => {
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      setFormData(prev => ({
+  // Helper function to combine date and time
+  const combineDateAndTime = (date, time) => {
+    if (!date || !time) return "";
+    const combined = new Date(date);
+    const [hours, minutes] = time.split(":");
+    combined.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    return combined.toISOString().slice(0, 16); // Format for datetime-local
+  };
+
+  // Update form data when date/time changes
+  const updateDateTime = (field, type, value) => {
+    const newState = {
+      ...datePickerStates[field],
+      [type]: value,
+    };
+
+    if (type === "date") {
+      newState.open = false;
+    }
+
+    setDatePickerStates((prev) => ({
+      ...prev,
+      [field]: newState,
+    }));
+
+    // Update form data
+    const combinedDateTime = combineDateAndTime(
+      type === "date" ? value : datePickerStates[field].date,
+      type === "time" ? value : datePickerStates[field].time
+    );
+
+    if (combinedDateTime) {
+      setFormData((prev) => ({
+        ...prev,
+        timelines: {
+          ...prev.timelines,
+          [field]: combinedDateTime,
+        },
+      }));
+    }
+  };
+
+  // Judging Criteria Handlers
+  const addCriteria = () => {
+    setJudgingCriteria([
+      ...judgingCriteria,
+      {
+        title: "",
+        description: "",
+        weight: 1,
+        maxScore: 10,
+      },
+    ]);
+  };
+
+  const removeCriteria = (index) => {
+    if (judgingCriteria.length > 1) {
+      setJudgingCriteria(judgingCriteria.filter((_, i) => i !== index));
+    } else {
+      toast.error("At least one judging criteria is required");
+    }
+  };
+
+  const updateCriteria = (index, field, value) => {
+    setJudgingCriteria(
+      judgingCriteria.map((criteria, i) =>
+        i === index ? { ...criteria, [field]: value } : criteria
+      )
+    );
+  };
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      setFormData((prev) => ({
         ...prev,
         [parent]: {
           ...prev[parent],
-          [child]: value
-        }
+          [child]: type === "checkbox" ? checked : value,
+        },
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [field]: value
+        [name]: type === "checkbox" ? checked : value,
       }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validate judging criteria
-    const validCriteria = judgingCriteria.filter(criteria => criteria.title.trim() !== '');
-    if (validCriteria.length === 0) {
-      toast.error('At least one judging criteria is required');
-      return;
-    }
+    setSaving(true);
 
     try {
-      setSaving(true);
+      // Validate judging criteria
+      const validCriteria = judgingCriteria.filter(
+        (criteria) => criteria.title.trim() !== ""
+      );
+
+      if (validCriteria.length === 0) {
+        toast.error("At least one judging criteria is required");
+        setSaving(false);
+        return;
+      }
+
+      // Check if any criteria has empty title
+      const hasEmptyCriteria = judgingCriteria.some(
+        (criteria) => criteria.title.trim() === ""
+      );
+      if (hasEmptyCriteria) {
+        toast.error(
+          "Please fill in all criteria titles or remove empty criteria"
+        );
+        setSaving(false);
+        return;
+      }
+
       const idToken = await user.getIdToken();
-      
-      // Convert datetime-local back to ISO dates
-      const formatDateForAPI = (dateString) => {
-        if (!dateString) return null;
-        return new Date(dateString).toISOString();
+
+      // Include ALL judging criteria in the payload
+      const payload = {
+        ...formData,
+        judgingCriteria: judgingCriteria,
       };
 
-      const updateData = {
-        ...formData,
-        timelines: {
-          registrationStart: formatDateForAPI(formData.timelines.registrationStart),
-          registrationEnd: formatDateForAPI(formData.timelines.registrationEnd),
-          hackathonStart: formatDateForAPI(formData.timelines.hackathonStart),
-          hackathonEnd: formatDateForAPI(formData.timelines.hackathonEnd),
-          resultsDate: formatDateForAPI(formData.timelines.resultsDate)
-        },
-        judgingCriteria: validCriteria
-      };
+      console.log("Updating payload:", payload); // Debug log
 
       const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
-        updateData,
+        payload,
         {
-          headers: { Authorization: `Bearer ${idToken}` }
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
       if (response.data.success) {
-        toast.success('Hackathon updated successfully!');
+        toast.success("Hackathon updated successfully!");
         navigate(`/organizer/hackathon/${hackathonId}`);
-      } else {
-        toast.error('Failed to update hackathon');
       }
     } catch (error) {
-      console.error('Error updating hackathon:', error);
-      if (error.response?.status === 400 && error.response?.data?.error?.includes('criteria')) {
-        toast.error(error.response.data.error);
-      } else {
-        toast.error(error.response?.data?.message || 'Error updating hackathon');
-      }
+      console.error("Error updating hackathon:", error);
+      toast.error(error.response?.data?.message || "Error updating hackathon");
     } finally {
       setSaving(false);
     }
   };
 
+  const DateTimePicker = ({ field, label, required = false, tooltip }) => {
+    const state = datePickerStates[field];
+
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label className="text-white/80 text-sm font-medium">
+            {label} {required && "*"}
+          </Label>
+          {tooltip && (
+            <Tooltip>
+              <TooltipTrigger>
+                <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-sm">{tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+        <div className="flex gap-4">
+          <div className="flex flex-col gap-3 flex-1">
+            <Label
+              htmlFor={`date-picker-${field}`}
+              className="px-1 text-white/60 text-xs"
+            >
+              Date
+            </Label>
+            <Popover
+              open={state.open}
+              onOpenChange={(open) =>
+                setDatePickerStates((prev) => ({
+                  ...prev,
+                  [field]: { ...prev[field], open },
+                }))
+              }
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  id={`date-picker-${field}`}
+                  className="w-full justify-between font-normal bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white h-10"
+                >
+                  {state.date ? state.date.toLocaleDateString() : "Select date"}
+                  <ChevronDownIcon className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto overflow-hidden p-0"
+                align="start"
+              >
+                <Calendar
+                  mode="single"
+                  selected={state.date}
+                  captionLayout="dropdown"
+                  onSelect={(date) => updateDateTime(field, "date", date)}
+                  className="bg-zinc-950 border-0"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="flex flex-col gap-3 w-40">
+            <Label
+              htmlFor={`time-picker-${field}`}
+              className="px-1 text-white/60 text-xs"
+            >
+              Time
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                type="time"
+                id={`time-picker-${field}`}
+                value={state.time}
+                onChange={(e) => updateDateTime(field, "time", e.target.value)}
+                className="bg-white/5 border-white/10 text-white h-10 flex-1 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                step="300" // 5 minute increments
+              />
+              <select
+                value={state.time >= "12:00" ? "PM" : "AM"}
+                onChange={(e) => {
+                  const [hours, minutes] = state.time.split(":");
+                  let newHours = parseInt(hours);
+
+                  if (e.target.value === "PM" && newHours < 12) {
+                    newHours += 12;
+                  } else if (e.target.value === "AM" && newHours >= 12) {
+                    newHours -= 12;
+                  }
+
+                  const newTime = `${newHours
+                    .toString()
+                    .padStart(2, "0")}:${minutes}`;
+                  updateDateTime(field, "time", newTime);
+                }}
+                className="w-16 h-10 px-2 rounded-md bg-white/5 border border-white/10 text-white text-sm focus:border-white/20 focus:outline-none"
+              >
+                <option value="AM" className="bg-zinc-900 text-white">
+                  AM
+                </option>
+                <option value="PM" className="bg-zinc-900 text-white">
+                  PM
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <div className="text-white">Loading hackathon data...</div>
+      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <div className="text-white">Loading hackathon data...</div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 text-white p-4 md:p-6">
-      <div className="max-w-3xl mx-auto">
+    <TooltipProvider>
+      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <Button
+            variant="ghost"
+            className="bg-zinc-900 text-white hover:bg-zinc-800 border border-neutral-700 hover:text-white"
+            onClick={() => navigate(`/organizer/hackathon/${hackathonId}`)}
+          >
+            <MdArrowBack className="w-5 h-5 mr-2" />
+            Back to Details
+          </Button>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          className="space-y-8"
         >
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <Button
-                onClick={() => navigate(`/organizer/hackathon/${hackathonId}`)}
-                variant="ghost"
-                className="text-zinc-300 hover:text-white hover:bg-zinc-800/50 transition-all duration-200"
-              >
-                <TbArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent">
-                  Edit Hackathon
-                </h1>
-                <p className="text-zinc-400 text-sm font-medium">Update your hackathon details</p>
-              </div>
-            </div>
+          {/* Page Title */}
+          <div className="text-center space-y-3 mb-12">
+            <h1 className="text-4xl font-bold text-white">Edit Hackathon</h1>
+            <p className="text-white/70 text-lg max-w-2xl mx-auto">
+              Update your hackathon details and settings
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Basic Information */}
-            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-zinc-700/60 transition-colors duration-200">
-              <CardHeader className="border-b border-zinc-800/60 py-4">
-                <CardTitle className="text-white flex items-center gap-2 text-base font-semibold">
-                  <div className="p-1.5 rounded-lg bg-blue-500/10">
-                    <TbDeviceFloppy className="w-4 h-4 text-blue-400" />
-                  </div>
-                  Basic Information
+          <form onSubmit={handleSubmit} className="space-y-10">
+            {/* Basic Details */}
+            <Card className="bg-zinc-950 border-white/10">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-white text-xl">
+                  Basic Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="title" className="text-zinc-300 text-sm font-medium">Title</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      placeholder="Enter hackathon title"
-                      required
-                    />
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-white/80 text-sm font-medium">
+                      Title *
+                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm">
+                          Choose a catchy and descriptive title for your
+                          hackathon
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="theme" className="text-zinc-300 text-sm font-medium">Theme</Label>
-                    <Select value={formData.theme} onValueChange={(value) => handleInputChange('theme', value)}>
-                      <SelectTrigger className="bg-zinc-800/50 border-zinc-700/50 text-white focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-800">
-                        <SelectItem value="AI" className="text-sm font-medium">AI</SelectItem>
-                        <SelectItem value="Fintech" className="text-sm font-medium">Fintech</SelectItem>
-                        <SelectItem value="Healthcare" className="text-sm font-medium">Healthcare</SelectItem>
-                        <SelectItem value="Education" className="text-sm font-medium">Education</SelectItem>
-                        <SelectItem value="Sustainability" className="text-sm font-medium">Sustainability</SelectItem>
-                        <SelectItem value="Other" className="text-sm font-medium">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                
-                <div className="space-y-1.5">
-                  <Label htmlFor="description" className="text-zinc-300 text-sm font-medium">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 min-h-[100px] text-sm font-medium resize-none"
-                    placeholder="Describe your hackathon..."
+                  <Input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleChange}
                     required
+                    placeholder="Enter hackathon title"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="bannerImageUrl" className="text-zinc-300 text-sm font-medium">Banner Image URL (Optional)</Label>
-                    <Input
-                      id="bannerImageUrl"
-                      value={formData.bannerImageUrl}
-                      onChange={(e) => handleInputChange('bannerImageUrl', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      placeholder="https://example.com/banner.jpg"
-                    />
+                <div className="space-y-2">
+                  <Label className="text-white/80 text-sm font-medium">
+                    Organizer Name *
+                  </Label>
+                  <Input
+                    type="text"
+                    name="organizerName"
+                    value={formData.organizerName}
+                    onChange={handleChange}
+                    required
+                    className="bg-white/5 border-white/10 text-white h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-white/80 text-sm font-medium">
+                      Description *
+                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm">
+                          Provide a detailed description of your hackathon goals
+                          and objectives
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <Textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    required
+                    rows="4"
+                    placeholder="Describe your hackathon..."
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 min-h-[120px]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-white/80 text-sm font-medium">
+                      Theme
+                    </Label>
+                    <select
+                      name="theme"
+                      value={formData.theme}
+                      onChange={handleChange}
+                      className="w-full h-12 px-4 rounded-md bg-zinc-900 border border-white/10 text-white focus:border-white/20 focus:outline-none"
+                    >
+                      <option value="AI" className="bg-zinc-900 text-white">
+                        AI
+                      </option>
+                      <option
+                        value="Fintech"
+                        className="bg-zinc-900 text-white"
+                      >
+                        Fintech
+                      </option>
+                      <option
+                        value="Healthcare"
+                        className="bg-zinc-900 text-white"
+                      >
+                        Healthcare
+                      </option>
+                      <option
+                        value="Education"
+                        className="bg-zinc-900 text-white"
+                      >
+                        Education
+                      </option>
+                      <option
+                        value="Sustainability"
+                        className="bg-zinc-900 text-white"
+                      >
+                        Sustainability
+                      </option>
+                      <option value="Other" className="bg-zinc-900 text-white">
+                        Other
+                      </option>
+                    </select>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="status" className="text-zinc-300 text-sm font-medium">Status</Label>
-                    <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
-                      <SelectTrigger className="bg-zinc-800/50 border-zinc-700/50 text-white focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-800">
-                        <SelectItem value="draft" className="text-sm font-medium">Draft</SelectItem>
-                        <SelectItem value="published" className="text-sm font-medium">Published</SelectItem>
-                        <SelectItem value="ongoing" className="text-sm font-medium">Ongoing</SelectItem>
-                        <SelectItem value="completed" className="text-sm font-medium">Completed</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-2">
+                    <Label className="text-white/80 text-sm font-medium">
+                      Status
+                    </Label>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleChange}
+                      className="w-full h-12 px-4 rounded-md bg-zinc-900 border border-white/10 text-white focus:border-white/20 focus:outline-none"
+                    >
+                      <option value="draft" className="bg-zinc-900 text-white">
+                        Draft
+                      </option>
+                      <option
+                        value="published"
+                        className="bg-zinc-900 text-white"
+                      >
+                        Published
+                      </option>
+                      <option
+                        value="ongoing"
+                        className="bg-zinc-900 text-white"
+                      >
+                        Ongoing
+                      </option>
+                      <option
+                        value="completed"
+                        className="bg-zinc-900 text-white"
+                      >
+                        Completed
+                      </option>
+                    </select>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white/80 text-sm font-medium">
+                    Banner Image URL (Optional)
+                  </Label>
+                  <Input
+                    type="url"
+                    name="bannerImageUrl"
+                    value={formData.bannerImageUrl}
+                    onChange={handleChange}
+                    placeholder="https://example.com/banner.jpg"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                  />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Timeline */}
-            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-zinc-700/60 transition-colors duration-200">
-              <CardHeader className="border-b border-zinc-800/60 py-4">
-                <CardTitle className="text-white flex items-center gap-2 text-base font-semibold">
-                  <div className="p-1.5 rounded-lg bg-purple-500/10">
-                    <TbCalendar className="w-4 h-4 text-purple-400" />
-                  </div>
-                  Timeline
-                </CardTitle>
+            {/* Timelines */}
+            <Card className="bg-zinc-950 border-white/10">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-white text-xl">Timeline</CardTitle>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        Set up the complete timeline for your hackathon event
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="registrationStart" className="text-zinc-300 text-sm font-medium">Registration Start</Label>
-                    <Input
-                      id="registrationStart"
-                      type="datetime-local"
-                      value={formData.timelines.registrationStart}
-                      onChange={(e) => handleInputChange('timelines.registrationStart', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="registrationEnd" className="text-zinc-300 text-sm font-medium">Registration End</Label>
-                    <Input
-                      id="registrationEnd"
-                      type="datetime-local"
-                      value={formData.timelines.registrationEnd}
-                      onChange={(e) => handleInputChange('timelines.registrationEnd', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="hackathonStart" className="text-zinc-300 text-sm font-medium">Hackathon Start</Label>
-                    <Input
-                      id="hackathonStart"
-                      type="datetime-local"
-                      value={formData.timelines.hackathonStart}
-                      onChange={(e) => handleInputChange('timelines.hackathonStart', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="hackathonEnd" className="text-zinc-300 text-sm font-medium">Hackathon End</Label>
-                    <Input
-                      id="hackathonEnd"
-                      type="datetime-local"
-                      value={formData.timelines.hackathonEnd}
-                      onChange={(e) => handleInputChange('timelines.hackathonEnd', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5 md:col-span-2">
-                    <Label htmlFor="resultsDate" className="text-zinc-300 text-sm font-medium">Results Date (Optional)</Label>
-                    <Input
-                      id="resultsDate"
-                      type="datetime-local"
-                      value={formData.timelines.resultsDate}
-                      onChange={(e) => handleInputChange('timelines.resultsDate', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                    />
-                  </div>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <DateTimePicker
+                    field="registrationStart"
+                    label="Registration Start"
+                    required
+                    tooltip="When participants can start registering for the hackathon"
+                  />
+                  <DateTimePicker
+                    field="registrationEnd"
+                    label="Registration End"
+                    required
+                    tooltip="Last date and time for registration"
+                  />
+                  <DateTimePicker
+                    field="hackathonStart"
+                    label="Hackathon Start"
+                    required
+                    tooltip="Official start date and time of the hackathon"
+                  />
+                  <DateTimePicker
+                    field="hackathonEnd"
+                    label="Hackathon End"
+                    required
+                    tooltip="When the hackathon coding period ends"
+                  />
+                  <DateTimePicker
+                    field="resultsDate"
+                    label="Results Date"
+                    tooltip="When the results will be announced (optional)"
+                  />
                 </div>
               </CardContent>
             </Card>
 
             {/* Team Settings */}
-            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-zinc-700/60 transition-colors duration-200">
-              <CardHeader className="border-b border-zinc-800/60 py-4">
-                <CardTitle className="text-white flex items-center gap-2 text-base font-semibold">
-                  <div className="p-1.5 rounded-lg bg-green-500/10">
-                    <TbUsers className="w-4 h-4 text-green-400" />
-                  </div>
-                  Team Settings
-                </CardTitle>
+            <Card className="bg-zinc-950 border-white/10">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-white text-xl">
+                    Team Settings
+                  </CardTitle>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        Configure team size requirements for participants
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="minTeamSize" className="text-zinc-300 text-sm font-medium">Min Team Size</Label>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-white/80 text-sm font-medium">
+                      Minimum Team Size *
+                    </Label>
                     <Input
-                      id="minTeamSize"
                       type="number"
-                      min="1"
+                      name="teamSettings.minTeamSize"
                       value={formData.teamSettings.minTeamSize}
-                      onChange={(e) => handleInputChange('teamSettings.minTeamSize', parseInt(e.target.value))}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="maxTeamSize" className="text-zinc-300 text-sm font-medium">Max Team Size</Label>
-                    <Input
-                      id="maxTeamSize"
-                      type="number"
+                      onChange={handleChange}
                       min="1"
-                      value={formData.teamSettings.maxTeamSize}
-                      onChange={(e) => handleInputChange('teamSettings.maxTeamSize', parseInt(e.target.value))}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
+                      required
+                      className="bg-white/5 border-white/10 text-white h-12"
                     />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-zinc-300 text-sm font-medium">Allow Solo Participation</Label>
-                    <Select 
-                      value={formData.teamSettings.allowSolo.toString()} 
-                      onValueChange={(value) => handleInputChange('teamSettings.allowSolo', value === 'true')}
-                    >
-                      <SelectTrigger className="bg-zinc-800/50 border-zinc-700/50 text-white focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-800">
-                        <SelectItem value="true" className="text-sm font-medium">Yes</SelectItem>
-                        <SelectItem value="false" className="text-sm font-medium">No</SelectItem>
-                      </SelectContent>
-                    </Select>
+
+                  <div className="space-y-2">
+                    <Label className="text-white/80 text-sm font-medium">
+                      Maximum Team Size *
+                    </Label>
+                    <Input
+                      type="number"
+                      name="teamSettings.maxTeamSize"
+                      value={formData.teamSettings.maxTeamSize}
+                      onChange={handleChange}
+                      min="1"
+                      required
+                      className="bg-white/5 border-white/10 text-white h-12"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 pt-2">
+                  <input
+                    type="checkbox"
+                    name="teamSettings.allowSolo"
+                    checked={formData.teamSettings.allowSolo}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded border-white/20 bg-white/5 text-blue-600"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Label className="text-white/80 text-sm font-medium">
+                      Allow Solo Participants
+                    </Label>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="text-sm">
+                          Allow individuals to participate without forming a
+                          team
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Problem Statements */}
-            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-zinc-700/60 transition-colors duration-200">
-              <CardHeader className="border-b border-zinc-800/60 py-4">
-                <CardTitle className="text-white flex items-center gap-2 text-base font-semibold">
-                  <div className="p-1.5 rounded-lg bg-orange-500/10">
-                    <TbCode className="w-4 h-4 text-orange-400" />
-                  </div>
-                  Problem Statements
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="problemStatements" className="text-zinc-300 text-sm font-medium">Problem Statements</Label>
-                  <Textarea
-                    id="problemStatements"
-                    value={formData.problemStatements}
-                    onChange={(e) => handleInputChange('problemStatements', e.target.value)}
-                    className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 min-h-[150px] text-sm font-medium resize-none"
-                    placeholder="Describe the problem statements for participants..."
-                    required
-                  />
+            <Card className="bg-zinc-950 border-white/10">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-white text-xl">
+                    Problem Statements
+                  </CardTitle>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        Define the challenges participants will work on
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Label className="text-white/80 text-sm font-medium">
+                  Problem Statements *
+                </Label>
+                <Textarea
+                  name="problemStatements"
+                  value={formData.problemStatements}
+                  onChange={handleChange}
+                  required
+                  rows="6"
+                  placeholder="Describe the problem statements for participants..."
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/50 min-h-[160px]"
+                />
               </CardContent>
             </Card>
 
             {/* Judging Criteria */}
-            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-zinc-700/60 transition-colors duration-200">
-              <CardHeader className="border-b border-zinc-800/60 py-4">
-                <CardTitle className="text-white flex items-center gap-2 text-base font-semibold">
-                  <div className="p-1.5 rounded-lg bg-amber-500/10">
-                    <TbStar className="w-4 h-4 text-amber-400" />
-                  </div>
-                  Judging Criteria
-                </CardTitle>
-                <p className="text-zinc-400 text-sm mt-1">
-                  Define how projects will be evaluated by judges
+            <Card className="bg-zinc-950 border-white/10">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-white text-xl">
+                    Judging Criteria
+                  </CardTitle>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        Define how projects will be evaluated by judges
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <p className="text-white/50 text-sm mt-2">
+                  Define how projects will be evaluated
                 </p>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
+              <CardContent className="space-y-6">
                 {judgingCriteria.map((criteria, index) => (
-                  <Card key={index} className="bg-zinc-800/30 border-zinc-700/30 hover:border-zinc-600/50 transition-colors duration-200">
-                    <CardContent className="p-4 space-y-3">
-                      <div className="flex gap-3">
-                        <div className="flex-1">
-                          <Label className="text-zinc-300 text-sm font-medium">Criteria Title</Label>
+                  <Card key={index} className="bg-white/5 border-white/10">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex gap-4">
+                        <div className="flex-1 space-y-2">
+                          <Label className="text-white/80 text-sm font-medium">
+                            Criteria Title *
+                          </Label>
                           <Input
                             value={criteria.title}
-                            onChange={(e) => updateCriteria(index, "title", e.target.value)}
+                            onChange={(e) =>
+                              updateCriteria(index, "title", e.target.value)
+                            }
                             placeholder="e.g., Innovation"
-                            className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 mt-1 h-9 text-sm font-medium"
+                            className={`bg-white/5 border-white/10 text-white h-12 ${
+                              criteria.title.trim() === ""
+                                ? "border-red-500/50"
+                                : ""
+                            }`}
                             required
                           />
                         </div>
-                        <div className="w-24">
-                          <Label className="text-zinc-300 text-sm font-medium">Max Score</Label>
+
+                        <div className="w-28 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Label className="text-white/80 text-sm font-medium">
+                              Max Score
+                            </Label>
+                            <Tooltip>
+                              <TooltipTrigger>
+                                <MdInfo className="w-3 h-3 text-white/50 hover:text-white/80" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-sm">
+                                  Maximum points for this criteria
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
                           <Input
                             type="number"
                             value={criteria.maxScore}
-                            onChange={(e) => updateCriteria(index, "maxScore", parseInt(e.target.value) || 10)}
+                            onChange={(e) =>
+                              updateCriteria(
+                                index,
+                                "maxScore",
+                                parseInt(e.target.value) || 10
+                              )
+                            }
                             min={1}
                             max={100}
-                            className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 mt-1 h-9 text-sm font-medium"
+                            className="bg-white/5 border-white/10 text-white h-12"
                           />
                         </div>
+
                         <div className="flex items-end">
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => removeCriteria(index)}
-                            disabled={judgingCriteria.length <= 1}
-                            className="h-9"
-                          >
-                            <TbTrash className="w-4 h-4" />
-                          </Button>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => removeCriteria(index)}
+                                disabled={judgingCriteria.length <= 1}
+                                className="bg-red-600/20 text-red-400 hover:bg-red-600/30 border-red-600/30 h-12 w-12"
+                              >
+                                <MdRemove className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-sm">Remove this criteria</p>
+                            </TooltipContent>
+                          </Tooltip>
                         </div>
                       </div>
-                      <div>
-                        <Label className="text-zinc-300 text-sm font-medium">Description (Optional)</Label>
+
+                      <div className="space-y-2">
+                        <Label className="text-white/80 text-sm font-medium">
+                          Description
+                        </Label>
                         <Textarea
                           value={criteria.description}
-                          onChange={(e) => updateCriteria(index, "description", e.target.value)}
+                          onChange={(e) =>
+                            updateCriteria(index, "description", e.target.value)
+                          }
                           placeholder="Describe what judges should look for..."
-                          className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 mt-1 min-h-[60px] text-sm font-medium resize-none"
+                          className="bg-white/5 border-white/10 text-white placeholder:text-white/50 min-h-[80px]"
+                          rows={2}
                         />
                       </div>
                     </CardContent>
                   </Card>
                 ))}
-                
+
                 <Button
                   type="button"
                   onClick={addCriteria}
                   variant="outline"
-                  className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-800/50 hover:text-white hover:border-zinc-500 transition-all duration-200"
+                  className="w-full h-12 border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
                 >
-                  <TbPlus className="w-4 h-4 mr-2" />
+                  <MdAdd className="w-4 h-4 mr-2" />
                   Add Criteria
                 </Button>
               </CardContent>
             </Card>
 
             {/* Prizes */}
-            <Card className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-sm hover:border-zinc-700/60 transition-colors duration-200">
-              <CardHeader className="border-b border-zinc-800/60 py-4">
-                <CardTitle className="text-white flex items-center gap-2 text-base font-semibold">
-                  <div className="p-1.5 rounded-lg bg-yellow-500/10">
-                    <TbTrophy className="w-4 h-4 text-yellow-400" />
-                  </div>
-                  Prizes
-                </CardTitle>
+            <Card className="bg-zinc-950 border-white/10">
+              <CardHeader className="pb-6">
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-white text-xl">Prizes</CardTitle>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-sm">
+                        Define the rewards for winners and participants
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="firstPrize" className="text-zinc-300 text-sm font-medium">🥇 First Prize</Label>
-                    <Input
-                      id="firstPrize"
-                      value={formData.prizes.firstPrize}
-                      onChange={(e) => handleInputChange('prizes.firstPrize', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      placeholder="e.g., Rs 10,000 + goodies"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="secondPrize" className="text-zinc-300 text-sm font-medium">🥈 Second Prize</Label>
-                    <Input
-                      id="secondPrize"
-                      value={formData.prizes.secondPrize}
-                      onChange={(e) => handleInputChange('prizes.secondPrize', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      placeholder="e.g., Rs 5,000 + goodies"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="thirdPrize" className="text-zinc-300 text-sm font-medium">🥉 Third Prize</Label>
-                    <Input
-                      id="thirdPrize"
-                      value={formData.prizes.thirdPrize}
-                      onChange={(e) => handleInputChange('prizes.thirdPrize', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      placeholder="e.g., Rs 3,000 + goodies"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="participantPrize" className="text-zinc-300 text-sm font-medium">🎁 Participation Prize</Label>
-                    <Input
-                      id="participantPrize"
-                      value={formData.prizes.participantPrize}
-                      onChange={(e) => handleInputChange('prizes.participantPrize', e.target.value)}
-                      className="bg-zinc-800/50 border-zinc-700/50 text-white placeholder:text-zinc-500 focus:border-blue-500/50 focus:ring-blue-500/20 transition-all duration-200 h-9 text-sm font-medium"
-                      placeholder="e.g., Participation certificate"
-                    />
-                  </div>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <Label className="text-white/80 text-sm font-medium">
+                    First Prize *
+                  </Label>
+                  <Input
+                    type="text"
+                    name="prizes.firstPrize"
+                    value={formData.prizes.firstPrize}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter first prize details"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white/80 text-sm font-medium">
+                    Second Prize *
+                  </Label>
+                  <Input
+                    type="text"
+                    name="prizes.secondPrize"
+                    value={formData.prizes.secondPrize}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter second prize details"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white/80 text-sm font-medium">
+                    Third Prize *
+                  </Label>
+                  <Input
+                    type="text"
+                    name="prizes.thirdPrize"
+                    value={formData.prizes.thirdPrize}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter third prize details"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-white/80 text-sm font-medium">
+                    Participant Prize *
+                  </Label>
+                  <Input
+                    type="text"
+                    name="prizes.participantPrize"
+                    value={formData.prizes.participantPrize}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter participant prize details"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                  />
                 </div>
               </CardContent>
             </Card>
 
+            {/* Validation warning */}
+            {judgingCriteria.some(
+              (criteria) => criteria.title.trim() === ""
+            ) && (
+              <div className="bg-red-950/40 border border-red-800/50 rounded-lg p-6">
+                <p className="text-red-300 text-sm">
+                  Please fill in all criteria titles or remove empty criteria
+                  before submitting.
+                </p>
+              </div>
+            )}
+
             {/* Submit Button */}
-            <div className="flex justify-end space-x-3 pt-2">
+            <div className="flex justify-end gap-4">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => navigate(`/organizer/hackathon/${hackathonId}`)}
-                className="text-zinc-300 hover:text-white hover:bg-zinc-800/50 transition-all duration-200"
+                className="text-white bg-white/40 hover:bg-white/20 hover:text-white h-12 px-8"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={saving}
-                className="relative overflow-hidden bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-purple-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-blue-600 text-white hover:bg-blue-700 h-12 px-8"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 opacity-0 hover:opacity-100 transition-opacity duration-300" />
-                <div className="relative flex items-center">
-                  {saving ? (
-                    <>
-                      <TbLoader className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <TbDeviceFloppy className="w-4 h-4 mr-2" />
-                      Save Changes
-                    </>
-                  )}
-                </div>
+                {saving ? "Updating..." : "Update Hackathon"}
               </Button>
             </div>
           </form>
         </motion.div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
 
