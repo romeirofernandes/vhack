@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import {
   MdDashboard,
@@ -14,17 +14,23 @@ import {
   MdLeaderboard,
   MdCheckCircle,
   MdFlashOn,
+  MdNotifications,
+  MdEvent,
+  MdAnalytics,
 } from "react-icons/md";
-import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
+import { TbCode, TbSparkles, TbRocket } from "react-icons/tb";
 import { motion } from "framer-motion";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Profile from "./organizer/Profile";
@@ -33,46 +39,79 @@ import { toast } from "react-hot-toast";
 import { signOut } from "firebase/auth";
 import { auth } from "@/config/firebase";
 import MyHackathons from "./organizer/MyHackathons";
-import { getIdToken } from "firebase/auth";
 import Analytics from "./organizer/Analytics";
 
-
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
-
 const CreateEvent = () => (
-  <div className="text-white text-xl text-center py-20">
-    <MdAdd className="mx-auto mb-4 w-10 h-10" />
-    <p>Create Event functionality coming soon!</p>
+  <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+    <div className="w-24 h-24 bg-zinc-800/50 border border-zinc-700 rounded-lg flex items-center justify-center mb-6">
+      <TbRocket className="w-12 h-12 text-zinc-400" />
+    </div>
+    <h2 className="text-2xl font-bold text-white mb-4">
+      Launch Your Next Hackathon
+    </h2>
+    <p className="text-zinc-400 max-w-md mb-6">
+      Create engaging hackathons and bring together the brightest minds to solve
+      real-world challenges.
+    </p>
+    <Button
+      onClick={() => (window.location.href = "/organizer/create-hackathon")}
+      className="bg-white text-zinc-950 hover:bg-zinc-200"
+    >
+      <MdAdd className="w-4 h-4 mr-2" />
+      Create Hackathon
+    </Button>
   </div>
 );
 
 const Participants = () => (
-  <div className="text-white text-xl text-center py-20">
-    <MdGroup className="mx-auto mb-4 w-10 h-10" />
-    <p>Participants management coming soon!</p>
+  <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+    <div className="w-24 h-24 bg-zinc-800/50 border border-zinc-700 rounded-lg flex items-center justify-center mb-6">
+      <MdGroup className="w-12 h-12 text-zinc-400" />
+    </div>
+    <h2 className="text-2xl font-bold text-white mb-4">Participant Hub</h2>
+    <p className="text-zinc-400 max-w-md mb-6">
+      Manage participants, track engagement, and foster collaboration across all
+      your events.
+    </p>
+    <Button
+      variant="outline"
+      className="border-zinc-700 text-zinc-400 hover:bg-zinc-800"
+    >
+      Coming Soon
+    </Button>
   </div>
 );
 
-const DashboardAnalytics = () => (
-  <Analytics />
-);
-
 const Settings = () => (
-  <div className="text-white text-xl text-center py-20">
-    <MdSettings className="mx-auto mb-4 w-10 h-10" />
-    <p>Settings coming soon!</p>
+  <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+    <div className="w-24 h-24 bg-zinc-800/50 border border-zinc-700 rounded-lg flex items-center justify-center mb-6">
+      <MdSettings className="w-12 h-12 text-zinc-400" />
+    </div>
+    <h2 className="text-2xl font-bold text-white mb-4">
+      Organization Settings
+    </h2>
+    <p className="text-zinc-400 max-w-md mb-6">
+      Customize your organization profile, set defaults, and configure
+      preferences.
+    </p>
+    <Button
+      variant="outline"
+      className="border-zinc-700 text-zinc-400 hover:bg-zinc-800"
+    >
+      Coming Soon
+    </Button>
   </div>
 );
 
 const OrganizerDashboard = () => {
-  const [open, setOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
   const [hackathons, setHackathons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState(null);
+  const [error, setError] = useState("");
   const { user } = useAuth();
   const navigate = useNavigate();
-  
 
   useEffect(() => {
     if (activeSection === "dashboard") {
@@ -81,34 +120,35 @@ const OrganizerDashboard = () => {
     if (activeSection === "hackathons") {
       fetchHackathons();
     }
-    // eslint-disable-next-line
   }, [activeSection]);
 
   const fetchDashboardData = async () => {
-  try {
-    setLoading(true);
-    const idToken = await user.getIdToken();
-    const res = await axios.get(
-      `${import.meta.env.VITE_API_URL}/organizer/dashboard`,
-      {
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-        withCredentials: true,
+    try {
+      setLoading(true);
+      const idToken = await user.getIdToken();
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/organizer/dashboard`,
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (res.data.success) {
+        setDashboardData(res.data.data);
+        setError("");
+      } else {
+        setError(res.data.message || "Error loading dashboard");
       }
-    );
-    console.log("Dashboard response:", res.data);
-    if (res.data.success) {
-      setDashboardData(res.data.data);
-    } else {
-      toast.error(res.data.message || "Error loading dashboard");
+    } catch (err) {
+      setError("Failed to load dashboard data");
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    toast.error("Error loading dashboard");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const fetchHackathons = async () => {
     try {
@@ -116,8 +156,10 @@ const OrganizerDashboard = () => {
       setLoading(true);
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/hackathons/my/hackathons`,
-        { headers: { Authorization: `Bearer ${idToken}` },
-          withCredentials: true }
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+          withCredentials: true,
+        }
       );
       if (response.data.success) {
         setHackathons(response.data.data.hackathons);
@@ -140,318 +182,418 @@ const OrganizerDashboard = () => {
     }
   };
 
-  const links = [
+  const sidebarLinks = [
     {
       label: "Dashboard",
-      href: "/organizer/dashboard",
-      icon: <MdDashboard className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      href: "#",
+      icon: <MdDashboard className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("dashboard"),
     },
     {
       label: "My Hackathons",
-      href: "/organizer/hackathons",
-      icon: <MdCalendarToday className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      href: "#",
+      icon: <MdCalendarToday className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("hackathons"),
     },
     {
       label: "Create Event",
-      href: "/organizer/create-hackathon",
-      icon: <MdAdd className="text-white/70 h-5 w-5 flex-shrink-0" />,
-      onClick: () => navigate("/organizer/create-hackathon"),
+      href: "#",
+      icon: <MdAdd className="text-white h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("create-event"),
     },
     {
       label: "Participants",
-      href: "/organizer/participants",
-      icon: <MdGroup className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      href: "#",
+      icon: <MdGroup className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("participants"),
     },
     {
       label: "Analytics",
-      href: "/organizer/analytics",
-      icon: <MdBarChart className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      href: "#",
+      icon: <MdBarChart className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("analytics"),
     },
     {
       label: "Profile",
-      href: "/organizer/profile",
-      icon: <MdPerson className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      href: "#",
+      icon: <MdPerson className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("profile"),
     },
     {
       label: "Settings",
-      href: "/organizer/settings",
-      icon: <MdSettings className="text-white/70 h-5 w-5 flex-shrink-0" />,
-      onClick: () => setActiveSection("settings"),
-    },
-    {
-      label: "Logout",
       href: "#",
-      icon: <MdLogout className="text-white/70 h-5 w-5 flex-shrink-0" />,
-      onClick: handleLogout,
+      icon: <MdSettings className="text-white h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("settings"),
     },
   ];
 
-  const renderContent = () => {
-    if (activeSection === "dashboard") {
-      if (loading || !dashboardData) {
-        return <div className="text-white text-center py-20">Loading...</div>;
-      }
-      const { stats, recentActivity, upcomingEvents, todoList, insights, leaderboard } = dashboardData;
+  const renderDashboardContent = () => {
+    if (!dashboardData) return null;
 
-      return (
-        <>
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <MdCalendarToday className="w-5 h-5" /> Total Hackathons
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <span className="text-3xl font-bold text-white">{stats.totalHackathons}</span>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <MdTimer className="w-5 h-5" /> Active Events
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <span className="text-3xl font-bold text-white">{stats.activeEvents}</span>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <MdGroup className="w-5 h-5" /> Total Participants
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <span className="text-3xl font-bold text-white">{stats.totalParticipants}</span>
-              </CardContent>
-            </Card>
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <MdTrendingUp className="w-5 h-5" /> Success Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <span className="text-3xl font-bold text-white">{stats.successRate}%</span>
-              </CardContent>
-            </Card>
-          </div>
+    const {
+      stats,
+      recentActivity,
+      upcomingEvents,
+      todoList,
+      insights,
+      leaderboard,
+    } = dashboardData;
 
-          {/* Main Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column */}
-            <div className="space-y-6">
-              {/* Recent Activity */}
-              <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <MdTrendingUp className="w-5 h-5" /> Recent Activity
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {recentActivity.length > 0 ? recentActivity.map((a, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full bg-blue-400" />
-                      <div>
-                        <p className="text-white text-sm">{a.message}</p>
-                        <p className="text-xs text-white/50">{new Date(a.timestamp).toLocaleString()}</p>
+    // Prepare chart data for top performers
+    const chartData = leaderboard.slice(0, 5).map((participant, index) => ({
+      name:
+        participant.displayName?.split(" ")[0] ||
+        participant.email.split("@")[0],
+      submissions: participant.submissions || 0,
+    }));
+
+    const chartConfig = {
+      submissions: {
+        label: "Submissions",
+        color: "hsl(var(--chart-1))",
+      },
+    };
+
+    return (
+      <div className="space-y-8">
+        {/* Header Section */}
+        <div className="text-center py-8 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+          <h1 className="text-3xl font-bold text-white mb-3">
+            Organizer Dashboard
+          </h1>
+          <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
+            Manage your hackathons, track performance, and inspire innovation
+            across your community.
+          </p>
+        </div>
+   {/* Quick Actions - Clean Horizontal Row */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button
+            className="flex-1 h-14 bg-white text-zinc-950 hover:bg-zinc-100 font- hover:scale-[0.97] transition-all duration-300 justify-center"
+            onClick={() => navigate("/organizer/create-hackathon")}
+          >
+            <MdEvent className="w-5 h-5" />
+            Create Hackathon
+          </Button>
+
+          <Button
+            variant="outline"
+            className="flex-1 h-14 bg-white text-zinc-950 hover:bg-zinc-100 font-medium hover:scale-[0.97] transition-all duration-300 justify-center"
+            onClick={() => setActiveSection("participants")}
+          >
+            <MdGroup className="w-5 h-5" />
+            Manage Participants
+          </Button>
+
+          <Button
+            variant="outline"
+            className="flex-1 h-14 bg-white text-zinc-950 hover:bg-zinc-100 font-medium hover:scale-[0.97] transition-all duration-300 justify-center"
+            onClick={() => setActiveSection("analytics")}
+          >
+            <MdAnalytics className="w-5 h-5" />
+            View Analytics
+          </Button>
+        </div>
+
+        {/* Stats Overview - Keep as is */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            className="bg-gradient-to-br from-blue-500/20 to-blue-600/10 border border-blue-500/30 rounded-xl p-6"
+            whileHover={{ scale: 1.02 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <MdCalendarToday className="w-8 h-8 text-blue-400" />
+              <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                Active: {stats.activeEvents}
+              </Badge>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">
+              {stats.totalHackathons}
+            </div>
+            <div className="text-blue-300 text-sm">Total Hackathons</div>
+          </motion.div>
+
+          <motion.div
+            className="bg-gradient-to-br from-green-500/20 to-green-600/10 border border-green-500/30 rounded-xl p-6"
+            whileHover={{ scale: 1.02 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <MdGroup className="w-8 h-8 text-green-400" />
+              <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
+                All Events
+              </Badge>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">
+              {stats.totalParticipants}
+            </div>
+            <div className="text-green-300 text-sm">Total Participants</div>
+          </motion.div>
+
+          <motion.div
+            className="bg-gradient-to-br from-purple-500/20 to-purple-600/10 border border-purple-500/30 rounded-xl p-6"
+            whileHover={{ scale: 1.02 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <MdTrendingUp className="w-8 h-8 text-purple-400" />
+              <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
+                Success
+              </Badge>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">
+              {stats.successRate}%
+            </div>
+            <div className="text-purple-300 text-sm">Completion Rate</div>
+          </motion.div>
+
+          <motion.div
+            className="bg-gradient-to-br from-orange-500/20 to-orange-600/10 border border-orange-500/30 rounded-xl p-6"
+            whileHover={{ scale: 1.02 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <MdTimer className="w-8 h-8 text-orange-400" />
+              <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30">
+                Live Now
+              </Badge>
+            </div>
+            <div className="text-3xl font-bold text-white mb-1">
+              {stats.activeEvents}
+            </div>
+            <div className="text-orange-300 text-sm">Active Events</div>
+          </motion.div>
+        </div>
+
+        {/* Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Recent Activity */}
+          <Card className="bg-zinc-900/50 border-zinc-800">
+            <CardHeader className="border-b border-zinc-800">
+              <CardTitle className="text-white flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                Recent Activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-4 max-h-80 overflow-y-auto">
+                {recentActivity.length > 0 ? (
+                  recentActivity.map((activity, index) => (
+                    <motion.div
+                      key={index}
+                      className="flex items-start gap-4 p-4 rounded-lg bg-zinc-800/50 border border-zinc-700/50"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div
+                        className={`w-3 h-3 rounded-full mt-1 ${
+                          activity.type === "registration"
+                            ? "bg-green-400"
+                            : activity.type === "submission"
+                            ? "bg-blue-400"
+                            : "bg-purple-400"
+                        }`}
+                      />
+                      <div className="flex-1">
+                        <p className="text-white text-sm font-medium">
+                          {activity.message}
+                        </p>
+                        <p className="text-zinc-400 text-xs mt-1">
+                          {new Date(activity.timestamp).toLocaleDateString()}
+                        </p>
                       </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-zinc-800/50 rounded-lg flex items-center justify-center mx-auto mb-4">
+                      <MdNotifications className="w-8 h-8 text-zinc-400" />
                     </div>
-                  )) : <div className="text-white/50">No recent activity</div>}
-                </CardContent>
-              </Card>
-              {/* To-Do List */}
-              <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <MdCheckCircle className="w-5 h-5" /> To-Do List
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {todoList.length > 0 ? todoList.map((t, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <MdFlashOn className="text-yellow-400" />
-                      <span className="text-white text-sm">{t.task}</span>
-                    </div>
-                  )) : <div className="text-white/50">All caught up!</div>}
-                </CardContent>
-              </Card>
-            </div>
-            {/* Right Column */}
-            <div className="space-y-6">
-              {/* Upcoming Events */}
-              <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <MdTimer className="w-5 h-5" /> Upcoming Events
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {upcomingEvents.length > 0 ? upcomingEvents.map((e, i) => (
-                    <div key={i} className="flex flex-col">
-                      <span className="text-white font-medium">{e.title}</span>
-                      <span className="text-xs text-white/50">
-                        {new Date(e.startDate).toLocaleDateString()} - {new Date(e.endDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )) : <div className="text-white/50">No upcoming events</div>}
-                </CardContent>
-              </Card>
-              {/* Quick Actions */}
-              <Card className="bg-white/5 border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
-                    <MdFlashOn className="w-5 h-5" /> Quick Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full bg-blue-600 text-white" onClick={() => navigate("/organizer/create-hackathon")}>
-                    + Create Hackathon
-                  </Button>
-                  <Button className="w-full bg-green-600 text-white" onClick={() => setActiveSection("participants")}>
-                    View Participants
-                  </Button>
-                  <Button className="w-full bg-purple-600 text-white" onClick={() => setActiveSection("analytics")}>
-                    View Analytics
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Bottom: Insights/Charts & Leaderboard */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-            {/* Insights/Charts */}
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  📊 Insights
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="h-56">
-                  <Bar
-                    data={{
-                      labels: insights.map(i => i.title),
-                      datasets: [
-                        {
-                          label: "Participants",
-                          data: insights.map(i => i.participants),
-                          backgroundColor: "rgba(59,130,246,0.7)",
-                        },
-                      ],
-                    }}
-                    options={{
-                      plugins: { legend: { display: false } },
-                      scales: { y: { beginAtZero: true } },
-                      responsive: true,
-                      maintainAspectRatio: false,
-                    }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            {/* Leaderboard */}
-            <Card className="bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <MdLeaderboard className="w-5 h-5" /> Leaderboard
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {leaderboard.length > 0 ? leaderboard.map((p, i) => (
-                  <div key={p._id || i} className="flex items-center gap-3">
-                    <span className="text-xl font-bold text-yellow-400">{i + 1}</span>
-                    <img src={p.photoURL || "https://avatar.vercel.sh/user"} className="w-8 h-8 rounded-full" />
-                    <span className="text-white">{p.displayName || p.email}</span>
-                    <span className="ml-auto text-white/70">{p.submissions} submissions</span>
+                    <p className="text-zinc-400 mb-4">No recent activity</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-zinc-700 text-zinc-400 hover:bg-zinc-800"
+                      onClick={() => navigate("/organizer/create-hackathon")}
+                    >
+                      Create Your First Event
+                    </Button>
                   </div>
-                )) : <div className="text-white/50">No leaderboard data</div>}
-              </CardContent>
-            </Card>
-          </div>
-        </>
-      );
-    }
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-    if (activeSection === "hackathons") {
-      return <MyHackathons hackathons={hackathons} loading={loading} navigate={navigate} />;
-    }
-    if (activeSection === "create-event") {
-      return <CreateEvent />;
-    }
-    if (activeSection === "participants") {
-      return <Participants />;
-    }
-    if (activeSection === "analytics") {
-      return <DashboardAnalytics />;
-    }
-    if (activeSection === "profile") {
-      return <Profile />;
-    }
-    if (activeSection === "settings") {
-      return <Settings />;
-    }
-    return null;
+          {/* Top Performers Chart */}
+          <Card className="bg-zinc-900/50 border-zinc-800">
+            <CardHeader className="border-b border-zinc-800">
+              <CardTitle className="text-white flex items-center gap-2">
+                <MdLeaderboard className="w-5 h-5 text-zinc-400" />
+                Top Performers
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              {chartData.length > 0 ? (
+                <ChartContainer
+                  config={chartConfig}
+                  className="h-[300px] w-full"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <XAxis
+                        dataKey="name"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "#a1a1aa", fontSize: 12 }}
+                      />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar
+                        dataKey="submissions"
+                        fill="#3b82f6"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-zinc-800/50 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <MdLeaderboard className="w-8 h-8 text-zinc-400" />
+                  </div>
+                  <p className="text-zinc-400">No participants yet</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   };
 
+  const renderContent = () => {
+    switch (activeSection) {
+      case "dashboard":
+        return renderDashboardContent();
+      case "hackathons":
+        return (
+          <MyHackathons
+            hackathons={hackathons}
+            loading={loading}
+            navigate={navigate}
+          />
+        );
+      case "create-event":
+        return <CreateEvent />;
+      case "participants":
+        return <Participants />;
+      case "analytics":
+        return <Analytics />;
+      case "profile":
+        return <Profile />;
+      case "settings":
+        return <Settings />;
+      default:
+        return renderDashboardContent();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-400 mx-auto mb-4"></div>
+          <div className="text-white">Loading dashboard...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-zinc-950 min-h-screen flex">
-      <Sidebar open={open} setOpen={setOpen}>
+    <div className="rounded-md flex flex-col md:flex-row bg-zinc-950 w-full flex-1 mx-auto border border-white/10 h-screen overflow-hidden">
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            <Logo />
+            <motion.div
+              className="font-normal flex items-center text-sm text-white py-1 relative z-20"
+              animate={{
+                justifyContent: sidebarOpen ? "flex-start" : "center",
+              }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex items-center space-x-2">
+                <TbCode className="ml-4 w-5 h-5 text-white flex-shrink-0" />
+                <motion.span
+                  animate={{
+                    width: sidebarOpen ? "auto" : 0,
+                    opacity: sidebarOpen ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.2 }}
+                  className="font-medium text-white whitespace-nowrap overflow-hidden"
+                >
+                  vHack
+                </motion.span>
+                <motion.div
+                  animate={{
+                    width: sidebarOpen ? "auto" : 0,
+                    opacity: sidebarOpen ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.2, delay: sidebarOpen ? 0.1 : 0 }}
+                  className="overflow-hidden"
+                >
+                  <Badge
+                    variant="secondary"
+                    className="bg-orange-900/30 border-orange-600/30 text-orange-200 text-xs whitespace-nowrap"
+                  >
+                    <TbSparkles className="w-3 h-3 mr-1" />
+                    Organizer
+                  </Badge>
+                </motion.div>
+              </div>
+            </motion.div>
+
             <div className="mt-8 flex flex-col gap-2">
-              {links.map((link, idx) => (
+              {sidebarLinks.map((link, idx) => (
                 <SidebarLink key={idx} link={link} />
               ))}
             </div>
           </div>
+
           <div>
             <SidebarLink
               link={{
-                label: user?.displayName || "Organizer",
+                label: "Logout",
                 href: "#",
-                icon: (
-                  <img
-                    src={user?.photoURL || "https://avatar.vercel.sh/organizer"}
-                    className="h-7 w-7 flex-shrink-0 rounded-full border border-white/10"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
-                ),
+                icon: <MdLogout className="text-white h-5 w-5 flex-shrink-0" />,
+                onClick: handleLogout,
               }}
             />
           </div>
         </SidebarBody>
       </Sidebar>
 
-      <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-        {renderContent()}
-      </div>
-    </div>
-  );
-};
+      <div className="flex flex-1 flex-col">
+        <div className="p-2 md:p-10 border border-white/10 bg-zinc-950 flex flex-col gap-2 flex-1 w-full h-full overflow-y-auto">
+          {error && (
+            <Alert className="mb-6 bg-red-900/20 border-red-800/50">
+              <AlertDescription className="text-red-200">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
 
-const Logo = () => {
-  return (
-    <div className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20">
-      <div className="h-5 w-6 bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-medium text-white whitespace-pre"
-      >
-        VHack
-      </motion.span>
+          <motion.div
+            key={activeSection}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {renderContent()}
+          </motion.div>
+        </div>
+      </div>
     </div>
   );
 };
