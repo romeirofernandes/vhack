@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import Profile from "./judges/Profile";
 import JudgeAnalytics from "./judges/Analytics";
@@ -28,15 +29,15 @@ import {
   MdPending,
   MdGavel,
   MdArrowBack,
-  MdInfo,
-  MdGroup,
 } from "react-icons/md";
+import { TbCode, TbSparkles } from "react-icons/tb";
 import { signOut } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import { useNavigate } from "react-router-dom";
 
 const JudgeDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
   const [hackathons, setHackathons] = useState([]);
   const [selectedHackathon, setSelectedHackathon] = useState(null);
@@ -52,12 +53,13 @@ const JudgeDashboard = () => {
       console.error("Logout error:", error);
     }
   };
-  
+
   useEffect(() => {
-    if(activeSection === "dashboard" && !dashboardData) {
-    fetchDashboardData();
-  }
+    if (activeSection === "dashboard" && !dashboardData) {
+      fetchDashboardData();
+    }
   }, [activeSection, dashboardData]);
+
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -84,29 +86,30 @@ const JudgeDashboard = () => {
           projectsToJudge: 5,
           projectsJudged: 23,
           averageScore: 7.8,
-          completionRate: 92
+          completionRate: 92,
         },
         recentActivity: [
           {
             type: "judgment",
-            message: "Judged project 'AI Assistant' in Tech Innovation Challenge",
+            message:
+              "Judged project 'AI Assistant' in Tech Innovation Challenge",
             timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-            project: "AI Assistant"
+            project: "AI Assistant",
           },
           {
             type: "assignment",
             message: "Assigned as judge for 'Future of Work Hackathon'",
             timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-            hackathon: "Future of Work Hackathon"
-          }
+            hackathon: "Future of Work Hackathon",
+          },
         ],
         upcomingDeadlines: [
           {
             hackathon: "Climate Tech Challenge",
             type: "judging",
             deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-            daysLeft: 3
-          }
+            daysLeft: 3,
+          },
         ],
         pendingInvitations: [
           {
@@ -114,57 +117,59 @@ const JudgeDashboard = () => {
             organizerId: { displayName: "TechCorp" },
             theme: "AI",
             timelines: {
-              hackathonStart: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-            }
-          }
+              hackathonStart: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            },
+          },
         ],
         projectsToJudge: [
           {
             title: "Smart City Dashboard",
             hackathon: { title: "Urban Tech Challenge" },
             team: { name: "CityBuilders" },
-            builders: [{ user: { displayName: "Alex Johnson" } }]
-          }
-        ]
+            builders: [{ user: { displayName: "Alex Johnson" } }],
+          },
+        ],
       });
     } finally {
       setLoading(false);
     }
   };
-const fetchJudgeHackathons = async () => {
-  try {
-    setLoading(true);
-    const idToken = await user.getIdToken();
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/hackathons/judge/assigned`,
-      {
-        headers: { Authorization: `Bearer ${idToken}` },
-      }
-    );
-    if (response.data.success) {
-      setHackathons(response.data.data);
-    } else {
-      toast.error("Failed to fetch assigned hackathons");
-    }
-  } catch (error) {
-    console.error("Error fetching judge hackathons:", error);
-    toast.error("Error fetching assigned hackathons");
-  } finally {
-    setLoading(false);
-  }
-};
 
-useEffect(() => {
-  if (activeSection === "projects") {
-    fetchJudgeHackathons();
-  }
-  return () => setSelectedHackathon(null);
-}, [activeSection]);
+  const fetchJudgeHackathons = async () => {
+    try {
+      setLoading(true);
+      const idToken = await user.getIdToken();
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/hackathons/judge/assigned`,
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
+      if (response.data.success) {
+        setHackathons(response.data.data);
+      } else {
+        toast.error("Failed to fetch assigned hackathons");
+      }
+    } catch (error) {
+      console.error("Error fetching judge hackathons:", error);
+      toast.error("Error fetching assigned hackathons");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeSection === "projects") {
+      fetchJudgeHackathons();
+    }
+    return () => setSelectedHackathon(null);
+  }, [activeSection]);
+
   const sidebarLinks = [
     {
       label: "Dashboard",
       href: "#",
-      icon: <MdDashboard className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
+      icon: <MdDashboard className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("dashboard"),
     },
     {
@@ -172,7 +177,7 @@ useEffect(() => {
       href: "#",
       icon: (
         <div className="relative">
-          <MdNotifications className="text-zinc-400 h-5 w-5 flex-shrink-0" />
+          <MdNotifications className="text-white h-5 w-5 flex-shrink-0" />
           {dashboardData?.stats?.pendingInvitations > 0 && (
             <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
           )}
@@ -183,53 +188,44 @@ useEffect(() => {
     {
       label: "Projects",
       href: "#",
-      icon: <MdAssignment className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
+      icon: <MdAssignment className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("projects"),
     },
     {
       label: "Judging Queue",
       href: "#",
-      icon: <MdBalance className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
+      icon: <MdBalance className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("queue"),
     },
     {
       label: "My Reviews",
       href: "#",
-      icon: <MdGavel className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
+      icon: <MdGavel className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("reviews"),
     },
     {
       label: "Analytics",
       href: "#",
-      icon: <MdBarChart className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
+      icon: <MdBarChart className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("analytics"),
     },
     {
       label: "Hackathons",
       href: "#",
-      icon: <MdCalendarToday className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
+      icon: <MdCalendarToday className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("hackathons"),
     },
-  ];
-
-  const bottomLinks = [
     {
       label: "Profile",
       href: "#",
-      icon: <MdPerson className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
+      icon: <MdPerson className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("profile"),
     },
     {
       label: "Settings",
       href: "#",
-      icon: <MdSettings className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
+      icon: <MdSettings className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("settings"),
-    },
-    {
-      label: "Logout",
-      href: "#",
-      icon: <MdLogout className="text-zinc-400 h-5 w-5 flex-shrink-0" />,
-      onClick: handleLogout,
     },
   ];
 
@@ -242,7 +238,13 @@ useEffect(() => {
       );
     }
 
-    const { stats, recentActivity, upcomingDeadlines, pendingInvitations, projectsToJudge } = dashboardData;
+    const {
+      stats,
+      recentActivity,
+      upcomingDeadlines,
+      pendingInvitations,
+      projectsToJudge,
+    } = dashboardData;
 
     return (
       <div className="space-y-8">
@@ -250,7 +252,7 @@ useEffect(() => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">
-              Welcome back, {user?.displayName?.split(' ')[0] || 'Judge'}!
+              Welcome back, {user?.displayName?.split(" ")[0] || "Judge"}!
             </h1>
             <p className="text-zinc-400">
               Ready to evaluate some amazing projects?
@@ -271,7 +273,9 @@ useEffect(() => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-zinc-400 text-sm">Total Hackathons</p>
-                  <p className="text-2xl font-bold text-white">{stats.totalHackathons}</p>
+                  <p className="text-2xl font-bold text-white">
+                    {stats.totalHackathons}
+                  </p>
                 </div>
                 <MdCalendarToday className="w-8 h-8 text-blue-400" />
               </div>
@@ -283,7 +287,9 @@ useEffect(() => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-zinc-400 text-sm">Projects Judged</p>
-                  <p className="text-2xl font-bold text-white">{stats.projectsJudged}</p>
+                  <p className="text-2xl font-bold text-white">
+                    {stats.projectsJudged}
+                  </p>
                 </div>
                 <MdCheckCircle className="w-8 h-8 text-green-400" />
               </div>
@@ -295,7 +301,9 @@ useEffect(() => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-zinc-400 text-sm">Pending Reviews</p>
-                  <p className="text-2xl font-bold text-white">{stats.projectsToJudge}</p>
+                  <p className="text-2xl font-bold text-white">
+                    {stats.projectsToJudge}
+                  </p>
                 </div>
                 <MdPending className="w-8 h-8 text-yellow-400" />
               </div>
@@ -307,7 +315,9 @@ useEffect(() => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-zinc-400 text-sm">Average Score</p>
-                  <p className="text-2xl font-bold text-white">{stats.averageScore}/10</p>
+                  <p className="text-2xl font-bold text-white">
+                    {stats.averageScore}/10
+                  </p>
                 </div>
                 <MdStar className="w-8 h-8 text-yellow-400" />
               </div>
@@ -319,7 +329,9 @@ useEffect(() => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-zinc-400 text-sm">Completion Rate</p>
-                  <p className="text-2xl font-bold text-white">{stats.completionRate}%</p>
+                  <p className="text-2xl font-bold text-white">
+                    {stats.completionRate}%
+                  </p>
                 </div>
                 <MdTrendingUp className="w-8 h-8 text-green-400" />
               </div>
@@ -331,7 +343,9 @@ useEffect(() => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-zinc-400 text-sm">Pending Invitations</p>
-                  <p className="text-2xl font-bold text-white">{stats.pendingInvitations}</p>
+                  <p className="text-2xl font-bold text-white">
+                    {stats.pendingInvitations}
+                  </p>
                 </div>
                 <MdNotifications className="w-8 h-8 text-purple-400" />
               </div>
@@ -350,20 +364,31 @@ useEffect(() => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {recentActivity && recentActivity.length > 0 ? recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 bg-zinc-900 rounded-lg border border-zinc-800">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.type === 'judgment' ? 'bg-green-400' : 'bg-blue-400'
-                  }`} />
-                  <div className="flex-1">
-                    <p className="text-white text-sm">{activity.message}</p>
-                    <p className="text-zinc-400 text-xs mt-1">
-                      {new Date(activity.timestamp).toLocaleString()}
-                    </p>
+              {recentActivity && recentActivity.length > 0 ? (
+                recentActivity.map((activity, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start space-x-3 p-3 bg-zinc-900 rounded-lg border border-zinc-800"
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full mt-2 ${
+                        activity.type === "judgment"
+                          ? "bg-green-400"
+                          : "bg-blue-400"
+                      }`}
+                    />
+                    <div className="flex-1">
+                      <p className="text-white text-sm">{activity.message}</p>
+                      <p className="text-zinc-400 text-xs mt-1">
+                        {new Date(activity.timestamp).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )) : (
-                <p className="text-zinc-400 text-center py-4">No recent activity</p>
+                ))
+              ) : (
+                <p className="text-zinc-400 text-center py-4">
+                  No recent activity
+                </p>
               )}
             </CardContent>
           </Card>
@@ -377,21 +402,38 @@ useEffect(() => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {upcomingDeadlines && upcomingDeadlines.length > 0 ? upcomingDeadlines.map((deadline, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-zinc-900 rounded-lg border border-zinc-800">
-                  <div>
-                    <p className="text-white font-medium">{deadline.hackathon}</p>
-                    <p className="text-zinc-400 text-sm capitalize">{deadline.type} deadline</p>
+              {upcomingDeadlines && upcomingDeadlines.length > 0 ? (
+                upcomingDeadlines.map((deadline, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-zinc-900 rounded-lg border border-zinc-800"
+                  >
+                    <div>
+                      <p className="text-white font-medium">
+                        {deadline.hackathon}
+                      </p>
+                      <p className="text-zinc-400 text-sm capitalize">
+                        {deadline.type} deadline
+                      </p>
+                    </div>
+                    <Badge
+                      className={`${
+                        deadline.daysLeft <= 1
+                          ? "bg-red-600 border-red-600"
+                          : deadline.daysLeft <= 3
+                          ? "bg-yellow-600 border-yellow-600"
+                          : "bg-green-600 border-green-600"
+                      } text-white`}
+                    >
+                      {deadline.daysLeft} day
+                      {deadline.daysLeft !== 1 ? "s" : ""}
+                    </Badge>
                   </div>
-                  <Badge className={`${
-                    deadline.daysLeft <= 1 ? 'bg-red-600 border-red-600' : 
-                    deadline.daysLeft <= 3 ? 'bg-yellow-600 border-yellow-600' : 'bg-green-600 border-green-600'
-                  } text-white`}>
-                    {deadline.daysLeft} day{deadline.daysLeft !== 1 ? 's' : ''}
-                  </Badge>
-                </div>
-              )) : (
-                <p className="text-zinc-400 text-center py-4">No upcoming deadlines</p>
+                ))
+              ) : (
+                <p className="text-zinc-400 text-center py-4">
+                  No upcoming deadlines
+                </p>
               )}
             </CardContent>
           </Card>
@@ -407,19 +449,32 @@ useEffect(() => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {pendingInvitations.map((invitation, index) => (
-                  <div key={index} className="p-4 bg-zinc-900 rounded-lg border border-yellow-600">
+                  <div
+                    key={index}
+                    className="p-4 bg-zinc-900 rounded-lg border border-yellow-600"
+                  >
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-white font-medium">{invitation.title}</h3>
-                      <Badge className="bg-yellow-600 text-white border-yellow-600">{invitation.theme}</Badge>
+                      <h3 className="text-white font-medium">
+                        {invitation.title}
+                      </h3>
+                      <Badge className="bg-yellow-600 text-white border-yellow-600">
+                        {invitation.theme}
+                      </Badge>
                     </div>
                     <p className="text-zinc-400 text-sm mb-3">
                       Organized by {invitation.organizerId?.displayName}
                     </p>
                     <div className="flex space-x-2">
-                      <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white border-green-600">
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white border-green-600"
+                      >
                         Accept
                       </Button>
-                      <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white border-red-600">
+                      <Button
+                        size="sm"
+                        className="bg-red-600 hover:bg-red-700 text-white border-red-600"
+                      >
                         Decline
                       </Button>
                     </div>
@@ -440,11 +495,16 @@ useEffect(() => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {projectsToJudge.map((project, index) => (
-                  <div key={index} className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                  <div
+                    key={index}
+                    className="p-4 bg-zinc-900 rounded-lg border border-zinc-800"
+                  >
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-white font-medium">{project.title}</h3>
-                      <Button 
-                        size="sm" 
+                      <h3 className="text-white font-medium">
+                        {project.title}
+                      </h3>
+                      <Button
+                        size="sm"
                         className="bg-blue-600 hover:bg-blue-700 text-white border-blue-600"
                         onClick={() => {
                           setActiveSection("projects");
@@ -486,64 +546,131 @@ useEffect(() => {
       case "invitations":
         return <JudgeInvitation />;
       case "projects":
-  // If no hackathon is selected, show a list to pick from
-  if (!selectedHackathon) {
-    return (
-      <div>
-        <h2 className="text-2xl font-bold text-white mb-4">Select a Hackathon</h2>
-        <div className="space-y-4">
-          {hackathons.length === 0 && (
-            <div className="text-zinc-400">No assigned hackathons.</div>
-          )}
-          {hackathons.map(h => (
+        // If no hackathon is selected, show a list to pick from
+        if (!selectedHackathon) {
+          return (
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-6">
+            Select a Hackathon
+          </h2>
+          {hackathons.length === 0 ? (
+            <div className="text-zinc-400 text-center py-8">
+          No assigned hackathons.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {hackathons.map((h) => (
             <Card
               key={h._id}
-              className="bg-zinc-950 border-zinc-800 hover:border-blue-600 cursor-pointer"
+              className="bg-zinc-950 border-zinc-800 hover:border-blue-600 cursor-pointer transition-all duration-300 transform hover:scale-[1.02]"
               onClick={() => setSelectedHackathon(h)}
             >
-              <CardContent className="p-4 flex items-center justify-between">
-                <div>
-                  <h3 className="text-white font-semibold">{h.title}</h3>
-                  <p className="text-zinc-400 text-sm">{h.theme}</p>
-                </div>
-                <Badge className="bg-blue-600 text-white">{h.status}</Badge>
+              <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white text-lg font-semibold truncate">
+                {h.title}
+              </CardTitle>
+              <Badge className="bg-blue-600 text-white border-blue-600 ml-2">
+                {h.status}
+              </Badge>
+            </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+            <p className="text-zinc-400 text-sm mb-4">{h.theme}</p>
+            <div className="flex items-center justify-between text-xs text-zinc-500">
+              <span>
+                {h.timelines?.hackathonStart ? 
+              new Date(h.timelines.hackathonStart).toLocaleDateString() : 
+              'Date TBD'
+                }
+              </span>
+              <span className="flex items-center gap-1">
+                <MdAssignment className="w-3 h-3" />
+                Projects
+              </span>
+            </div>
               </CardContent>
             </Card>
           ))}
+            </div>
+          )}
         </div>
-      </div>
-    );
-  }
-  // If a hackathon is selected, show its projects
-  return (
-    <>
-    <Button
-      variant="ghost"
-      className="mb-4 text-zinc-400 hover:text-white"
-      onClick={() => setSelectedHackathon(null)}
-    >
-      <MdArrowBack className="inline-block mr-2" />
-      Back to Hackathons
-    </Button>
-    
-    <JudgeProjects
-      hackathon={selectedHackathon}
-      onBack={() => setSelectedHackathon(null)}
-      />
-      </>
-  );
+          );
+        }
+        // If no hackathon is selected, show a list to pick from
+        if (!selectedHackathon) {
+          return (
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                Select a Hackathon
+              </h2>
+              <div className="space-y-4">
+                {hackathons.length === 0 && (
+                  <div className="text-zinc-400">No assigned hackathons.</div>
+                )}
+                {hackathons.map((h) => (
+                  <Card
+                    key={h._id}
+                    className="bg-zinc-950 border-zinc-800 hover:border-blue-600 cursor-pointer"
+                    onClick={() => setSelectedHackathon(h)}
+                  >
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-white font-semibold">{h.title}</h3>
+                        <p className="text-zinc-400 text-sm">{h.theme}</p>
+                      </div>
+                      <Badge className="bg-blue-600 text-white">
+                        {h.status}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          );
+        }
+        // If a hackathon is selected, show its projects
+        return (
+          <>
+            <Button
+              variant="outline"
+              className="mb-4 border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
+              onClick={() => setSelectedHackathon(null)}
+            >
+              <MdArrowBack className="inline-block mr-2" />
+              Back to Hackathons
+            </Button>
+
+            <JudgeProjects
+              hackathon={selectedHackathon}
+              onBack={() => setSelectedHackathon(null)}
+            />
+          </>
+        );
       case "queue":
-        return renderComingSoon("Judging Queue", "Project review queue coming soon!");
+        return renderComingSoon(
+          "Judging Queue",
+          "Project review queue coming soon!"
+        );
       case "reviews":
-        return renderComingSoon("My Reviews", "Review history and management coming soon!");
+        return renderComingSoon(
+          "My Reviews",
+          "Review history and management coming soon!"
+        );
       case "analytics":
         return <JudgeAnalytics />;
       case "hackathons":
-        return renderComingSoon("Hackathons", "Your judging hackathons overview coming soon!");
+        return renderComingSoon(
+          "Hackathons",
+          "Your judging hackathons overview coming soon!"
+        );
       case "profile":
-        return <Profile/>;
+        return <Profile />;
       case "settings":
-        return renderComingSoon("Settings", "Judging preferences and settings coming soon!");
+        return renderComingSoon(
+          "Settings",
+          "Judging preferences and settings coming soon!"
+        );
       default:
         return renderDashboardContent();
     }
@@ -552,152 +679,72 @@ useEffect(() => {
   // If a hackathon is selected and we're in projects section, show the judging interface
   if (selectedHackathon && activeSection === "projects") {
     return (
-  <div className="min-h-screen bg-zinc-950 flex">
-    {/* Sidebar */}
-    <div className="w-64 bg-zinc-950 border-r border-zinc-800 flex flex-col">
-      {/* User Info */}
-      <div className="p-6 border-b border-zinc-800">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-            <span className="text-white font-semibold">
-              {user?.displayName?.charAt(0) || 'J'}
-            </span>
-          </div>
-          <div>
-            <p className="text-white font-medium">{user?.displayName || 'Judge'}</p>
-            <p className="text-zinc-400 text-sm">Judge Panel</p>
-          </div>
-        </div>
-      </div>
+      <div className="rounded-md flex flex-col md:flex-row bg-zinc-950 w-full flex-1 mx-auto border border-white/10 h-screen overflow-hidden">
+        <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
+          <SidebarBody className="justify-between gap-10">
+            <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+              <motion.div
+                className="font-normal flex items-center text-sm text-white py-1 relative z-20"
+                animate={{
+                  justifyContent: sidebarOpen ? "flex-start" : "center",
+                }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="flex items-center space-x-2">
+                  <TbCode className="ml-4 w-5 h-5 text-white flex-shrink-0" />
+                  <motion.span
+                    animate={{
+                      width: sidebarOpen ? "auto" : 0,
+                      opacity: sidebarOpen ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="font-medium text-white whitespace-nowrap overflow-hidden"
+                  >
+                    vHack
+                  </motion.span>
+                  <motion.div
+                    animate={{
+                      width: sidebarOpen ? "auto" : 0,
+                      opacity: sidebarOpen ? 1 : 0,
+                    }}
+                    transition={{ duration: 0.2, delay: sidebarOpen ? 0.1 : 0 }}
+                    className="overflow-hidden"
+                  >
+                    <Badge
+                      variant="secondary"
+                      className="bg-purple-600/20 border-purple-400/40 text-purple-300 text-xs whitespace-nowrap"
+                    >
+                      <TbSparkles className="w-3 h-3 mr-1" />
+                      Judge
+                    </Badge>
+                  </motion.div>
+                </div>
+              </motion.div>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-4 py-6">
-        <div className="space-y-2">
-          {sidebarLinks.map((link) => (
-            <button
-              key={link.label}
-              onClick={link.onClick}
-              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                activeSection === link.label.toLowerCase().replace(' ', '')
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-              }`}
-            >
-              {link.icon}
-              <span className="font-medium">{link.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
-
-      {/* Bottom Links */}
-      <div className="px-4 py-6 border-t border-zinc-800">
-        <div className="space-y-2">
-          {bottomLinks.map((link) => (
-            <button
-              key={link.label}
-              onClick={link.onClick}
-              className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                activeSection === link.label.toLowerCase()
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-              }`}
-            >
-              {link.icon}
-              <span className="font-medium">{link.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div> {/* ← FIRST MISSING CLOSING DIV - closes the entire sidebar */}
-
-    {/* Main Content */}
-    <div className="flex-1 overflow-hidden">
-      <div className="h-full overflow-y-auto">
-        <div className="p-8">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeSection}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.2 }}
-            >
-              {renderContent()}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-  }
-
-  return (
-  
-    <div className="min-h-screen bg-zinc-950 flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-zinc-950 border-r border-zinc-800 flex flex-col">
-        {/* User Info */}
-        <div className="p-6 border-b border-zinc-800">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-semibold">
-                {user?.displayName?.charAt(0) || 'J'}
-              </span>
+              <div className="mt-8 flex flex-col gap-2">
+                {sidebarLinks.map((link, idx) => (
+                  <SidebarLink key={idx} link={link} />
+                ))}
+              </div>
             </div>
+
             <div>
-              <p className="text-white font-medium">{user?.displayName || 'Judge'}</p>
-              <p className="text-zinc-400 text-sm">Judge Panel</p>
+              <SidebarLink
+                link={{
+                  label: "Logout",
+                  href: "#",
+                  icon: (
+                    <MdLogout className="text-white h-5 w-5 flex-shrink-0" />
+                  ),
+                  onClick: handleLogout,
+                }}
+              />
             </div>
-          </div>
-        </div>
+          </SidebarBody>
+        </Sidebar>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6">
-          <div className="space-y-2">
-            {sidebarLinks.map((link) => (
-              <button
-                key={link.label}
-                onClick={link.onClick}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                  activeSection === link.label.toLowerCase().replace(' ', '')
-                    ? "bg-zinc-800 text-white"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-                }`}
-              >
-                {link.icon}
-                <span className="font-medium">{link.label}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
-
-        {/* Bottom Links */}
-        <div className="px-4 py-6 border-t border-zinc-800">
-          <div className="space-y-2">
-            {bottomLinks.map((link) => (
-              <button
-                key={link.label}
-                onClick={link.onClick}
-                className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                  activeSection === link.label.toLowerCase()
-                    ? "bg-zinc-800 text-white"
-                    : "text-zinc-400 hover:text-white hover:bg-zinc-800"
-                }`}
-              >
-                {link.icon}
-                <span className="font-medium">{link.label}</span>
-              </button>
-            ))}
-          </div>
-      </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto">
-          <div className="p-8">
+        <div className="flex flex-1 flex-col">
+          <div className="p-2 md:p-10 border border-white/10 bg-zinc-950 flex flex-col gap-2 flex-1 w-full h-full overflow-y-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeSection}
@@ -710,6 +757,87 @@ useEffect(() => {
               </motion.div>
             </AnimatePresence>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-md flex flex-col md:flex-row bg-zinc-950 w-full flex-1 mx-auto border border-white/10 h-screen overflow-hidden">
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
+        <SidebarBody className="justify-between gap-10">
+          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+            <motion.div
+              className="font-normal flex items-center text-sm text-white py-1 relative z-20"
+              animate={{
+                justifyContent: sidebarOpen ? "flex-start" : "center",
+              }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex items-center space-x-2">
+                <TbCode className="ml-4 w-5 h-5 text-white flex-shrink-0" />
+                <motion.span
+                  animate={{
+                    width: sidebarOpen ? "auto" : 0,
+                    opacity: sidebarOpen ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.2 }}
+                  className="font-medium text-white whitespace-nowrap overflow-hidden"
+                >
+                  vHack
+                </motion.span>
+                <motion.div
+                  animate={{
+                    width: sidebarOpen ? "auto" : 0,
+                    opacity: sidebarOpen ? 1 : 0,
+                  }}
+                  transition={{ duration: 0.2, delay: sidebarOpen ? 0.1 : 0 }}
+                  className="overflow-hidden"
+                >
+                  <Badge
+                    variant="secondary"
+                    className="bg-purple-600/20 border-purple-400/40 text-purple-300 text-xs whitespace-nowrap"
+                  >
+                    <TbSparkles className="w-3 h-3 mr-1" />
+                    Judge
+                  </Badge>
+                </motion.div>
+              </div>
+            </motion.div>
+
+            <div className="mt-8 flex flex-col gap-2">
+              {sidebarLinks.map((link, idx) => (
+                <SidebarLink key={idx} link={link} />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <SidebarLink
+              link={{
+                label: "Logout",
+                href: "#",
+                icon: <MdLogout className="text-white h-5 w-5 flex-shrink-0" />,
+                onClick: handleLogout,
+              }}
+            />
+          </div>
+        </SidebarBody>
+      </Sidebar>
+
+      <div className="flex flex-1 flex-col">
+        <div className="p-2 md:p-10 border border-white/10 bg-zinc-950 flex flex-col gap-2 flex-1 w-full h-full overflow-y-auto">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              {renderContent()}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </div>
