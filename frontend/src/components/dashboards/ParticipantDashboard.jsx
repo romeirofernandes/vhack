@@ -452,10 +452,10 @@ const ParticipantDashboard = () => {
                 >
                   <Badge
                     variant="secondary"
-                    className="bg-white/10 border-white/20 text-white/90 text-xs whitespace-nowrap"
+                    className="bg-blue-500/20 border-blue-400/40 text-blue-300 text-xs whitespace-nowrap"
                   >
                     <TbSparkles className="w-3 h-3 mr-1" />
-                    Beta
+                    Participant
                   </Badge>
                 </motion.div>
               </div>
