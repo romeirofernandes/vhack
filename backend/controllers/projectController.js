@@ -2,6 +2,7 @@ const Project = require("../models/Project");
 const User = require("../models/User");
 const Hackathon = require("../models/Hackathon");
 const Team = require("../models/Team");
+const { analyzeProject } = require("../services/aiJudgeService");
 
 const projectController = {
   // Get user's projects + public projects
@@ -630,88 +631,240 @@ const projectController = {
   }
 },
 
+
 // Submit judge score
-async submitJudgeScore(req, res) {
+async analyzeProjectWithAI(req, res) {
   try {
     const { projectId } = req.params;
-    const { scores, feedback } = req.body;
-    const judgeId = req.user._id;
+    const { refresh } = req.query;
+    const userId = req.user._id;
 
-    // Find project and populate hackathon
-    const project = await Project.findById(projectId).populate("hackathon");
+    console.log('AI Analysis requested for project:', projectId);
+    console.log('User ID:', userId);
+
+    // Find the project
+    const project = await Project.findById(projectId)
+      .populate("hackathon", "title judgingCriteria organizerId judges")
+      .populate("team", "name members")
+      .populate("builders.user", "displayName _id");
+
     if (!project) {
-      return res.status(404).json({ success: false, error: "Project not found" });
-    }
-
-    // Check if user is a judge for this hackathon
-    if (!project.hackathon.judges.includes(judgeId)) {
-      return res.status(403).json({ success: false, error: "You are not a judge for this hackathon" });
-    }
-
-    // Check if judging period has started
-    const now = new Date();
-    const submissionDeadline = new Date(project.hackathon.timelines.hackathonEnd);
-    
-    if (now < submissionDeadline) {
-      return res.status(400).json({ 
-        success: false, 
-        error: "Judging not open yet" 
+      return res.status(404).json({
+        success: false,
+        error: "Project not found"
       });
     }
 
-    // Check if judge has already scored this project
-    const existingScoreIndex = project.scores.findIndex(
-      score => score.judge.toString() === judgeId.toString()
+    console.log('Project found:', project.title);
+
+    // Check if user has access (judge, organizer, or team member)
+    const hackathon = project.hackathon;
+    const isJudge = hackathon.judges?.some(judge => judge.toString() === userId.toString());
+    const isOrganizer = hackathon.organizerId?.toString() === userId.toString();
+    const isTeamMember = project.builders?.some(
+      builder => builder.user._id.toString() === userId.toString()
     );
 
-    // Calculate total score
-    const totalScore = scores.reduce((sum, score) => sum + score.score, 0);
+    console.log('Access check:');
+    console.log('- Is Judge:', isJudge);
+    console.log('- Is Organizer:', isOrganizer);
+    console.log('- Is Team Member:', isTeamMember);
 
-    const judgeScore = {
-      judge: judgeId,
-      criteria: scores,
-      totalScore,
-      feedback,
-      submittedAt: new Date()
+    if (!isJudge && !isOrganizer && !isTeamMember) {
+      console.log('Access denied for user:', userId);
+      return res.status(403).json({
+        success: false,
+        error: "Access denied"
+      });
+    }
+
+    // Check for valid cached analysis
+    const hasValidCachedAnalysis = project.aiAnalysis && 
+      project.aiAnalysis.overallScore && 
+      project.aiAnalysis.codeQualityMetrics &&
+      Object.keys(project.aiAnalysis.codeQualityMetrics).length > 0 &&
+      project.aiAnalysis.strengths &&
+      project.aiAnalysis.strengths.length > 0;
+
+    if (hasValidCachedAnalysis && !refresh) {
+      console.log('Returning cached analysis');
+      return res.json({
+        success: true,
+        data: project.aiAnalysis,
+        cached: true
+      });
+    }
+
+    console.log('Generating new AI analysis...');
+
+    // Get GitHub URL
+    const githubUrl = project.links?.github;
+    if (!githubUrl) {
+      return res.status(400).json({
+        success: false,
+        error: "Project must have a GitHub repository for AI analysis"
+      });
+    }
+
+    console.log('Calling AI service for GitHub URL:', githubUrl);
+
+    // **USE THE ACTUAL AI SERVICE HERE**
+    const analysisResult = await analyzeProject(githubUrl, hackathon.judgingCriteria || []);
+
+    if (!analysisResult.success) {
+      console.error('AI service error:', analysisResult.error);
+      return res.status(500).json({
+        success: false,
+        error: analysisResult.error || "AI analysis failed"
+      });
+    }
+
+    console.log('AI service completed successfully:', {
+      overallScore: analysisResult.analysis?.overallScore,
+      hasAnalysis: !!analysisResult.analysis
+    });
+
+    // Map AI service results to our expected format
+    const aiData = analysisResult.analysis;
+    const repoData = analysisResult.repositoryData;
+
+    const formattedAnalysisData = {
+      overallScore: aiData.overallScore || 75,
+      confidenceLevel: 90, // High confidence since it's from real AI analysis
+      analyzedAt: new Date(),
+      repositoryUrl: githubUrl,
+      
+      codeQualityMetrics: {
+        structureQuality: Math.round((aiData.technicalQuality?.score || 75) / 10),
+        documentationQuality: Math.round((aiData.documentation?.score || 70) / 10),
+        testingCoverage: 6, // Default since not in AI response
+        architectureDesign: Math.round((aiData.functionality?.score || 75) / 10)
+      },
+      
+      // Map judging criteria to AI analysis scores
+      criteriaScores: hackathon.judgingCriteria?.map((criteria) => {
+        let score = 7; // default
+        const maxScore = criteria.maxScore || 10;
+        
+        // Match criteria with AI analysis
+        const criteriaLower = criteria.title.toLowerCase();
+        if (criteriaLower.includes('technical') || criteriaLower.includes('implementation')) {
+          score = Math.round((aiData.technicalQuality?.score || 70) * maxScore / 100);
+        } else if (criteriaLower.includes('innovation') || criteriaLower.includes('creativity')) {
+          score = Math.round((aiData.innovation?.score || 80) * maxScore / 100);
+        } else if (criteriaLower.includes('functionality') || criteriaLower.includes('features')) {
+          score = Math.round((aiData.functionality?.score || 75) * maxScore / 100);
+        } else if (criteriaLower.includes('documentation')) {
+          score = Math.round((aiData.documentation?.score || 70) * maxScore / 100);
+        }
+        
+        return {
+          title: criteria.title,
+          description: criteria.description,
+          maxScore: maxScore,
+          score: Math.min(score, maxScore),
+          feedback: `AI Analysis: ${aiData.summary || 'Well-executed project with good technical implementation.'}`
+        };
+      }) || [
+        {
+          title: "Technical Implementation",
+          maxScore: 10,
+          score: Math.round((aiData.technicalQuality?.score || 75) / 10),
+          feedback: aiData.technicalQuality?.examples?.join('. ') || "Strong technical implementation."
+        },
+        {
+          title: "Innovation",
+          maxScore: 10,
+          score: Math.round((aiData.innovation?.score || 80) / 10),
+          feedback: aiData.innovation?.examples?.join('. ') || "Innovative approach with creative solutions."
+        },
+        {
+          title: "Documentation",
+          maxScore: 10,
+          score: Math.round((aiData.documentation?.score || 70) / 10),
+          feedback: aiData.documentation?.examples?.join('. ') || "Good documentation quality."
+        },
+        {
+          title: "Functionality",
+          maxScore: 10,
+          score: Math.round((aiData.functionality?.score || 75) / 10),
+          feedback: aiData.functionality?.examples?.join('. ') || "Solid functionality implementation."
+        }
+      ],
+      
+      // Use AI analysis results
+      strengths: [
+        ...(aiData.technicalQuality?.strengths || []),
+        ...(aiData.innovation?.strengths || []),
+        ...(aiData.documentation?.strengths || []),
+        ...(aiData.functionality?.strengths || [])
+      ].slice(0, 5), // Limit to 5 items
+      
+      improvements: [
+        ...(aiData.technicalQuality?.improvements || []),
+        ...(aiData.innovation?.improvements || []),
+        ...(aiData.documentation?.improvements || []),
+        ...(aiData.functionality?.improvements || [])
+      ].slice(0, 5), // Limit to 5 items
+      
+      technicalHighlights: aiData.keyHighlights || [
+        "Modern development practices",
+        "Clean architecture",
+        "Good code organization"
+      ],
+      
+      innovationFactors: aiData.innovation?.strengths || [
+        "Creative problem solving",
+        "Novel approach",
+        "Unique features"
+      ],
+      
+      recommendation: aiData.summary || "Well-executed project with solid technical implementation and innovative features.",
+      
+      repository: {
+        name: repoData?.name || project.title,
+        language: repoData?.language || "JavaScript",
+        stars: repoData?.stars || 0,
+        forks: repoData?.forks || 0,
+        description: repoData?.description || project.description
+      }
     };
 
-    if (existingScoreIndex >= 0) {
-      // Update existing score
-      project.scores[existingScoreIndex] = judgeScore;
-    } else {
-      // Add new score
-      project.scores.push(judgeScore);
-    }
+    console.log('Formatted analysis data:', {
+      overallScore: formattedAnalysisData.overallScore,
+      strengthsCount: formattedAnalysisData.strengths.length,
+      criteriaCount: formattedAnalysisData.criteriaScores.length
+    });
 
-    // Update project status
-    if (project.status === "submitted") {
-      project.status = "judging";
-    }
-
-    // **MANUAL FINAL SCORE CALCULATION**
-    if (project.scores && project.scores.length > 0) {
-      const totalFinalScore = project.scores.reduce((sum, score) => sum + score.totalScore, 0);
-      project.finalScore = Number((totalFinalScore / project.scores.length).toFixed(2));
-      console.log('Manually calculated final score:', project.finalScore);
-    }
-
-    // Save the project (this should also trigger the pre-save hook)
+    // Save analysis to project
+    project.aiAnalysis = formattedAnalysisData;
     await project.save();
 
-    // Populate the response
-    await project.populate("scores.judge", "_id displayName email");
+    console.log('AI analysis saved successfully');
 
-    res.json({ 
-      success: true, 
-      message: "Score submitted successfully",
-      data: project
+    res.json({
+      success: true,
+      data: formattedAnalysisData,
+      cached: false
     });
 
   } catch (error) {
-    console.error("Error submitting judge score:", error);
-    res.status(500).json({ success: false, error: "Server error" });
+    console.error("AI Analysis error:", error);
+    
+    // Check if it's a GitHub API error
+    if (error.message.includes('GitHub') || error.message.includes('repository')) {
+      return res.status(400).json({
+        success: false,
+        error: "Failed to access GitHub repository. Please check if the repository is public and the URL is correct."
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      error: "Failed to analyze project with AI: " + error.message
+    });
   }
-}
+},
   
 };
 

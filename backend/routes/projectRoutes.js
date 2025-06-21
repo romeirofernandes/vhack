@@ -7,6 +7,11 @@ const authMiddleware = require("../middleware/auth");
 // All project routes require authentication
 router.use(authMiddleware);
 
+// Add these routes to your existing projectRoutes.js
+
+// AI Analysis routes
+router.post('/:projectId/ai-analyze', authMiddleware, projectController.analyzeProjectWithAI);
+
 // Project CRUD operations
 router.get("/", projectController.getProjects);
 router.get("/:projectId", projectController.getProject);
@@ -29,6 +34,6 @@ router.delete(
 router.get("/hackathon/:hackathonId/submitted", authMiddleware, projectController.getSubmittedProjects);
 
 // Submit judge score
-router.post("/:projectId/score", authMiddleware, projectController.submitJudgeScore);
+// router.post("/:projectId/score", authMiddleware, projectController.submitJudgeScore);
 
 module.exports = router;

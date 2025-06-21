@@ -711,9 +711,9 @@ const DateTimePicker = ({ field, label, required = false, tooltip }) => {
                           />
                         </div>
 
-                        <div className="w-28 space-y-2">
-                          <div className="flex items-center gap-2">
-                            <Label className="text-white/80 text-sm font-medium">
+                        <div className="w-32 space-y-1">
+                          <div className="flex items-center gap-1">
+                            <Label className="text-white/80 text-xs font-medium">
                               Max Score
                             </Label>
                             <Tooltip>
@@ -722,25 +722,55 @@ const DateTimePicker = ({ field, label, required = false, tooltip }) => {
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p className="text-sm">
-                                  Maximum points for this criteria
+                                  Maximum points for this criteria (1-100)
                                 </p>
                               </TooltipContent>
                             </Tooltip>
                           </div>
-                          <Input
-                            type="number"
-                            value={criteria.maxScore}
-                            onChange={(e) =>
-                              updateCriteria(
-                                index,
-                                "maxScore",
-                                parseInt(e.target.value) || 10
-                              )
-                            }
-                            min={1}
-                            max={100}
-                            className="bg-white/5 border-white/10 text-white h-12"
-                          />
+                          <div className="relative">
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              pattern="[0-9]*"
+                              value={criteria.maxScore}
+                              onChange={(e) => {
+                                // Only allow numbers
+                                const value = e.target.value.replace(/[^0-9]/g, '');
+                                if (value === '') {
+                                  updateCriteria(index, "maxScore", '');
+                                } else {
+                                  const numValue = parseInt(value);
+                                  if (numValue >= 1 && numValue <= 100) {
+                                    updateCriteria(index, "maxScore", numValue);
+                                  }
+                                }
+                              }}
+                              onBlur={(e) => {
+                                // Set default value if empty
+                                if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                                  updateCriteria(index, "maxScore", 10);
+                                }
+                              }}
+                              onFocus={(e) => {
+                                // Select all text when focused
+                                e.target.select();
+                              }}
+                              className="bg-white/5 border-white/10 text-white h-10 pr-7 text-sm"
+                              placeholder="10"
+                            />
+                            {/* Clear button */}
+                            <button
+                              type="button"
+                              onClick={() => updateCriteria(index, "maxScore", 10)}
+                              className="absolute right-1.5 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80 text-xs"
+                              title="Reset to 10"
+                            >
+                              ↻
+                            </button>
+                          </div>
+                          <div className="text-xs text-white/30 leading-tight">
+                            1-100
+                          </div>
                         </div>
 
                         <div className="flex items-end">

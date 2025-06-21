@@ -3,6 +3,7 @@ const router = express.Router();
 const hackathonController = require('../controllers/hackathonController');
 const authMiddleware = require('../middleware/auth');
 const Hackathon = require("../models/Hackathon")
+const chatController = require('../controllers/chatController');
 
 router.get('/published', authMiddleware, async (req, res) => {
   try {
@@ -39,5 +40,6 @@ router.delete('/:hackathonId', authMiddleware, hackathonController.deleteHackath
 
 router.get('/judge/assigned', authMiddleware, hackathonController.getAssignedHackathons);
 
-module.exports = router;
+router.get('/:hackathonId/chat-messages', chatController.getChatHistory);
+
 module.exports = router; 

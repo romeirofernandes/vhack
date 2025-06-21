@@ -14,15 +14,21 @@ import {
   TbClock,
   TbTrophy,
   TbMessageCircle,
+  TbBrain,
 } from "react-icons/tb";
 import { MdOpenInNew, MdPlayArrow, MdCode, MdGroup } from "react-icons/md";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import AIProjectAnalysis from "@/components/AIProjectAnalysis"; // Adjust the import path as necessary
+
 
 const ProjectCard = ({ project }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
+  const [selectedProjectForAI, setSelectedProjectForAI] = useState(null);
+  const { hackathon } = project;
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -119,6 +125,19 @@ const ProjectCard = ({ project }) => {
               </a>
             </Button>
           )}
+          {/* ADD THIS NEW BUTTON HERE */}
+  <Button
+    onClick={() => {
+      setSelectedProjectForAI(project);
+      setAiAnalysisOpen(true);
+    }}
+    variant="outline"
+    size="sm"
+    className="bg-purple-600/20 border-purple-600/50 text-purple-400 hover:bg-purple-600/30"
+  >
+    <TbBrain className="w-4 h-4 mr-1" />
+    AI Analysis
+  </Button>
           {project.links?.live && (
             <Button variant="outline" size="sm" asChild className="border-zinc-600 hover:border-zinc-500">
               <a href={project.links.live} target="_blank" rel="noopener noreferrer">
@@ -484,7 +503,20 @@ const ProjectCard = ({ project }) => {
           )}
         </AnimatePresence>
       </CardContent>
+      {aiAnalysisOpen && (
+  <AIProjectAnalysis
+    project={selectedProjectForAI}
+    hackathon={hackathon}
+    isOpen={aiAnalysisOpen}
+    onClose={() => {
+      setAiAnalysisOpen(false);
+      setSelectedProjectForAI(null);
+    }}
+    userRole="organizer"
+  />
+)}
     </Card>
+    
   );
 };
 

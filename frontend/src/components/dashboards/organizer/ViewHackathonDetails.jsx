@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -22,6 +22,7 @@ import {
   TbCrown,
   TbCalendarStats,
   TbFlag,
+  TbBrain,
 } from "react-icons/tb";
 import { MdAssignment, MdArrowBack } from "react-icons/md";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import SubmittedProjects from "./SubmittedProjects";
+import { io } from "socket.io-client";
 
 const ViewHackathonDetails = () => {
   const [hackathon, setHackathon] = useState(null);
@@ -53,16 +55,83 @@ const ViewHackathonDetails = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showProjects, setShowProjects] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
+  const [selectedProjectForAI, setSelectedProjectForAI] = useState(null);
+  const [submittedProjects, setSubmittedProjects] = useState([]);
   const { hackathonId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const socketRef = useRef(null);
 
   useEffect(() => {
     fetchHackathonDetails();
     fetchTeamsAndParticipants();
-  }, [hackathonId]);
+    fetchSubmittedProjects();
+    if (!hackathonId || !user) return;
+    
+    // Fetch chat history immediately when component mounts
+    const fetchChatHistory = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/hackathons/${hackathonId}/chat-messages`);
+        const data = await res.json();
+        if (data.success) {
+          setMessages(data.messages || []);
+        }
+      } catch (err) {
+        console.error("Error fetching chat history:", err);
+      }
+    };
+    fetchChatHistory();
+    
+    socketRef.current = io(import.meta.env.VITE_API_URL || "http://localhost:8000");
+    socketRef.current.emit("join_hackathon_room", {
+      hackathonId,
+      userId: user.uid,
+      role: "organizer",
+    });
+    socketRef.current.on("hackathon_message", (data) => {
+      setMessages((prev) => {
+        const all = [...prev, data];
+        // Deduplicate by _id if present
+        const ids = new Set();
+        const deduped = all.filter(msg => {
+          if (msg._id && ids.has(msg._id)) return false;
+          if (msg._id) ids.add(msg._id);
+          return true;
+        });
+        // Sort by createdAt
+        return [...deduped].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+      });
+    });
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, [hackathonId, user]);
+
+  const fetchSubmittedProjects = async () => {
+     if (!user) return; // Add this check
+  try {
+    const idToken = await user.getIdToken();
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/projects/hackathons/${hackathonId}/submitted`,
+      {
+        headers: { Authorization: `Bearer ${idToken}` },
+      }
+    );
+
+    if (response.data.success) {
+      setSubmittedProjects(response.data.data || []);
+    }
+  } catch (error) {
+    console.error("Error fetching submitted projects:", error);
+    // Don't show error toast as this might be called before projects exist
+  }
+};
 
   const fetchHackathonDetails = async () => {
+     if (!user) return; // Add this check
     try {
       setLoading(true);
       const idToken = await user.getIdToken();
@@ -87,6 +156,7 @@ const ViewHackathonDetails = () => {
   };
 
   const fetchTeamsAndParticipants = async () => {
+     if (!user) return; // Add this check
     try {
       const idToken = await user.getIdToken();
 
@@ -212,6 +282,21 @@ const ViewHackathonDetails = () => {
     const diffTime = targetDate - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  const sendMessage = () => {
+    if (newMessage.trim() && socketRef.current) {
+      socketRef.current.emit("hackathon_message", {
+        hackathonId,
+        sender: {
+          userId: user.uid,
+          name: user.displayName || "Organizer",
+          role: "organizer",
+        },
+        message: newMessage,
+      });
+      setNewMessage("");
+    }
   };
 
   if (loading) {
@@ -475,6 +560,7 @@ const ViewHackathonDetails = () => {
             { id: "participants", label: "Participants", icon: TbUsers },
             { id: "timeline", label: "Timeline", icon: TbCalendar },
             { id: "settings", label: "Settings", icon: TbSettings },
+            { id: "chat", label: "Chat", icon: TbSend },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -626,6 +712,7 @@ const ViewHackathonDetails = () => {
                 {/* Submitted Projects Section */}
                 {(hackathon.status === "ongoing" ||
                   hackathon.status === "completed") && (
+                    
                   <Card className="bg-zinc-950 border-zinc-800">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
@@ -648,7 +735,22 @@ const ViewHackathonDetails = () => {
                       </div>
                     </CardContent>
                   </Card>
+                  
                 )}
+                {submittedProjects.length > 0 && (
+  <div className="mb-4">
+    <Button
+      onClick={() => {
+        // You can implement a hackathon-wide AI analytics view
+        // For now, let's show individual project analysis
+      }}
+      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+    >
+      <TbBrain className="w-4 h-4 mr-2" />
+      AI Analytics Dashboard
+    </Button>
+  </div>
+)}
 
                 {/* Team Settings */}
                 <Card className="bg-zinc-950 border-zinc-800">
@@ -1492,9 +1594,108 @@ const ViewHackathonDetails = () => {
               </Card>
             </div>
           )}
+
+          {/* Chat Tab */}
+          {activeTab === "chat" && (
+            <Card className="bg-zinc-950 border-zinc-800">
+              <CardHeader className="pb-4 border-b border-zinc-800">
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TbSend className="w-5 h-5 text-blue-400" />
+                  Organizer-Judge Chat
+                </CardTitle>
+                <p className="text-zinc-400 text-sm">
+                  Real-time communication with judges
+                </p>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="flex flex-col h-96">
+                  {/* Messages Area */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    {messages.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center">
+                        <TbSend className="w-12 h-12 text-zinc-600 mb-3" />
+                        <p className="text-zinc-400 font-medium">No messages yet</p>
+                        <p className="text-zinc-500 text-sm">Start a conversation with the judges</p>
+                      </div>
+                    ) : (
+                      [...messages].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)).map((msg, idx) => {
+                        const isOwnMessage = msg.sender?.userId === user.uid;
+                        const messageTime = new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        });
+                        
+                        return (
+                          <div key={msg._id || `${msg.sender?.userId}-${msg.createdAt || idx}`} 
+                               className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                              isOwnMessage 
+                                ? 'bg-blue-600 text-white rounded-br-md' 
+                                : 'bg-zinc-800 text-white rounded-bl-md'
+                            }`}>
+                              {!isOwnMessage && (
+                                <div className="flex items-center gap-2 mb-1">
+                                  <div className={`w-2 h-2 rounded-full ${
+                                    msg.sender?.role === 'judge' ? 'bg-purple-400' : 'bg-green-400'
+                                  }`} />
+                                  <span className="text-xs font-medium opacity-80">
+                                    {msg.sender?.name || "User"}
+                                  </span>
+                                </div>
+                              )}
+                              <p className="text-sm leading-relaxed">{msg.message}</p>
+                              <div className={`text-xs opacity-60 mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
+                                {messageTime}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                  
+                  {/* Input Area */}
+                  <div className="border-t border-zinc-800 p-4">
+                    <div className="flex gap-3">
+                      <div className="flex-1 relative">
+                        <input
+                          className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                          placeholder="Type your message..."
+                          disabled={!socketRef.current}
+                        />
+                        {!socketRef.current && (
+                          <div className="absolute inset-0 bg-zinc-900/50 rounded-lg flex items-center justify-center">
+                            <div className="flex items-center gap-2 text-zinc-400 text-sm">
+                              <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                              Connecting...
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        onClick={sendMessage}
+                        disabled={!newMessage.trim() || !socketRef.current}
+                        className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 disabled:cursor-not-allowed transition-all duration-200"
+                      >
+                        <TbSend className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-zinc-500 mt-2">
+                      Press Enter to send • Shift+Enter for new line
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </motion.div>
       </div>
+      
     </div>
+    
   );
 };
 

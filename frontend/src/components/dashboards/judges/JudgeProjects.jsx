@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +14,15 @@ import {
   MdGroup,
   MdArrowBack,
   MdStar,
-  MdInfo
+  MdInfo,
+  MdCode,
+  MdEmojiEvents,
+  MdExpandMore,
+  MdExpandLess
 } from "react-icons/md";
+import { io } from "socket.io-client";
+import { TbSend,TbBrain } from "react-icons/tb";
+import AIProjectAnalysis from "@/components/AIProjectAnalysis";
 
 const JudgeProjects = ({ hackathon,onBack }) => {
   const { user } = useAuth();
@@ -24,6 +31,13 @@ const JudgeProjects = ({ hackathon,onBack }) => {
   const [loading, setLoading] = useState(true);
   const [judgingOpen, setJudgingOpen] = useState(false);
   const [mongoUserId, setMongoUserId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [hackathonDetails, setHackathonDetails] = useState(null);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
+  const [selectedProjectForAI, setSelectedProjectForAI] = useState(null);
+  const socketRef = useRef(null);
 
 useEffect(() => {
   const getMongoId = async () => {
@@ -45,6 +59,99 @@ useEffect(() => {
     getMongoId();
   }
 }, [user]);
+
+useEffect(() => {
+  if (!hackathon || !user) return;
+
+  // Fetch hackathon details
+  const fetchHackathonDetails = async () => {
+    try {
+      const idToken = await user.getIdToken();
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/hackathons/${hackathon._id}`,
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setHackathonDetails(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching hackathon details:", error);
+    }
+  };
+
+  fetchHackathonDetails();
+
+  // Fetch chat history
+  const fetchChatHistory = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/hackathons/${hackathon._id}/chat-messages`
+      );
+      const data = await res.json();
+      if (data.success) {
+        setMessages((prev) => {
+          // Merge and deduplicate by _id (if present)
+          const ids = new Set();
+          const all = [...(data.messages || []), ...prev];
+          const deduped = all.filter(msg => {
+            if (msg._id && ids.has(msg._id)) return false;
+            if (msg._id) ids.add(msg._id);
+            return true;
+          });
+          // Sort by createdAt
+          return [...deduped].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching chat history:", err);
+    }
+  };
+  fetchChatHistory();
+
+  // Socket.io connection
+  socketRef.current = io(import.meta.env.VITE_API_URL || "http://localhost:8000");
+  socketRef.current.emit("join_hackathon_room", {
+    hackathonId: hackathon._id,
+    userId: user.uid,
+    role: "judge",
+  });
+  socketRef.current.on("hackathon_message", (data) => {
+    setMessages((prev) => {
+      const all = [...prev, data];
+      // Deduplicate by _id if present
+      const ids = new Set();
+      const deduped = all.filter(msg => {
+        if (msg._id && ids.has(msg._id)) return false;
+        if (msg._id) ids.add(msg._id);
+        return true;
+      });
+      // Sort by createdAt
+      return [...deduped].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+    });
+  });
+  return () => {
+    socketRef.current.disconnect();
+  };
+}, [hackathon, user]);
+
+const sendMessage = () => {
+  if (newMessage.trim() && socketRef.current) {
+    socketRef.current.emit("hackathon_message", {
+      hackathonId: hackathon._id,
+      sender: {
+        userId: user.uid,
+        name: user.displayName || "Judge",
+        role: "judge",
+      },
+      message: newMessage,
+    });
+    setNewMessage("");
+  }
+};
+
   if (!hackathon) {
     return (
       <div className="text-zinc-400 p-8 text-center">
@@ -137,6 +244,82 @@ useEffect(() => {
           Review and score submitted projects
         </p>
       </div>
+
+      {/* Hackathon Details Section */}
+      {hackathonDetails && (
+        <Card className="bg-zinc-950 border-zinc-800">
+          <CardHeader className="cursor-pointer" onClick={() => setDetailsExpanded(!detailsExpanded)}>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white flex items-center gap-2">
+                <MdInfo className="w-5 h-5 text-blue-400" />
+                Hackathon Details & Judging Criteria
+              </CardTitle>
+              {detailsExpanded ? (
+                <MdExpandLess className="w-5 h-5 text-zinc-400" />
+              ) : (
+                <MdExpandMore className="w-5 h-5 text-zinc-400" />
+              )}
+            </div>
+            <p className="text-zinc-400 text-sm">
+              Click to {detailsExpanded ? 'hide' : 'view'} problem statements and judging criteria
+            </p>
+          </CardHeader>
+          
+          {detailsExpanded && (
+            <CardContent className="space-y-6 pt-0">
+              {/* Problem Statements */}
+              {hackathonDetails.problemStatements && (
+                <div className="space-y-3">
+                  <h4 className="text-white font-semibold flex items-center gap-2">
+                    <MdCode className="w-4 h-4 text-purple-400" />
+                    Problem Statements
+                  </h4>
+                  <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                    <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                      {hackathonDetails.problemStatements}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Judging Criteria */}
+              {hackathonDetails.judgingCriteria && hackathonDetails.judgingCriteria.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-white font-semibold flex items-center gap-2">
+                    <MdEmojiEvents className="w-4 h-4 text-yellow-400" />
+                    Judging Criteria
+                  </h4>
+                  <div className="grid gap-3">
+                    {hackathonDetails.judgingCriteria.map((criteria, index) => (
+                      <div key={index} className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                        <div className="flex items-center justify-between mb-2">
+                          <h5 className="text-white font-medium">{criteria.title}</h5>
+                          <Badge className="bg-blue-600 text-white">
+                            Max: {criteria.maxScore} pts
+                          </Badge>
+                        </div>
+                        {criteria.description && (
+                          <p className="text-zinc-400 text-sm leading-relaxed">
+                            {criteria.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Theme */}
+              <div className="space-y-3">
+                <h4 className="text-white font-semibold">Theme</h4>
+                <Badge className="bg-purple-600 text-white text-base px-3 py-1">
+                  {hackathonDetails.theme}
+                </Badge>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       {/* Judging Status */}
       {!judgingOpen && (
@@ -270,6 +453,17 @@ useEffect(() => {
                       >
                         {status === "scored" ? "View Score" : "Score Project"}
                       </Button>
+                      <Button
+  onClick={() => {
+    setSelectedProjectForAI(project);
+    setAiAnalysisOpen(true);
+  }}
+  variant="outline"
+  className="bg-purple-600/20 border-purple-600/50 text-purple-400 hover:bg-purple-600/30"
+>
+  <TbBrain className="w-4 h-4 mr-2" />
+  AI Analysis
+</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -292,6 +486,114 @@ useEffect(() => {
           </CardContent>
         </Card>
       )}
+
+      {/* Chat Section */}
+      <Card className="bg-zinc-950 border-zinc-800">
+        <CardHeader className="pb-4 border-b border-zinc-800">
+          <CardTitle className="text-white flex items-center gap-2">
+            <TbSend className="w-5 h-5 text-purple-400" />
+            Organizer-Judge Chat
+          </CardTitle>
+          <p className="text-zinc-400 text-sm">
+            Real-time communication with the organizer
+          </p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="flex flex-col h-80">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <TbSend className="w-12 h-12 text-zinc-600 mb-3" />
+                  <p className="text-zinc-400 font-medium">No messages yet</p>
+                  <p className="text-zinc-500 text-sm">Start a conversation with the organizer</p>
+                </div>
+              ) : (
+                messages.map((msg, idx) => {
+                  const isOwnMessage = msg.sender?.userId === user.uid;
+                  const messageTime = new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  });
+                  
+                  return (
+                    <div key={msg._id || `${msg.sender?.userId}-${msg.createdAt || idx}`} 
+                         className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                        isOwnMessage 
+                          ? 'bg-purple-600 text-white rounded-br-md' 
+                          : 'bg-zinc-800 text-white rounded-bl-md'
+                      }`}>
+                        {!isOwnMessage && (
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className={`w-2 h-2 rounded-full ${
+                              msg.sender?.role === 'organizer' ? 'bg-green-400' : 'bg-blue-400'
+                            }`} />
+                            <span className="text-xs font-medium opacity-80">
+                              {msg.sender?.name || "User"}
+                            </span>
+                          </div>
+                        )}
+                        <p className="text-sm leading-relaxed">{msg.message}</p>
+                        <div className={`text-xs opacity-60 mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
+                          {messageTime}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            
+            {/* Input Area */}
+            <div className="border-t border-zinc-800 p-4">
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <input
+                    className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                    placeholder="Type your message..."
+                    disabled={!socketRef.current}
+                  />
+                  {!socketRef.current && (
+                    <div className="absolute inset-0 bg-zinc-900/50 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center gap-2 text-zinc-400 text-sm">
+                        <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                        Connecting...
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <Button
+                  onClick={sendMessage}
+                  disabled={!newMessage.trim() || !socketRef.current}
+                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-700 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <TbSend className="w-4 h-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-zinc-500 mt-2">
+                Press Enter to send • Shift+Enter for new line
+              </p>
+            </div>
+          </div>
+          
+        </CardContent>
+      </Card>
+      {aiAnalysisOpen && (
+  <AIProjectAnalysis
+    project={selectedProjectForAI}
+    hackathon={hackathonDetails}
+    isOpen={aiAnalysisOpen}
+    onClose={() => {
+      setAiAnalysisOpen(false);
+      setSelectedProjectForAI(null);
+    }}
+    userRole="judge"
+  />
+)}
     </div>
   );
 };
