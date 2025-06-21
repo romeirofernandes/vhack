@@ -319,17 +319,24 @@ const EditHackathon = () => {
 
       const idToken = await user.getIdToken();
 
-      // Include ALL judging criteria in the payload
-      const payload = {
+      // Convert datetime-local strings to proper Date objects for the backend
+      const processedPayload = {
         ...formData,
         judgingCriteria: judgingCriteria,
+        timelines: {
+          registrationStart: formData.timelines.registrationStart ? new Date(formData.timelines.registrationStart) : null,
+          registrationEnd: formData.timelines.registrationEnd ? new Date(formData.timelines.registrationEnd) : null,
+          hackathonStart: formData.timelines.hackathonStart ? new Date(formData.timelines.hackathonStart) : null,
+          hackathonEnd: formData.timelines.hackathonEnd ? new Date(formData.timelines.hackathonEnd) : null,
+          resultsDate: formData.timelines.resultsDate ? new Date(formData.timelines.resultsDate) : null,
+        }
       };
 
-      console.log("Updating payload:", payload); // Debug log
+      console.log("Updating payload:", processedPayload); // Debug log
 
       const response = await axios.put(
         `${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}`,
-        payload,
+        processedPayload,
         {
           headers: {
             Authorization: `Bearer ${idToken}`,
@@ -344,7 +351,27 @@ const EditHackathon = () => {
       }
     } catch (error) {
       console.error("Error updating hackathon:", error);
-      toast.error(error.response?.data?.message || "Error updating hackathon");
+      
+      // More detailed error handling
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error("Error response data:", error.response.data);
+        console.error("Error response status:", error.response.status);
+        
+        const errorMessage = error.response.data?.message || 
+                           error.response.data?.error || 
+                           "Error updating hackathon";
+        toast.error(errorMessage);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("No response received:", error.request);
+        toast.error("No response from server. Please check your connection.");
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error("Error setting up request:", error.message);
+        toast.error("Error setting up request");
+      }
     } finally {
       setSaving(false);
     }

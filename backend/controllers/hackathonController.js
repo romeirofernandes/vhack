@@ -190,14 +190,28 @@ exports.updateHackathon = async (req, res) => {
                 message: 'Hackathon ID is required'
             });
         }
+        
         const hackathon = await Hackathon.findById(hackathonId);
-        const now = new Date();
-        if(now > new Date(hackathon.timelines.hackathonStart)) {
-            return res.status(400).json({
+        
+        if (!hackathon) {
+            return res.status(404).json({
                 success: false,
-                message: 'Cannot update hackathon after it has started'
+                message: 'Hackathon not found'
             });
         }
+
+        // Only restrict updates for published/ongoing hackathons that have already started
+        const now = new Date();
+        const hackathonStart = new Date(hackathon.timelines.hackathonStart);
+        
+        if ((hackathon.status === 'published' || hackathon.status === 'ongoing') && 
+            now > hackathonStart) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot update hackathon after it has started and is published/ongoing'
+            });
+        }
+
         // Find and update the hackathon
         const updatedHackathon = await Hackathon.findByIdAndUpdate(
             hackathonId,
