@@ -14,7 +14,11 @@ import {
   MdGroup,
   MdArrowBack,
   MdStar,
-  MdInfo
+  MdInfo,
+  MdCode,
+  MdEmojiEvents,
+  MdExpandMore,
+  MdExpandLess
 } from "react-icons/md";
 import { io } from "socket.io-client";
 import { TbSend } from "react-icons/tb";
@@ -28,6 +32,8 @@ const JudgeProjects = ({ hackathon,onBack }) => {
   const [mongoUserId, setMongoUserId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [hackathonDetails, setHackathonDetails] = useState(null);
+  const [detailsExpanded, setDetailsExpanded] = useState(false);
   const socketRef = useRef(null);
 
 useEffect(() => {
@@ -53,6 +59,27 @@ useEffect(() => {
 
 useEffect(() => {
   if (!hackathon || !user) return;
+
+  // Fetch hackathon details
+  const fetchHackathonDetails = async () => {
+    try {
+      const idToken = await user.getIdToken();
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/hackathons/${hackathon._id}`,
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
+      const data = await response.json();
+      if (data.success) {
+        setHackathonDetails(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching hackathon details:", error);
+    }
+  };
+
+  fetchHackathonDetails();
 
   // Fetch chat history
   const fetchChatHistory = async () => {
@@ -214,6 +241,82 @@ const sendMessage = () => {
           Review and score submitted projects
         </p>
       </div>
+
+      {/* Hackathon Details Section */}
+      {hackathonDetails && (
+        <Card className="bg-zinc-950 border-zinc-800">
+          <CardHeader className="cursor-pointer" onClick={() => setDetailsExpanded(!detailsExpanded)}>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white flex items-center gap-2">
+                <MdInfo className="w-5 h-5 text-blue-400" />
+                Hackathon Details & Judging Criteria
+              </CardTitle>
+              {detailsExpanded ? (
+                <MdExpandLess className="w-5 h-5 text-zinc-400" />
+              ) : (
+                <MdExpandMore className="w-5 h-5 text-zinc-400" />
+              )}
+            </div>
+            <p className="text-zinc-400 text-sm">
+              Click to {detailsExpanded ? 'hide' : 'view'} problem statements and judging criteria
+            </p>
+          </CardHeader>
+          
+          {detailsExpanded && (
+            <CardContent className="space-y-6 pt-0">
+              {/* Problem Statements */}
+              {hackathonDetails.problemStatements && (
+                <div className="space-y-3">
+                  <h4 className="text-white font-semibold flex items-center gap-2">
+                    <MdCode className="w-4 h-4 text-purple-400" />
+                    Problem Statements
+                  </h4>
+                  <div className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                    <p className="text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                      {hackathonDetails.problemStatements}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Judging Criteria */}
+              {hackathonDetails.judgingCriteria && hackathonDetails.judgingCriteria.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-white font-semibold flex items-center gap-2">
+                    <MdEmojiEvents className="w-4 h-4 text-yellow-400" />
+                    Judging Criteria
+                  </h4>
+                  <div className="grid gap-3">
+                    {hackathonDetails.judgingCriteria.map((criteria, index) => (
+                      <div key={index} className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                        <div className="flex items-center justify-between mb-2">
+                          <h5 className="text-white font-medium">{criteria.title}</h5>
+                          <Badge className="bg-blue-600 text-white">
+                            Max: {criteria.maxScore} pts
+                          </Badge>
+                        </div>
+                        {criteria.description && (
+                          <p className="text-zinc-400 text-sm leading-relaxed">
+                            {criteria.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Theme */}
+              <div className="space-y-3">
+                <h4 className="text-white font-semibold">Theme</h4>
+                <Badge className="bg-purple-600 text-white text-base px-3 py-1">
+                  {hackathonDetails.theme}
+                </Badge>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       {/* Judging Status */}
       {!judgingOpen && (
