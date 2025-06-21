@@ -316,7 +316,7 @@ const JudgeDashboard = () => {
                 <div>
                   <p className="text-zinc-400 text-sm">Average Score</p>
                   <p className="text-2xl font-bold text-white">
-                    {stats.averageScore}/10
+                    {stats.averageScore}
                   </p>
                 </div>
                 <MdStar className="w-8 h-8 text-yellow-400" />
