@@ -17,6 +17,7 @@ import {
   MdInfo
 } from "react-icons/md";
 import { io } from "socket.io-client";
+import { TbSend } from "react-icons/tb";
 
 const JudgeProjects = ({ hackathon,onBack }) => {
   const { user } = useAuth();
@@ -369,36 +370,100 @@ const sendMessage = () => {
         </Card>
       )}
 
-      <div className="my-8 p-4 bg-zinc-900 rounded-lg border border-zinc-700">
-        <h3 className="text-lg font-bold mb-2 text-white">Organizer-Judge Chat</h3>
-        <div className="min-h-[100px] max-h-72 overflow-y-auto mb-2 bg-zinc-950 p-2 rounded border border-zinc-800">
-          {messages.length === 0 ? (
-            <div className="text-zinc-400 italic">No messages yet.</div>
-          ) : (
-            messages.map((msg, idx) => (
-              <div key={msg._id || `${msg.sender?.userId}-${msg.createdAt || idx}`} className="mb-1">
-                <span className="font-semibold text-white">{msg.sender?.name || "User"}:</span>
-                <span className="ml-2 text-white">{msg.message}</span>
+      {/* Chat Section */}
+      <Card className="bg-zinc-950 border-zinc-800">
+        <CardHeader className="pb-4 border-b border-zinc-800">
+          <CardTitle className="text-white flex items-center gap-2">
+            <TbSend className="w-5 h-5 text-purple-400" />
+            Organizer-Judge Chat
+          </CardTitle>
+          <p className="text-zinc-400 text-sm">
+            Real-time communication with the organizer
+          </p>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="flex flex-col h-80">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center">
+                  <TbSend className="w-12 h-12 text-zinc-600 mb-3" />
+                  <p className="text-zinc-400 font-medium">No messages yet</p>
+                  <p className="text-zinc-500 text-sm">Start a conversation with the organizer</p>
+                </div>
+              ) : (
+                messages.map((msg, idx) => {
+                  const isOwnMessage = msg.sender?.userId === user.uid;
+                  const messageTime = new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  });
+                  
+                  return (
+                    <div key={msg._id || `${msg.sender?.userId}-${msg.createdAt || idx}`} 
+                         className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                        isOwnMessage 
+                          ? 'bg-purple-600 text-white rounded-br-md' 
+                          : 'bg-zinc-800 text-white rounded-bl-md'
+                      }`}>
+                        {!isOwnMessage && (
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className={`w-2 h-2 rounded-full ${
+                              msg.sender?.role === 'organizer' ? 'bg-green-400' : 'bg-blue-400'
+                            }`} />
+                            <span className="text-xs font-medium opacity-80">
+                              {msg.sender?.name || "User"}
+                            </span>
+                          </div>
+                        )}
+                        <p className="text-sm leading-relaxed">{msg.message}</p>
+                        <div className={`text-xs opacity-60 mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
+                          {messageTime}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            
+            {/* Input Area */}
+            <div className="border-t border-zinc-800 p-4">
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <input
+                    className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                    placeholder="Type your message..."
+                    disabled={!socketRef.current}
+                  />
+                  {!socketRef.current && (
+                    <div className="absolute inset-0 bg-zinc-900/50 rounded-lg flex items-center justify-center">
+                      <div className="flex items-center gap-2 text-zinc-400 text-sm">
+                        <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+                        Connecting...
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <Button
+                  onClick={sendMessage}
+                  disabled={!newMessage.trim() || !socketRef.current}
+                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-zinc-700 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <TbSend className="w-4 h-4" />
+                </Button>
               </div>
-            ))
-          )}
-        </div>
-        <div className="flex gap-2">
-          <input
-            className="flex-1 p-2 rounded bg-zinc-800 text-white"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-            placeholder="Type a message..."
-          />
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded"
-            onClick={sendMessage}
-          >
-            Send
-          </button>
-        </div>
-      </div>
+              <p className="text-xs text-zinc-500 mt-2">
+                Press Enter to send • Shift+Enter for new line
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
