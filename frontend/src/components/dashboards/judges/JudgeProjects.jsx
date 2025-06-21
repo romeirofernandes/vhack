@@ -18,13 +18,13 @@ import {
   MdCode,
   MdEmojiEvents,
   MdExpandMore,
-  MdExpandLess
+  MdExpandLess,
 } from "react-icons/md";
 import { io } from "socket.io-client";
-import { TbSend,TbBrain } from "react-icons/tb";
+import { TbSend, TbBrain } from "react-icons/tb";
 import AIProjectAnalysis from "@/components/AIProjectAnalysis";
 
-const JudgeProjects = ({ hackathon,onBack }) => {
+const JudgeProjects = ({ hackathon, onBack }) => {
   const { user } = useAuth();
   const [projects, setProjects] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -39,118 +39,129 @@ const JudgeProjects = ({ hackathon,onBack }) => {
   const [selectedProjectForAI, setSelectedProjectForAI] = useState(null);
   const socketRef = useRef(null);
 
-useEffect(() => {
-  const getMongoId = async () => {
-    try {
-      const idToken = await user.getIdToken();
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/mongo-id`, {
-        headers: { Authorization: `Bearer ${idToken}` }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setMongoUserId(data.mongoId);
-      }
-    } catch (error) {
-      console.error("Error getting mongo ID:", error);
-    }
-  };
-
-  if (user) {
-    getMongoId();
-  }
-}, [user]);
-
-useEffect(() => {
-  if (!hackathon || !user) return;
-
-  // Fetch hackathon details
-  const fetchHackathonDetails = async () => {
-    try {
-      const idToken = await user.getIdToken();
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/hackathons/${hackathon._id}`,
-        {
-          headers: { Authorization: `Bearer ${idToken}` },
+  useEffect(() => {
+    const getMongoId = async () => {
+      try {
+        const idToken = await user.getIdToken();
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/auth/mongo-id`,
+          {
+            headers: { Authorization: `Bearer ${idToken}` },
+          }
+        );
+        const data = await response.json();
+        if (data.success) {
+          setMongoUserId(data.mongoId);
         }
-      );
-      const data = await response.json();
-      if (data.success) {
-        setHackathonDetails(data.data);
+      } catch (error) {
+        console.error("Error getting mongo ID:", error);
       }
-    } catch (error) {
-      console.error("Error fetching hackathon details:", error);
+    };
+
+    if (user) {
+      getMongoId();
     }
-  };
+  }, [user]);
 
-  fetchHackathonDetails();
+  useEffect(() => {
+    if (!hackathon || !user) return;
 
-  // Fetch chat history
-  const fetchChatHistory = async () => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/hackathons/${hackathon._id}/chat-messages`
-      );
-      const data = await res.json();
-      if (data.success) {
-        setMessages((prev) => {
-          // Merge and deduplicate by _id (if present)
-          const ids = new Set();
-          const all = [...(data.messages || []), ...prev];
-          const deduped = all.filter(msg => {
-            if (msg._id && ids.has(msg._id)) return false;
-            if (msg._id) ids.add(msg._id);
-            return true;
+    // Fetch hackathon details
+    const fetchHackathonDetails = async () => {
+      try {
+        const idToken = await user.getIdToken();
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/hackathons/${hackathon._id}`,
+          {
+            headers: { Authorization: `Bearer ${idToken}` },
+          }
+        );
+        const data = await response.json();
+        if (data.success) {
+          setHackathonDetails(data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching hackathon details:", error);
+      }
+    };
+
+    fetchHackathonDetails();
+
+    // Fetch chat history
+    const fetchChatHistory = async () => {
+      try {
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:8000"
+          }/hackathons/${hackathon._id}/chat-messages`
+        );
+        const data = await res.json();
+        if (data.success) {
+          setMessages((prev) => {
+            // Merge and deduplicate by _id (if present)
+            const ids = new Set();
+            const all = [...(data.messages || []), ...prev];
+            const deduped = all.filter((msg) => {
+              if (msg._id && ids.has(msg._id)) return false;
+              if (msg._id) ids.add(msg._id);
+              return true;
+            });
+            // Sort by createdAt
+            return [...deduped].sort(
+              (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
+            );
           });
-          // Sort by createdAt
-          return [...deduped].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
-        });
+        }
+      } catch (err) {
+        console.error("Error fetching chat history:", err);
       }
-    } catch (err) {
-      console.error("Error fetching chat history:", err);
+    };
+    fetchChatHistory();
+
+    // Socket.io connection
+    socketRef.current = io(
+      import.meta.env.VITE_API_URL || "http://localhost:8000"
+    );
+    socketRef.current.emit("join_hackathon_room", {
+      hackathonId: hackathon._id,
+      userId: user.uid,
+      role: "judge",
+    });
+    socketRef.current.on("hackathon_message", (data) => {
+      setMessages((prev) => {
+        const all = [...prev, data];
+        // Deduplicate by _id if present
+        const ids = new Set();
+        const deduped = all.filter((msg) => {
+          if (msg._id && ids.has(msg._id)) return false;
+          if (msg._id) ids.add(msg._id);
+          return true;
+        });
+        // Sort by createdAt
+        return [...deduped].sort(
+          (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
+        );
+      });
+    });
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, [hackathon, user]);
+
+  const sendMessage = () => {
+    if (newMessage.trim() && socketRef.current) {
+      socketRef.current.emit("hackathon_message", {
+        hackathonId: hackathon._id,
+        sender: {
+          userId: user.uid,
+          name: user.displayName || "Judge",
+          role: "judge",
+        },
+        message: newMessage,
+      });
+      setNewMessage("");
     }
   };
-  fetchChatHistory();
-
-  // Socket.io connection
-  socketRef.current = io(import.meta.env.VITE_API_URL || "http://localhost:8000");
-  socketRef.current.emit("join_hackathon_room", {
-    hackathonId: hackathon._id,
-    userId: user.uid,
-    role: "judge",
-  });
-  socketRef.current.on("hackathon_message", (data) => {
-    setMessages((prev) => {
-      const all = [...prev, data];
-      // Deduplicate by _id if present
-      const ids = new Set();
-      const deduped = all.filter(msg => {
-        if (msg._id && ids.has(msg._id)) return false;
-        if (msg._id) ids.add(msg._id);
-        return true;
-      });
-      // Sort by createdAt
-      return [...deduped].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
-    });
-  });
-  return () => {
-    socketRef.current.disconnect();
-  };
-}, [hackathon, user]);
-
-const sendMessage = () => {
-  if (newMessage.trim() && socketRef.current) {
-    socketRef.current.emit("hackathon_message", {
-      hackathonId: hackathon._id,
-      sender: {
-        userId: user.uid,
-        name: user.displayName || "Judge",
-        role: "judge",
-      },
-      message: newMessage,
-    });
-    setNewMessage("");
-  }
-};
 
   if (!hackathon) {
     return (
@@ -190,20 +201,21 @@ const sendMessage = () => {
   };
 
   const getProjectStatus = (project) => {
-  if (!mongoUserId) return "pending"; // Wait for ID
-  
-  const judgeScore = project.scores?.find(score => {
-    if (!score?.judge) return false;
-    
-    const judgeId = typeof score.judge === "object" 
-      ? score.judge._id?.toString() 
-      : score.judge?.toString();
-      
-    return judgeId === mongoUserId;
-  });
-  
-  return judgeScore ? "scored" : "pending";
-};
+    if (!mongoUserId) return "pending"; // Wait for ID
+
+    const judgeScore = project.scores?.find((score) => {
+      if (!score?.judge) return false;
+
+      const judgeId =
+        typeof score.judge === "object"
+          ? score.judge._id?.toString()
+          : score.judge?.toString();
+
+      return judgeId === mongoUserId;
+    });
+
+    return judgeScore ? "scored" : "pending";
+  };
   const handleScoreSubmitted = () => {
     fetchProjects();
     setSelectedProject(null);
@@ -223,7 +235,7 @@ const sendMessage = () => {
         <div className="flex items-center gap-4">
           <h2 className="text-2xl font-bold text-white">Score Project</h2>
         </div>
-        
+
         <ProjectScoring
           project={selectedProject}
           hackathon={hackathon}
@@ -240,15 +252,16 @@ const sendMessage = () => {
         <h2 className="text-3xl font-bold text-white mb-2">
           {hackathon.title} - Projects
         </h2>
-        <p className="text-zinc-400">
-          Review and score submitted projects
-        </p>
+        <p className="text-zinc-400">Review and score submitted projects</p>
       </div>
 
       {/* Hackathon Details Section */}
       {hackathonDetails && (
         <Card className="bg-zinc-950 border-zinc-800">
-          <CardHeader className="cursor-pointer" onClick={() => setDetailsExpanded(!detailsExpanded)}>
+          <CardHeader
+            className="cursor-pointer"
+            onClick={() => setDetailsExpanded(!detailsExpanded)}
+          >
             <div className="flex items-center justify-between">
               <CardTitle className="text-white flex items-center gap-2">
                 <MdInfo className="w-5 h-5 text-blue-400" />
@@ -261,10 +274,11 @@ const sendMessage = () => {
               )}
             </div>
             <p className="text-zinc-400 text-sm">
-              Click to {detailsExpanded ? 'hide' : 'view'} problem statements and judging criteria
+              Click to {detailsExpanded ? "hide" : "view"} problem statements
+              and judging criteria
             </p>
           </CardHeader>
-          
+
           {detailsExpanded && (
             <CardContent className="space-y-6 pt-0">
               {/* Problem Statements */}
@@ -283,31 +297,39 @@ const sendMessage = () => {
               )}
 
               {/* Judging Criteria */}
-              {hackathonDetails.judgingCriteria && hackathonDetails.judgingCriteria.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-white font-semibold flex items-center gap-2">
-                    <MdEmojiEvents className="w-4 h-4 text-yellow-400" />
-                    Judging Criteria
-                  </h4>
-                  <div className="grid gap-3">
-                    {hackathonDetails.judgingCriteria.map((criteria, index) => (
-                      <div key={index} className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
-                        <div className="flex items-center justify-between mb-2">
-                          <h5 className="text-white font-medium">{criteria.title}</h5>
-                          <Badge className="bg-blue-600 text-white">
-                            Max: {criteria.maxScore} pts
-                          </Badge>
-                        </div>
-                        {criteria.description && (
-                          <p className="text-zinc-400 text-sm leading-relaxed">
-                            {criteria.description}
-                          </p>
-                        )}
-                      </div>
-                    ))}
+              {hackathonDetails.judgingCriteria &&
+                hackathonDetails.judgingCriteria.length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-white font-semibold flex items-center gap-2">
+                      <MdEmojiEvents className="w-4 h-4 text-yellow-400" />
+                      Judging Criteria
+                    </h4>
+                    <div className="grid gap-3">
+                      {hackathonDetails.judgingCriteria.map(
+                        (criteria, index) => (
+                          <div
+                            key={index}
+                            className="p-4 bg-zinc-900 rounded-lg border border-zinc-800"
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <h5 className="text-white font-medium">
+                                {criteria.title}
+                              </h5>
+                              <Badge className="bg-blue-600 text-white">
+                                Max: {criteria.maxScore} pts
+                              </Badge>
+                            </div>
+                            {criteria.description && (
+                              <p className="text-zinc-400 text-sm leading-relaxed">
+                                {criteria.description}
+                              </p>
+                            )}
+                          </div>
+                        )
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* Theme */}
               <div className="space-y-3">
@@ -341,7 +363,9 @@ const sendMessage = () => {
               </div>
               <div>
                 <p className="text-zinc-400 text-sm">Total Projects</p>
-                <p className="text-2xl font-bold text-white">{projects.length}</p>
+                <p className="text-2xl font-bold text-white">
+                  {projects.length}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -356,7 +380,10 @@ const sendMessage = () => {
               <div>
                 <p className="text-zinc-400 text-sm">Scored</p>
                 <p className="text-2xl font-bold text-white">
-                  {projects.filter(p => getProjectStatus(p) === "scored").length}
+                  {
+                    projects.filter((p) => getProjectStatus(p) === "scored")
+                      .length
+                  }
                 </p>
               </div>
             </div>
@@ -372,7 +399,10 @@ const sendMessage = () => {
               <div>
                 <p className="text-zinc-400 text-sm">Pending</p>
                 <p className="text-2xl font-bold text-white">
-                  {projects.filter(p => getProjectStatus(p) === "pending").length}
+                  {
+                    projects.filter((p) => getProjectStatus(p) === "pending")
+                      .length
+                  }
                 </p>
               </div>
             </div>
@@ -409,11 +439,11 @@ const sendMessage = () => {
                           {status === "scored" ? "Scored" : "Pending"}
                         </Badge>
                       </div>
-                      
+
                       <p className="text-zinc-300 mb-3 line-clamp-2">
                         {project.description}
                       </p>
-                      
+
                       <div className="flex items-center gap-4 text-zinc-400 text-sm">
                         <div className="flex items-center gap-1">
                           <MdGroup className="w-4 h-4" />
@@ -427,11 +457,17 @@ const sendMessage = () => {
 
                       {project.technologies?.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-3">
-                          {project.technologies.slice(0, 3).map((tech, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {tech}
-                            </Badge>
-                          ))}
+                          {project.technologies
+                            .slice(0, 3)
+                            .map((tech, index) => (
+                              <Badge
+                                key={index}
+                                variant="default"
+                                className="text-xs"
+                              >
+                                {tech}
+                              </Badge>
+                            ))}
                           {project.technologies.length > 3 && (
                             <Badge variant="outline" className="text-xs">
                               +{project.technologies.length - 3} more
@@ -454,16 +490,16 @@ const sendMessage = () => {
                         {status === "scored" ? "View Score" : "Score Project"}
                       </Button>
                       <Button
-  onClick={() => {
-    setSelectedProjectForAI(project);
-    setAiAnalysisOpen(true);
-  }}
-  variant="outline"
-  className="bg-purple-600/20 border-purple-600/50 text-purple-400 hover:bg-purple-600/30"
->
-  <TbBrain className="w-4 h-4 mr-2" />
-  AI Analysis
-</Button>
+                        onClick={() => {
+                          setSelectedProjectForAI(project);
+                          setAiAnalysisOpen(true);
+                        }}
+                        variant="outline"
+                        className="bg-purple-600/40 border-purple-600/50 text-purple-400 hover:bg-purple-600/20 hover:text-purple-400"
+                      >
+                        <TbBrain className="w-4 h-4 mr-2" />
+                        AI Analysis
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -506,36 +542,57 @@ const sendMessage = () => {
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <TbSend className="w-12 h-12 text-zinc-600 mb-3" />
                   <p className="text-zinc-400 font-medium">No messages yet</p>
-                  <p className="text-zinc-500 text-sm">Start a conversation with the organizer</p>
+                  <p className="text-zinc-500 text-sm">
+                    Start a conversation with the organizer
+                  </p>
                 </div>
               ) : (
                 messages.map((msg, idx) => {
                   const isOwnMessage = msg.sender?.userId === user.uid;
-                  const messageTime = new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                  const messageTime = new Date(
+                    msg.createdAt || Date.now()
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
                   });
-                  
+
                   return (
-                    <div key={msg._id || `${msg.sender?.userId}-${msg.createdAt || idx}`} 
-                         className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                        isOwnMessage 
-                          ? 'bg-purple-600 text-white rounded-br-md' 
-                          : 'bg-zinc-800 text-white rounded-bl-md'
-                      }`}>
+                    <div
+                      key={
+                        msg._id ||
+                        `${msg.sender?.userId}-${msg.createdAt || idx}`
+                      }
+                      className={`flex ${
+                        isOwnMessage ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      <div
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                          isOwnMessage
+                            ? "bg-purple-600 text-white rounded-br-md"
+                            : "bg-zinc-800 text-white rounded-bl-md"
+                        }`}
+                      >
                         {!isOwnMessage && (
                           <div className="flex items-center gap-2 mb-1">
-                            <div className={`w-2 h-2 rounded-full ${
-                              msg.sender?.role === 'organizer' ? 'bg-green-400' : 'bg-blue-400'
-                            }`} />
+                            <div
+                              className={`w-2 h-2 rounded-full ${
+                                msg.sender?.role === "organizer"
+                                  ? "bg-green-400"
+                                  : "bg-blue-400"
+                              }`}
+                            />
                             <span className="text-xs font-medium opacity-80">
                               {msg.sender?.name || "User"}
                             </span>
                           </div>
                         )}
                         <p className="text-sm leading-relaxed">{msg.message}</p>
-                        <div className={`text-xs opacity-60 mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
+                        <div
+                          className={`text-xs opacity-60 mt-1 ${
+                            isOwnMessage ? "text-right" : "text-left"
+                          }`}
+                        >
                           {messageTime}
                         </div>
                       </div>
@@ -544,7 +601,7 @@ const sendMessage = () => {
                 })
               )}
             </div>
-            
+
             {/* Input Area */}
             <div className="border-t border-zinc-800 p-4">
               <div className="flex gap-3">
@@ -553,7 +610,9 @@ const sendMessage = () => {
                     className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && !e.shiftKey && sendMessage()
+                    }
                     placeholder="Type your message..."
                     disabled={!socketRef.current}
                   />
@@ -579,21 +638,20 @@ const sendMessage = () => {
               </p>
             </div>
           </div>
-          
         </CardContent>
       </Card>
       {aiAnalysisOpen && (
-  <AIProjectAnalysis
-    project={selectedProjectForAI}
-    hackathon={hackathonDetails}
-    isOpen={aiAnalysisOpen}
-    onClose={() => {
-      setAiAnalysisOpen(false);
-      setSelectedProjectForAI(null);
-    }}
-    userRole="judge"
-  />
-)}
+        <AIProjectAnalysis
+          project={selectedProjectForAI}
+          hackathon={hackathonDetails}
+          isOpen={aiAnalysisOpen}
+          onClose={() => {
+            setAiAnalysisOpen(false);
+            setSelectedProjectForAI(null);
+          }}
+          userRole="judge"
+        />
+      )}
     </div>
   );
 };
