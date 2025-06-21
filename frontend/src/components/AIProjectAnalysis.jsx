@@ -166,8 +166,8 @@ const AIProjectAnalysis = ({
           <div className="border-b border-zinc-800 p-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="p-3 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl">
-                  <TbBrain className="w-6 h-6 text-white" />
+                <div className="p-3 bg-gradient-to-br from-zinc-800 to-neutral-900 rounded-xl border border-zinc-700">
+                  <TbBrain className="w-6 h-6 text-zinc-300" />
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white">
@@ -210,8 +210,8 @@ const AIProjectAnalysis = ({
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="relative">
-                  <div className="w-16 h-16 border-4 border-purple-600/30 rounded-full animate-spin border-t-purple-600"></div>
-                  <TbBrain className="w-8 h-8 text-purple-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+                  <div className="w-16 h-16 border-4 border-emerald-500/30 rounded-full animate-spin border-t-emerald-500"></div>
+                  <TbBrain className="w-8 h-8 text-emerald-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
                 </div>
                 <p className="text-white font-medium mt-4">
                   Analyzing repository...
@@ -232,7 +232,7 @@ const AIProjectAnalysis = ({
                 </p>
                 <Button
                   onClick={() => fetchAnalysis()}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  className="bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700"
                 >
                   <TbBrain className="w-4 h-4 mr-2" />
                   Start AI Analysis
@@ -244,40 +244,42 @@ const AIProjectAnalysis = ({
                 onValueChange={setActiveTab}
                 className="space-y-6"
               >
-                <TabsList className="grid grid-cols-4 bg-zinc-900 border border-zinc-800">
-                  <TabsTrigger
-                    value="overview"
-                    className="data-[state=active]:bg-purple-600"
-                  >
-                    <TbChartBar className="w-4 h-4 mr-2" />
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="scores"
-                    className="data-[state=active]:bg-purple-600"
-                  >
-                    <TbTarget className="w-4 h-4 mr-2" />
-                    Detailed Scores
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="insights"
-                    className="data-[state=active]:bg-purple-600"
-                  >
-                    <TbBulb className="w-4 h-4 mr-2" />
-                    Insights
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="technical"
-                    className="data-[state=active]:bg-purple-600"
-                  >
-                    <TbCode className="w-4 h-4 mr-2" />
-                    Technical
-                  </TabsTrigger>
-                </TabsList>
+                <div className="flex justify-center">
+                  <TabsList className="grid grid-cols-4 bg-zinc-900 border border-zinc-800">
+                    <TabsTrigger
+                      value="overview"
+                      className="data-[state=active]:bg-emerald-600 text-white data-[state=active]:text-white"
+                    >
+                      <TbChartBar className="w-4 h-4 mr-1" />
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="scores"
+                      className="data-[state=active]:bg-emerald-600 text-white data-[state=active]:text-white"
+                    >
+                      <TbTarget className="w-4 h-4 mr-1" />
+                      Detailed Scores
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="insights"
+                      className="data-[state=active]:bg-emerald-600 text-white data-[state=active]:text-white"
+                    >
+                      <TbBulb className="w-4 h-4 mr-1" />
+                      Insights
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="technical"
+                      className="data-[state=active]:bg-emerald-600 text-white data-[state=active]:text-white"
+                    >
+                      <TbCode className="w-4 h-4 mr-1" />
+                      Technical
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
                 <TabsContent value="overview" className="space-y-6">
                   {/* Overall Score Card */}
-                  <Card className="bg-gradient-to-br from-purple-900/50 to-blue-900/50 border-purple-600/30">
+                  <Card className="bg-gradient-to-br from-zinc-900/80 to-neutral-900/80 border border-zinc-700/50 backdrop-blur-sm">
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between">
                         <div>
@@ -356,8 +358,8 @@ const AIProjectAnalysis = ({
                                 x2="100%"
                                 y2="0%"
                               >
-                                <stop offset="0%" stopColor="#8b5cf6" />
-                                <stop offset="100%" stopColor="#3b82f6" />
+                                <stop offset="0%" stopColor="#10b981" />
+                                <stop offset="100%" stopColor="#06b6d4" />
                               </linearGradient>
                             </defs>
                           </svg>
@@ -502,14 +504,14 @@ const AIProjectAnalysis = ({
                     <Card className="bg-zinc-900 border-zinc-800">
                       <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2">
-                          <TbCheck className="w-5 h-5 text-green-400" />
+                          <TbCheck className="w-5 h-5 text-emerald-400" />
                           Strengths
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
                         {analysis.strengths.map((strength, index) => (
                           <div key={index} className="flex items-start gap-3">
-                            <TbCheck className="w-4 h-4 text-green-400 mt-1 flex-shrink-0" />
+                            <TbCheck className="w-4 h-4 text-emerald-400 mt-1 flex-shrink-0" />
                             <p className="text-zinc-300">{strength}</p>
                           </div>
                         ))}
@@ -538,7 +540,7 @@ const AIProjectAnalysis = ({
                     <Card className="bg-zinc-900 border-zinc-800">
                       <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2">
-                          <TbCode className="w-5 h-5 text-blue-400" />
+                          <TbCode className="w-5 h-5 text-cyan-400" />
                           Technical Highlights
                         </CardTitle>
                       </CardHeader>
@@ -546,7 +548,7 @@ const AIProjectAnalysis = ({
                         {analysis.technicalHighlights.map(
                           (highlight, index) => (
                             <div key={index} className="flex items-start gap-3">
-                              <TbCode className="w-4 h-4 text-blue-400 mt-1 flex-shrink-0" />
+                              <TbCode className="w-4 h-4 text-cyan-400 mt-1 flex-shrink-0" />
                               <p className="text-zinc-300">{highlight}</p>
                             </div>
                           )
@@ -558,14 +560,14 @@ const AIProjectAnalysis = ({
                     <Card className="bg-zinc-900 border-zinc-800">
                       <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2">
-                          <TbRocket className="w-5 h-5 text-purple-400" />
+                          <TbRocket className="w-5 h-5 text-violet-400" />
                           Innovation Factors
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
                         {analysis.innovationFactors.map((factor, index) => (
                           <div key={index} className="flex items-start gap-3">
-                            <TbRocket className="w-4 h-4 text-purple-400 mt-1 flex-shrink-0" />
+                            <TbRocket className="w-4 h-4 text-violet-400 mt-1 flex-shrink-0" />
                             <p className="text-zinc-300">{factor}</p>
                           </div>
                         ))}
@@ -574,10 +576,10 @@ const AIProjectAnalysis = ({
                   </div>
 
                   {/* AI Recommendation */}
-                  <Card className="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border-blue-600/30">
+                  <Card className="bg-gradient-to-r from-zinc-900/60 to-neutral-900/60 border border-zinc-700/50 backdrop-blur-sm">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
-                        <TbBrain className="w-5 h-5" />
+                        <TbBrain className="w-5 h-5 text-emerald-400" />
                         AI Recommendation
                       </CardTitle>
                     </CardHeader>
@@ -674,7 +676,7 @@ const AIProjectAnalysis = ({
                           Analysis powered by
                         </p>
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+                          <div className="w-8 h-8 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-lg flex items-center justify-center">
                             <TbBrain className="w-4 h-4 text-white" />
                           </div>
                           <span className="text-white font-medium">
