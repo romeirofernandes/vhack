@@ -70,11 +70,15 @@ const ViewHackathonDetails = () => {
     fetchTeamsAndParticipants();
     fetchSubmittedProjects();
     if (!hackathonId || !user) return;
-    
+
     // Fetch chat history immediately when component mounts
     const fetchChatHistory = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/hackathons/${hackathonId}/chat-messages`);
+        const res = await fetch(
+          `${
+            import.meta.env.VITE_API_URL || "http://localhost:8000"
+          }/hackathons/${hackathonId}/chat-messages`
+        );
         const data = await res.json();
         if (data.success) {
           setMessages(data.messages || []);
@@ -84,8 +88,10 @@ const ViewHackathonDetails = () => {
       }
     };
     fetchChatHistory();
-    
-    socketRef.current = io(import.meta.env.VITE_API_URL || "http://localhost:8000");
+
+    socketRef.current = io(
+      import.meta.env.VITE_API_URL || "http://localhost:8000"
+    );
     socketRef.current.emit("join_hackathon_room", {
       hackathonId,
       userId: user.uid,
@@ -96,13 +102,15 @@ const ViewHackathonDetails = () => {
         const all = [...prev, data];
         // Deduplicate by _id if present
         const ids = new Set();
-        const deduped = all.filter(msg => {
+        const deduped = all.filter((msg) => {
           if (msg._id && ids.has(msg._id)) return false;
           if (msg._id) ids.add(msg._id);
           return true;
         });
         // Sort by createdAt
-        return [...deduped].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        return [...deduped].sort(
+          (a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
+        );
       });
     });
     return () => {
@@ -111,27 +119,29 @@ const ViewHackathonDetails = () => {
   }, [hackathonId, user]);
 
   const fetchSubmittedProjects = async () => {
-     if (!user) return; // Add this check
-  try {
-    const idToken = await user.getIdToken();
-    const response = await axios.get(
-      `${import.meta.env.VITE_API_URL}/projects/hackathons/${hackathonId}/submitted`,
-      {
-        headers: { Authorization: `Bearer ${idToken}` },
-      }
-    );
+    if (!user) return; // Add this check
+    try {
+      const idToken = await user.getIdToken();
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_API_URL
+        }/projects/hackathons/${hackathonId}/submitted`,
+        {
+          headers: { Authorization: `Bearer ${idToken}` },
+        }
+      );
 
-    if (response.data.success) {
-      setSubmittedProjects(response.data.data || []);
+      if (response.data.success) {
+        setSubmittedProjects(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching submitted projects:", error);
+      // Don't show error toast as this might be called before projects exist
     }
-  } catch (error) {
-    console.error("Error fetching submitted projects:", error);
-    // Don't show error toast as this might be called before projects exist
-  }
-};
+  };
 
   const fetchHackathonDetails = async () => {
-     if (!user) return; // Add this check
+    if (!user) return; // Add this check
     try {
       setLoading(true);
       const idToken = await user.getIdToken();
@@ -156,7 +166,7 @@ const ViewHackathonDetails = () => {
   };
 
   const fetchTeamsAndParticipants = async () => {
-     if (!user) return; // Add this check
+    if (!user) return; // Add this check
     try {
       const idToken = await user.getIdToken();
 
@@ -172,17 +182,28 @@ const ViewHackathonDetails = () => {
         const teamsData = teamsRes.data.data || [];
         setTeams(teamsData);
 
-        // Extract all participants from teams
-        const allParticipants = teamsData.flatMap((team) =>
-          team.members.map((member) => ({
-            ...member.user,
-            teamName: team.name,
-            teamId: team._id,
-            role: member.role,
-            joinedAt: member.joinedAt,
-          }))
-        );
-        setParticipants(allParticipants);
+        // Extract all unique participants from teams
+        const uniqueParticipants = [];
+        const participantIds = new Set();
+
+        teamsData.forEach((team) => {
+          team.members.forEach((member) => {
+            // Use user ID to ensure uniqueness
+            const userId = member.user._id || member.user.uid;
+            if (!participantIds.has(userId)) {
+              participantIds.add(userId);
+              uniqueParticipants.push({
+                ...member.user,
+                teamName: team.name,
+                teamId: team._id,
+                role: member.role,
+                joinedAt: member.joinedAt,
+              });
+            }
+          });
+        });
+
+        setParticipants(uniqueParticipants);
       }
     } catch (err) {
       console.error("Error fetching teams:", err);
@@ -712,7 +733,6 @@ const ViewHackathonDetails = () => {
                 {/* Submitted Projects Section */}
                 {(hackathon.status === "ongoing" ||
                   hackathon.status === "completed") && (
-                    
                   <Card className="bg-zinc-950 border-zinc-800">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
@@ -735,22 +755,21 @@ const ViewHackathonDetails = () => {
                       </div>
                     </CardContent>
                   </Card>
-                  
                 )}
                 {submittedProjects.length > 0 && (
-  <div className="mb-4">
-    <Button
-      onClick={() => {
-        // You can implement a hackathon-wide AI analytics view
-        // For now, let's show individual project analysis
-      }}
-      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-    >
-      <TbBrain className="w-4 h-4 mr-2" />
-      AI Analytics Dashboard
-    </Button>
-  </div>
-)}
+                  <div className="mb-4">
+                    <Button
+                      onClick={() => {
+                        // You can implement a hackathon-wide AI analytics view
+                        // For now, let's show individual project analysis
+                      }}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    >
+                      <TbBrain className="w-4 h-4 mr-2" />
+                      AI Analytics Dashboard
+                    </Button>
+                  </div>
+                )}
 
                 {/* Team Settings */}
                 <Card className="bg-zinc-950 border-zinc-800">
@@ -1614,46 +1633,77 @@ const ViewHackathonDetails = () => {
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-center">
                         <TbSend className="w-12 h-12 text-zinc-600 mb-3" />
-                        <p className="text-zinc-400 font-medium">No messages yet</p>
-                        <p className="text-zinc-500 text-sm">Start a conversation with the judges</p>
+                        <p className="text-zinc-400 font-medium">
+                          No messages yet
+                        </p>
+                        <p className="text-zinc-500 text-sm">
+                          Start a conversation with the judges
+                        </p>
                       </div>
                     ) : (
-                      [...messages].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)).map((msg, idx) => {
-                        const isOwnMessage = msg.sender?.userId === user.uid;
-                        const messageTime = new Date(msg.createdAt || Date.now()).toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        });
-                        
-                        return (
-                          <div key={msg._id || `${msg.sender?.userId}-${msg.createdAt || idx}`} 
-                               className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-                              isOwnMessage 
-                                ? 'bg-blue-600 text-white rounded-br-md' 
-                                : 'bg-zinc-800 text-white rounded-bl-md'
-                            }`}>
-                              {!isOwnMessage && (
-                                <div className="flex items-center gap-2 mb-1">
-                                  <div className={`w-2 h-2 rounded-full ${
-                                    msg.sender?.role === 'judge' ? 'bg-purple-400' : 'bg-green-400'
-                                  }`} />
-                                  <span className="text-xs font-medium opacity-80">
-                                    {msg.sender?.name || "User"}
-                                  </span>
+                      [...messages]
+                        .sort(
+                          (a, b) =>
+                            new Date(a.createdAt || 0) -
+                            new Date(b.createdAt || 0)
+                        )
+                        .map((msg, idx) => {
+                          const isOwnMessage = msg.sender?.userId === user.uid;
+                          const messageTime = new Date(
+                            msg.createdAt || Date.now()
+                          ).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          });
+
+                          return (
+                            <div
+                              key={
+                                msg._id ||
+                                `${msg.sender?.userId}-${msg.createdAt || idx}`
+                              }
+                              className={`flex ${
+                                isOwnMessage ? "justify-end" : "justify-start"
+                              }`}
+                            >
+                              <div
+                                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                                  isOwnMessage
+                                    ? "bg-blue-600 text-white rounded-br-md"
+                                    : "bg-zinc-800 text-white rounded-bl-md"
+                                }`}
+                              >
+                                {!isOwnMessage && (
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <div
+                                      className={`w-2 h-2 rounded-full ${
+                                        msg.sender?.role === "judge"
+                                          ? "bg-purple-400"
+                                          : "bg-green-400"
+                                      }`}
+                                    />
+                                    <span className="text-xs font-medium opacity-80">
+                                      {msg.sender?.name || "User"}
+                                    </span>
+                                  </div>
+                                )}
+                                <p className="text-sm leading-relaxed">
+                                  {msg.message}
+                                </p>
+                                <div
+                                  className={`text-xs opacity-60 mt-1 ${
+                                    isOwnMessage ? "text-right" : "text-left"
+                                  }`}
+                                >
+                                  {messageTime}
                                 </div>
-                              )}
-                              <p className="text-sm leading-relaxed">{msg.message}</p>
-                              <div className={`text-xs opacity-60 mt-1 ${isOwnMessage ? 'text-right' : 'text-left'}`}>
-                                {messageTime}
                               </div>
                             </div>
-                          </div>
-                        );
-                      })
+                          );
+                        })
                     )}
                   </div>
-                  
+
                   {/* Input Area */}
                   <div className="border-t border-zinc-800 p-4">
                     <div className="flex gap-3">
@@ -1662,7 +1712,9 @@ const ViewHackathonDetails = () => {
                           className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && !e.shiftKey && sendMessage()
+                          }
                           placeholder="Type your message..."
                           disabled={!socketRef.current}
                         />
@@ -1693,9 +1745,7 @@ const ViewHackathonDetails = () => {
           )}
         </motion.div>
       </div>
-      
     </div>
-    
   );
 };
 
