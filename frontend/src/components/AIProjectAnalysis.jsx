@@ -7,6 +7,8 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-hot-toast";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import {
   TbBrain,
   TbChartBar,
@@ -35,13 +37,14 @@ const AIProjectAnalysis = ({
   hackathon,
   isOpen,
   onClose,
-  userRole = "judge", // "judge" or "organizer"
+  userRole = "judge",
 }) => {
   const { user } = useAuth();
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
   const [cached, setCached] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [generatingPDF, setGeneratingPDF] = useState(false);
 
   useEffect(() => {
     if (isOpen && project) {
@@ -69,11 +72,8 @@ const AIProjectAnalysis = ({
           "Content-Type": "application/json",
         },
       });
-      console.log("Fetching AI analysis from:", url);
-      console.log("response", response);
 
       const data = await response.json();
-      console.log("AI analysis response:", data);
 
       if (data.success) {
         setAnalysis(data.data);
@@ -108,40 +108,287 @@ const AIProjectAnalysis = ({
     return "bg-red-600";
   };
 
-  const downloadReport = () => {
+  const generatePDFReport = async () => {
     if (!analysis) return;
 
-    const report = {
-      project: {
-        title: project.title,
-        team: project.team?.name,
-        repository: analysis.repository?.name,
-        analyzedAt: analysis.analyzedAt,
-      },
-      scores: {
-        overall: analysis.overallScore,
-        criteria: analysis.criteriaScores,
-        confidence: analysis.confidenceLevel,
-      },
-      codeQuality: analysis.codeQualityMetrics,
-      feedback: {
-        strengths: analysis.strengths,
-        improvements: analysis.improvements,
-        recommendation: analysis.recommendation,
-      },
-    };
+    setGeneratingPDF(true);
 
-    const blob = new Blob([JSON.stringify(report, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ai-analysis-${project.title
-      .replace(/\s+/g, "-")
-      .toLowerCase()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      // Create PDF using jsPDF's text methods instead of html2canvas
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - 2 * margin;
+      let yPosition = margin;
+
+      // Helper function to add text with wrapping
+      const addText = (text, x, y, options = {}) => {
+        const fontSize = options.fontSize || 12;
+        const fontWeight = options.fontWeight || "normal";
+        const color = options.color || "#000000";
+        const maxWidth = options.maxWidth || contentWidth;
+
+        pdf.setFontSize(fontSize);
+        pdf.setFont("helvetica", fontWeight);
+        pdf.setTextColor(color);
+
+        const lines = pdf.splitTextToSize(text, maxWidth);
+        pdf.text(lines, x, y);
+        return y + lines.length * (fontSize * 0.35);
+      };
+
+      // Helper function to add a new page if needed
+      const checkPageBreak = (neededHeight) => {
+        if (yPosition + neededHeight > pageHeight - margin) {
+          pdf.addPage();
+          yPosition = margin;
+        }
+      };
+
+      // Header
+      pdf.setFillColor(30, 30, 30);
+      pdf.rect(0, 0, pageWidth, 60, "F");
+
+      // Title
+      yPosition = addText("AI Project Analysis Report", margin, 35, {
+        fontSize: 24,
+        fontWeight: "bold",
+        color: "#FFFFFF",
+      });
+
+      yPosition = addText(
+        `${project.title} • ${project.team?.name || "Solo Project"}`,
+        margin,
+        yPosition + 5,
+        { fontSize: 14, color: "#CCCCCC" }
+      );
+
+      yPosition = 80;
+
+      // Overall Score Section
+      checkPageBreak(60);
+      pdf.setFillColor(45, 45, 45);
+      pdf.rect(margin, yPosition, contentWidth, 50, "F");
+
+      yPosition = addText("Overall Score", margin + 10, yPosition + 20, {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#FFFFFF",
+      });
+
+      yPosition = addText(
+        `${analysis.overallScore}/100`,
+        margin + 10,
+        yPosition + 5,
+        {
+          fontSize: 32,
+          fontWeight: "bold",
+          color:
+            analysis.overallScore >= 80
+              ? "#10B981"
+              : analysis.overallScore >= 60
+              ? "#EAB308"
+              : "#F97316",
+        }
+      );
+
+      const scoreLabel =
+        analysis.overallScore >= 80
+          ? "Excellent"
+          : analysis.overallScore >= 60
+          ? "Good"
+          : analysis.overallScore >= 40
+          ? "Average"
+          : "Needs Improvement";
+      yPosition = addText(scoreLabel, margin + 10, yPosition + 5, {
+        fontSize: 12,
+        color: "#CCCCCC",
+      });
+
+      yPosition = addText(
+        `Confidence: ${analysis.confidenceLevel}% • Analyzed: ${new Date(
+          analysis.analyzedAt
+        ).toLocaleDateString()}`,
+        margin + 10,
+        yPosition + 5,
+        { fontSize: 10, color: "#999999" }
+      );
+
+      yPosition += 30;
+
+      // Strengths Section
+      checkPageBreak(80);
+      yPosition = addText("Strengths", margin, yPosition, {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#10B981",
+      });
+      yPosition += 10;
+
+      analysis.strengths.forEach((strength, index) => {
+        checkPageBreak(20);
+        yPosition = addText(`• ${strength}`, margin + 5, yPosition, {
+          fontSize: 11,
+          color: "#333333",
+        });
+        yPosition += 5;
+      });
+
+      yPosition += 10;
+
+      // Improvements Section
+      checkPageBreak(80);
+      yPosition = addText("Areas for Improvement", margin, yPosition, {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#F97316",
+      });
+      yPosition += 10;
+
+      analysis.improvements.forEach((improvement, index) => {
+        checkPageBreak(20);
+        yPosition = addText(`• ${improvement}`, margin + 5, yPosition, {
+          fontSize: 11,
+          color: "#333333",
+        });
+        yPosition += 5;
+      });
+
+      yPosition += 10;
+
+      // Detailed Scores Section
+      checkPageBreak(100);
+      yPosition = addText("Detailed Scores", margin, yPosition, {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#000000",
+      });
+      yPosition += 10;
+
+      analysis.criteriaScores.forEach((criteria, index) => {
+        checkPageBreak(40);
+
+        // Score header
+        yPosition = addText(
+          `${criteria.title}: ${criteria.score}/${
+            criteria.maxScore
+          } (${Math.round((criteria.score / criteria.maxScore) * 100)}%)`,
+          margin,
+          yPosition,
+          { fontSize: 12, fontWeight: "bold", color: "#000000" }
+        );
+
+        // Score bar background
+        pdf.setFillColor(200, 200, 200);
+        pdf.rect(margin, yPosition + 2, contentWidth, 3, "F");
+
+        // Score bar fill
+        const scorePercentage = (criteria.score / criteria.maxScore) * 100;
+        const scoreColor =
+          scorePercentage >= 80
+            ? [16, 185, 129]
+            : scorePercentage >= 60
+            ? [234, 179, 8]
+            : [249, 115, 22];
+        pdf.setFillColor(...scoreColor);
+        pdf.rect(
+          margin,
+          yPosition + 2,
+          (contentWidth * scorePercentage) / 100,
+          3,
+          "F"
+        );
+
+        yPosition += 10;
+
+        // Feedback
+        yPosition = addText(criteria.feedback, margin, yPosition, {
+          fontSize: 10,
+          color: "#666666",
+          maxWidth: contentWidth,
+        });
+        yPosition += 10;
+      });
+
+      // Code Quality Metrics
+      checkPageBreak(100);
+      yPosition = addText("Code Quality Metrics", margin, yPosition, {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#000000",
+      });
+      yPosition += 10;
+
+      Object.entries(analysis.codeQualityMetrics).forEach(([key, value]) => {
+        checkPageBreak(25);
+
+        const metricName = key.replace(/([A-Z])/g, " $1").trim();
+        yPosition = addText(`${metricName}: ${value}/10`, margin, yPosition, {
+          fontSize: 12,
+          fontWeight: "bold",
+          color: "#000000",
+        });
+
+        // Metric bar background
+        pdf.setFillColor(200, 200, 200);
+        pdf.rect(margin, yPosition + 2, contentWidth, 3, "F");
+
+        // Metric bar fill
+        const metricColor =
+          value >= 8
+            ? [16, 185, 129]
+            : value >= 6
+            ? [234, 179, 8]
+            : [249, 115, 22];
+        pdf.setFillColor(...metricColor);
+        pdf.rect(margin, yPosition + 2, (contentWidth * value) / 10, 3, "F");
+
+        yPosition += 15;
+      });
+
+      // AI Recommendation
+      checkPageBreak(60);
+      yPosition = addText("AI Recommendation", margin, yPosition, {
+        fontSize: 16,
+        fontWeight: "bold",
+        color: "#10B981",
+      });
+      yPosition += 10;
+
+      yPosition = addText(analysis.recommendation, margin, yPosition, {
+        fontSize: 11,
+        color: "#333333",
+        maxWidth: contentWidth,
+      });
+
+      // Footer
+      pdf.setFontSize(8);
+      pdf.setTextColor("#999999");
+      pdf.text(
+        `Generated by vHack AI Analysis • ${new Date().toLocaleDateString()} • Powered by Groq AI`,
+        pageWidth / 2,
+        pageHeight - 10,
+        { align: "center" }
+      );
+
+      // Download PDF
+      const fileName = `ai-analysis-${project.title
+        .replace(/\s+/g, "-")
+        .toLowerCase()}.pdf`;
+      pdf.save(fileName);
+
+      toast.success("PDF report generated successfully!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.error("Failed to generate PDF report");
+    } finally {
+      setGeneratingPDF(false);
+    }
+  };
+
+  const downloadReport = () => {
+    generatePDFReport();
   };
 
   if (!isOpen) return null;
@@ -181,23 +428,31 @@ const AIProjectAnalysis = ({
 
               <div className="flex items-center gap-2">
                 {analysis && (
-                  <>
-                    <Button
-                      onClick={downloadReport}
-                      variant="outline"
-                      size="sm"
-                      className="border-zinc-700"
-                    >
-                      <TbDownload className="w-4 h-4 mr-2" />
-                      Export
-                    </Button>
-                  </>
+                  <Button
+                    onClick={downloadReport}
+                    disabled={generatingPDF}
+                    variant="outline"
+                    size="sm"
+                    className="border-zinc-700 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white hover:text-white"
+                  >
+                    {generatingPDF ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <TbDownload className="w-4 h-4 mr-1" />
+                        Export PDF
+                      </>
+                    )}
+                  </Button>
                 )}
                 <Button
                   onClick={onClose}
-                  variant="default"
+                  variant="ghost"
                   size="sm"
-                  className="text-zinc-400 hover:text-white"
+                  className="text-zinc-400 hover:text-white hover:bg-zinc-800"
                 >
                   <TbX className="w-5 h-5" />
                 </Button>
