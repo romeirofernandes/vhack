@@ -92,6 +92,36 @@ const projectSchema = new mongoose.Schema({
     submittedAt: { type: Date, default: Date.now }
   }
 ],
+// Add this to your existing Project schema
+aiAnalysis: {
+  overallScore: { type: Number, min: 0, max: 100 },
+  criteriaScores: [{
+    title: String,
+    score: Number,
+    maxScore: Number,
+    feedback: String
+  }],
+  strengths: [String],
+  improvements: [String],
+  technicalHighlights: [String],
+  innovationFactors: [String],
+  codeQualityMetrics: {
+    structureQuality: { type: Number, min: 0, max: 10 },
+    documentationQuality: { type: Number, min: 0, max: 10 },
+    testingCoverage: { type: Number, min: 0, max: 10 },
+    architectureDesign: { type: Number, min: 0, max: 10 }
+  },
+  recommendation: String,
+  confidenceLevel: { type: Number, min: 0, max: 100 },
+  analyzedAt: { type: Date, default: Date.now },
+  repository: {
+    name: String,
+    description: String,
+    language: String,
+    stars: Number,
+    forks: Number
+  }
+},
   rank: {
     type: Number,
     default: null

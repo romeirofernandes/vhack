@@ -22,6 +22,7 @@ import {
   TbCrown,
   TbCalendarStats,
   TbFlag,
+  TbBrain,
 } from "react-icons/tb";
 import { MdAssignment, MdArrowBack } from "react-icons/md";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,9 @@ const ViewHackathonDetails = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [showProjects, setShowProjects] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
+  const [selectedProjectForAI, setSelectedProjectForAI] = useState(null);
+  const [submittedProjects, setSubmittedProjects] = useState([]);
   const { hackathonId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -64,6 +68,7 @@ const ViewHackathonDetails = () => {
   useEffect(() => {
     fetchHackathonDetails();
     fetchTeamsAndParticipants();
+    fetchSubmittedProjects();
     if (!hackathonId || !user) return;
     
     // Fetch chat history immediately when component mounts
@@ -105,7 +110,28 @@ const ViewHackathonDetails = () => {
     };
   }, [hackathonId, user]);
 
+  const fetchSubmittedProjects = async () => {
+     if (!user) return; // Add this check
+  try {
+    const idToken = await user.getIdToken();
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/projects/hackathons/${hackathonId}/submitted`,
+      {
+        headers: { Authorization: `Bearer ${idToken}` },
+      }
+    );
+
+    if (response.data.success) {
+      setSubmittedProjects(response.data.data || []);
+    }
+  } catch (error) {
+    console.error("Error fetching submitted projects:", error);
+    // Don't show error toast as this might be called before projects exist
+  }
+};
+
   const fetchHackathonDetails = async () => {
+     if (!user) return; // Add this check
     try {
       setLoading(true);
       const idToken = await user.getIdToken();
@@ -130,6 +156,7 @@ const ViewHackathonDetails = () => {
   };
 
   const fetchTeamsAndParticipants = async () => {
+     if (!user) return; // Add this check
     try {
       const idToken = await user.getIdToken();
 
@@ -685,6 +712,7 @@ const ViewHackathonDetails = () => {
                 {/* Submitted Projects Section */}
                 {(hackathon.status === "ongoing" ||
                   hackathon.status === "completed") && (
+                    
                   <Card className="bg-zinc-950 border-zinc-800">
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
@@ -707,7 +735,22 @@ const ViewHackathonDetails = () => {
                       </div>
                     </CardContent>
                   </Card>
+                  
                 )}
+                {submittedProjects.length > 0 && (
+  <div className="mb-4">
+    <Button
+      onClick={() => {
+        // You can implement a hackathon-wide AI analytics view
+        // For now, let's show individual project analysis
+      }}
+      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+    >
+      <TbBrain className="w-4 h-4 mr-2" />
+      AI Analytics Dashboard
+    </Button>
+  </div>
+)}
 
                 {/* Team Settings */}
                 <Card className="bg-zinc-950 border-zinc-800">
@@ -1650,7 +1693,9 @@ const ViewHackathonDetails = () => {
           )}
         </motion.div>
       </div>
+      
     </div>
+    
   );
 };
 

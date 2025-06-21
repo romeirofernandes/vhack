@@ -21,7 +21,8 @@ import {
   MdExpandLess
 } from "react-icons/md";
 import { io } from "socket.io-client";
-import { TbSend } from "react-icons/tb";
+import { TbSend,TbBrain } from "react-icons/tb";
+import AIProjectAnalysis from "@/components/AIProjectAnalysis";
 
 const JudgeProjects = ({ hackathon,onBack }) => {
   const { user } = useAuth();
@@ -34,6 +35,8 @@ const JudgeProjects = ({ hackathon,onBack }) => {
   const [newMessage, setNewMessage] = useState("");
   const [hackathonDetails, setHackathonDetails] = useState(null);
   const [detailsExpanded, setDetailsExpanded] = useState(false);
+  const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
+  const [selectedProjectForAI, setSelectedProjectForAI] = useState(null);
   const socketRef = useRef(null);
 
 useEffect(() => {
@@ -450,6 +453,17 @@ const sendMessage = () => {
                       >
                         {status === "scored" ? "View Score" : "Score Project"}
                       </Button>
+                      <Button
+  onClick={() => {
+    setSelectedProjectForAI(project);
+    setAiAnalysisOpen(true);
+  }}
+  variant="outline"
+  className="bg-purple-600/20 border-purple-600/50 text-purple-400 hover:bg-purple-600/30"
+>
+  <TbBrain className="w-4 h-4 mr-2" />
+  AI Analysis
+</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -565,8 +579,21 @@ const sendMessage = () => {
               </p>
             </div>
           </div>
+          
         </CardContent>
       </Card>
+      {aiAnalysisOpen && (
+  <AIProjectAnalysis
+    project={selectedProjectForAI}
+    hackathon={hackathonDetails}
+    isOpen={aiAnalysisOpen}
+    onClose={() => {
+      setAiAnalysisOpen(false);
+      setSelectedProjectForAI(null);
+    }}
+    userRole="judge"
+  />
+)}
     </div>
   );
 };
