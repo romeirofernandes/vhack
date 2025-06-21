@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import {
   MdStar,
   MdInfo
 } from "react-icons/md";
+import { io } from "socket.io-client";
 
 const JudgeProjects = ({ hackathon,onBack }) => {
   const { user } = useAuth();
@@ -24,6 +25,9 @@ const JudgeProjects = ({ hackathon,onBack }) => {
   const [loading, setLoading] = useState(true);
   const [judgingOpen, setJudgingOpen] = useState(false);
   const [mongoUserId, setMongoUserId] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const socketRef = useRef(null);
 
 useEffect(() => {
   const getMongoId = async () => {
@@ -45,6 +49,78 @@ useEffect(() => {
     getMongoId();
   }
 }, [user]);
+
+useEffect(() => {
+  if (!hackathon || !user) return;
+
+  // Fetch chat history
+  const fetchChatHistory = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:8000"}/hackathons/${hackathon._id}/chat-messages`
+      );
+      const data = await res.json();
+      if (data.success) {
+        setMessages((prev) => {
+          // Merge and deduplicate by _id (if present)
+          const ids = new Set();
+          const all = [...(data.messages || []), ...prev];
+          const deduped = all.filter(msg => {
+            if (msg._id && ids.has(msg._id)) return false;
+            if (msg._id) ids.add(msg._id);
+            return true;
+          });
+          // Sort by createdAt
+          return [...deduped].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching chat history:", err);
+    }
+  };
+  fetchChatHistory();
+
+  // Socket.io connection
+  socketRef.current = io(import.meta.env.VITE_API_URL || "http://localhost:8000");
+  socketRef.current.emit("join_hackathon_room", {
+    hackathonId: hackathon._id,
+    userId: user.uid,
+    role: "judge",
+  });
+  socketRef.current.on("hackathon_message", (data) => {
+    setMessages((prev) => {
+      const all = [...prev, data];
+      // Deduplicate by _id if present
+      const ids = new Set();
+      const deduped = all.filter(msg => {
+        if (msg._id && ids.has(msg._id)) return false;
+        if (msg._id) ids.add(msg._id);
+        return true;
+      });
+      // Sort by createdAt
+      return [...deduped].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+    });
+  });
+  return () => {
+    socketRef.current.disconnect();
+  };
+}, [hackathon, user]);
+
+const sendMessage = () => {
+  if (newMessage.trim() && socketRef.current) {
+    socketRef.current.emit("hackathon_message", {
+      hackathonId: hackathon._id,
+      sender: {
+        userId: user.uid,
+        name: user.displayName || "Judge",
+        role: "judge",
+      },
+      message: newMessage,
+    });
+    setNewMessage("");
+  }
+};
+
   if (!hackathon) {
     return (
       <div className="text-zinc-400 p-8 text-center">
@@ -292,6 +368,37 @@ useEffect(() => {
           </CardContent>
         </Card>
       )}
+
+      <div className="my-8 p-4 bg-zinc-900 rounded-lg border border-zinc-700">
+        <h3 className="text-lg font-bold mb-2 text-white">Organizer-Judge Chat</h3>
+        <div className="min-h-[100px] max-h-72 overflow-y-auto mb-2 bg-zinc-950 p-2 rounded border border-zinc-800">
+          {messages.length === 0 ? (
+            <div className="text-zinc-400 italic">No messages yet.</div>
+          ) : (
+            messages.map((msg, idx) => (
+              <div key={msg._id || `${msg.sender?.userId}-${msg.createdAt || idx}`} className="mb-1">
+                <span className="font-semibold text-white">{msg.sender?.name || "User"}:</span>
+                <span className="ml-2 text-white">{msg.message}</span>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="flex gap-2">
+          <input
+            className="flex-1 p-2 rounded bg-zinc-800 text-white"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            placeholder="Type a message..."
+          />
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={sendMessage}
+          >
+            Send
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

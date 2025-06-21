@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -43,6 +43,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import SubmittedProjects from "./SubmittedProjects";
+import { io } from "socket.io-client";
 
 const ViewHackathonDetails = () => {
   const [hackathon, setHackathon] = useState(null);
@@ -56,11 +57,53 @@ const ViewHackathonDetails = () => {
   const { hackathonId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const socketRef = useRef(null);
 
   useEffect(() => {
     fetchHackathonDetails();
     fetchTeamsAndParticipants();
-  }, [hackathonId]);
+    if (!hackathonId || !user) return;
+    
+    // Fetch chat history immediately when component mounts
+    const fetchChatHistory = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:8000"}/hackathons/${hackathonId}/chat-messages`);
+        const data = await res.json();
+        if (data.success) {
+          setMessages(data.messages || []);
+        }
+      } catch (err) {
+        console.error("Error fetching chat history:", err);
+      }
+    };
+    fetchChatHistory();
+    
+    socketRef.current = io(import.meta.env.VITE_API_URL || "http://localhost:8000");
+    socketRef.current.emit("join_hackathon_room", {
+      hackathonId,
+      userId: user.uid,
+      role: "organizer",
+    });
+    socketRef.current.on("hackathon_message", (data) => {
+      setMessages((prev) => {
+        const all = [...prev, data];
+        // Deduplicate by _id if present
+        const ids = new Set();
+        const deduped = all.filter(msg => {
+          if (msg._id && ids.has(msg._id)) return false;
+          if (msg._id) ids.add(msg._id);
+          return true;
+        });
+        // Sort by createdAt
+        return [...deduped].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+      });
+    });
+    return () => {
+      socketRef.current.disconnect();
+    };
+  }, [hackathonId, user]);
 
   const fetchHackathonDetails = async () => {
     try {
@@ -212,6 +255,21 @@ const ViewHackathonDetails = () => {
     const diffTime = targetDate - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  const sendMessage = () => {
+    if (newMessage.trim() && socketRef.current) {
+      socketRef.current.emit("hackathon_message", {
+        hackathonId,
+        sender: {
+          userId: user.uid,
+          name: user.displayName || "Organizer",
+          role: "organizer",
+        },
+        message: newMessage,
+      });
+      setNewMessage("");
+    }
   };
 
   if (loading) {
@@ -475,6 +533,7 @@ const ViewHackathonDetails = () => {
             { id: "participants", label: "Participants", icon: TbUsers },
             { id: "timeline", label: "Timeline", icon: TbCalendar },
             { id: "settings", label: "Settings", icon: TbSettings },
+            { id: "chat", label: "Chat", icon: TbSend },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1490,6 +1549,36 @@ const ViewHackathonDetails = () => {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          )}
+
+          {/* Chat Tab */}
+          {activeTab === "chat" && (
+            <div className="my-8 p-4 bg-zinc-900 rounded-lg border border-zinc-700">
+              <h3 className="text-lg font-bold mb-2">Organizer-Judge Chat</h3>
+              <div className="h-40 overflow-y-auto mb-2 bg-zinc-950 p-2 rounded">
+                {[...messages].sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0)).map((msg, idx) => (
+                  <div key={msg._id || `${msg.sender?.userId}-${msg.createdAt || idx}`} className="mb-1">
+                    <span className="font-semibold">{msg.sender?.name || "User"}:</span>
+                    <span className="ml-2">{msg.message}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  className="flex-1 p-2 rounded bg-zinc-800 text-white"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                  placeholder="Type a message..."
+                />
+                <button
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
+                  onClick={sendMessage}
+                >
+                  Send
+                </button>
+              </div>
             </div>
           )}
         </motion.div>

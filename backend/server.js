@@ -14,6 +14,9 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const hackathonRoutes = require("./routes/hackathonRoutes");
 const adminRoutes = require('./routes/adminRoutes');
 const teamRoutes = require('./routes/teamRoutes');
+const http = require('http');
+const { Server } = require('socket.io');
+const chatController = require('./controllers/chatController');
 
 dotenv.config();
 
@@ -46,7 +49,18 @@ app.use("/hackathons", hackathonRoutes);
 app.use('/auth', authRoutes);
 app.use('/teams',teamRoutes);
 
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  },
+});
 
-app.listen(PORT, () => {
+// Move all socket logic to chatController
+chatController.initSocket(io);
+
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
