@@ -411,7 +411,7 @@ const OrganizerDashboard = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-zinc-700 text-zinc-400 hover:bg-zinc-800"
+                      className="border-zinc-700 text-zinc-800 hover:text-zinc-100 hover:bg-zinc-800"
                       onClick={() => navigate("/organizer/create-hackathon")}
                     >
                       Create Your First Event

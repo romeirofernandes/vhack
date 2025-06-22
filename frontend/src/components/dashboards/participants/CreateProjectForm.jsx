@@ -104,7 +104,7 @@ const CreateProjectForm = ({ isOpen, onClose, onSuccess, onError,hackathonId,tea
         uploadFormData.append("image", file);
 
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/upload`,
+          `${import.meta.env.VITE_API_URL}/api/upload/image`,
           {
             method: "POST",
             headers: {

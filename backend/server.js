@@ -44,7 +44,7 @@ app.use("/profile", profileRoutes);
 app.use("/projects", projectRoutes);
 app.use("/skills", skillsRoutes);
 app.use("/achievements", achievementRoutes);
-app.use("/upload", uploadRoutes);
+app.use("/api/upload", uploadRoutes);
 app.use("/hackathons", hackathonRoutes);
 app.use('/auth', authRoutes);
 app.use('/teams',teamRoutes);
