@@ -289,6 +289,120 @@ const projectController = {
     }
   },
 
+// Submit judge score
+async submitJudgeScore(req, res) {
+  try {
+    const { projectId } = req.params;
+    const { scores, feedback } = req.body;
+    const userId = req.user._id;
+
+    console.log('Submit score request:', { projectId, userId, scores: scores?.length });
+
+    // Find the project
+    const project = await Project.findById(projectId)
+      .populate("hackathon", "title judges organizerId timelines")
+      .populate("team", "name")
+      .populate("builders.user", "displayName");
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        error: "Project not found"
+      });
+    }
+
+    // Check if user is authorized to judge this project
+    const hackathon = project.hackathon;
+    const isJudge = hackathon.judges?.some(judge => judge.toString() === userId.toString());
+    const isOrganizer = hackathon.organizerId?.toString() === userId.toString();
+
+    if (!isJudge && !isOrganizer) {
+      return res.status(403).json({
+        success: false,
+        error: "You are not authorized to judge this project"
+      });
+    }
+
+    // Check if judging period is open
+    const now = new Date();
+    const submissionDeadline = new Date(hackathon.timelines.hackathonEnd);
+    
+    if (now < submissionDeadline) {
+      return res.status(400).json({
+        success: false,
+        error: "Judging period has not started yet"
+      });
+    }
+
+    // Validate scores
+    if (!scores || !Array.isArray(scores) || scores.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Scores are required"
+      });
+    }
+
+    // Check if judge has already scored this project
+    const existingScoreIndex = project.scores?.findIndex(
+      score => score.judge.toString() === userId.toString()
+    );
+
+    // Calculate total score
+    const totalScore = scores.reduce((sum, score) => sum + (score.score || 0), 0);
+
+    const scoreData = {
+      judge: userId,
+      criteria: scores.map(score => ({
+        title: score.title,
+        score: score.score,
+        maxScore: score.maxScore || 10
+      })),
+      totalScore,
+      feedback: feedback || "",
+      submittedAt: new Date()
+    };
+
+    if (existingScoreIndex >= 0) {
+      // Update existing score
+      project.scores[existingScoreIndex] = scoreData;
+    } else {
+      // Add new score
+      if (!project.scores) {
+        project.scores = [];
+      }
+      project.scores.push(scoreData);
+    }
+
+    // Update project status
+    if (project.status === "submitted") {
+      project.status = "judging";
+    }
+
+    await project.save();
+
+    console.log('Score submitted successfully for project:', project.title);
+
+    res.json({
+      success: true,
+      message: "Score submitted successfully",
+      data: {
+        score: scoreData,
+        project: {
+          id: project._id,
+          title: project.title,
+          finalScore: project.finalScore
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error("Submit judge score error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to submit score"
+    });
+  }
+},
   // Delete project
   async deleteProject(req, res) {
     try {

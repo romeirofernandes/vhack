@@ -23,12 +23,27 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AIProjectAnalysis from "@/components/AIProjectAnalysis"; // Adjust the import path as necessary
 
-
 const ProjectCard = ({ project }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
   const [selectedProjectForAI, setSelectedProjectForAI] = useState(null);
   const { hackathon } = project;
+
+  // Add this function to calculate final score
+  const calculateFinalScore = () => {
+    if (!project.scores || project.scores.length === 0) {
+      return null;
+    }
+
+    const totalScore = project.scores.reduce((sum, score) => {
+      return sum + (score.totalScore || 0);
+    }, 0);
+
+    return totalScore / project.scores.length;
+  };
+
+  // Get the final score (either from project.finalScore or calculate it)
+  const finalScore = project.finalScore || calculateFinalScore();
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -81,13 +96,17 @@ const ProjectCard = ({ project }) => {
             </p>
           </div>
           <div className="ml-4 flex flex-col items-end gap-2">
-            <Badge className={`${getStatusColor(project.status)} border px-2 py-1 text-xs`}>
+            <Badge
+              className={`${getStatusColor(
+                project.status
+              )} border px-2 py-1 text-xs`}
+            >
               {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
             </Badge>
-            {project.finalScore > 0 && (
+            {finalScore && finalScore > 0 && (
               <div className="text-right">
                 <div className="text-lg font-bold text-white">
-                  {project.finalScore.toFixed(1)}
+                  {finalScore.toFixed(1)}
                 </div>
                 <div className="text-xs text-zinc-400">Final Score</div>
               </div>
@@ -102,12 +121,19 @@ const ProjectCard = ({ project }) => {
           <div className="mb-4">
             <div className="flex flex-wrap gap-2">
               {project.technologies.slice(0, 5).map((tech, index) => (
-                <Badge key={index} variant="outline" className="text-zinc-300 border-zinc-600 bg-zinc-800/50">
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="text-zinc-300 border-zinc-600 bg-zinc-800/50"
+                >
                   {tech}
                 </Badge>
               ))}
               {project.technologies.length > 5 && (
-                <Badge variant="outline" className="text-zinc-400 border-zinc-600">
+                <Badge
+                  variant="outline"
+                  className="text-zinc-400 border-zinc-600"
+                >
                   +{project.technologies.length - 5} more
                 </Badge>
               )}
@@ -118,37 +144,64 @@ const ProjectCard = ({ project }) => {
         {/* Quick Links */}
         <div className="flex gap-2 mb-4">
           {project.links?.github && (
-            <Button variant="outline" size="sm" asChild className="border-zinc-600 hover:border-zinc-500">
-              <a href={project.links.github} target="_blank" rel="noopener noreferrer">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="border-zinc-600 hover:border-zinc-500"
+            >
+              <a
+                href={project.links.github}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <MdCode className="w-4 h-4 mr-1" />
                 GitHub
               </a>
             </Button>
           )}
           {/* ADD THIS NEW BUTTON HERE */}
-  <Button
-    onClick={() => {
-      setSelectedProjectForAI(project);
-      setAiAnalysisOpen(true);
-    }}
-    variant="outline"
-    size="sm"
-    className="bg-purple-600/20 border-purple-600/50 text-purple-400 hover:bg-purple-600/30"
-  >
-    <TbBrain className="w-4 h-4 mr-1" />
-    AI Analysis
-  </Button>
+          <Button
+            onClick={() => {
+              setSelectedProjectForAI(project);
+              setAiAnalysisOpen(true);
+            }}
+            variant="outline"
+            size="sm"
+            className="bg-purple-600/20 border-purple-600/50 text-purple-400 hover:bg-purple-600/30"
+          >
+            <TbBrain className="w-4 h-4 mr-1" />
+            AI Analysis
+          </Button>
           {project.links?.live && (
-            <Button variant="outline" size="sm" asChild className="border-zinc-600 hover:border-zinc-500">
-              <a href={project.links.live} target="_blank" rel="noopener noreferrer">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="border-zinc-600 hover:border-zinc-500"
+            >
+              <a
+                href={project.links.live}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <TbLink className="w-4 h-4 mr-1" />
                 Live Demo
               </a>
             </Button>
           )}
           {project.links?.video && (
-            <Button variant="outline" size="sm" asChild className="border-zinc-600 hover:border-zinc-500">
-              <a href={project.links.video} target="_blank" rel="noopener noreferrer">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="border-zinc-600 hover:border-zinc-500"
+            >
+              <a
+                href={project.links.video}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <MdPlayArrow className="w-4 h-4 mr-1" />
                 Video
               </a>
@@ -162,10 +215,12 @@ const ProjectCard = ({ project }) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TbStar className="w-4 h-4 text-yellow-400" />
-                <span className="text-white font-medium text-sm">Judged by {project.scores.length} judge(s)</span>
+                <span className="text-white font-medium text-sm">
+                  Judged by {project.scores.length} judge(s)
+                </span>
               </div>
               <div className="text-white font-bold">
-                {project.finalScore ? project.finalScore.toFixed(1) : 'N/A'}/10
+                {finalScore ? finalScore.toFixed(1) : "N/A"}
               </div>
             </div>
           </div>
@@ -261,7 +316,11 @@ const ProjectCard = ({ project }) => {
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {project.technologies.map((tech, index) => (
-                        <Badge key={index} variant="outline" className="text-zinc-300 border-zinc-600 bg-zinc-800/50">
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="text-zinc-300 border-zinc-600 bg-zinc-800/50"
+                        >
                           {tech}
                         </Badge>
                       ))}
@@ -279,9 +338,20 @@ const ProjectCard = ({ project }) => {
                     {project.links?.github && (
                       <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-400 text-sm">GitHub Repository</span>
-                          <Button variant="ghost" size="sm" asChild className="text-blue-400 hover:text-white">
-                            <a href={project.links.github} target="_blank" rel="noopener noreferrer">
+                          <span className="text-zinc-400 text-sm">
+                            GitHub Repository
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className="text-blue-400 hover:text-white"
+                          >
+                            <a
+                              href={project.links.github}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               <MdOpenInNew className="w-4 h-4" />
                             </a>
                           </Button>
@@ -291,9 +361,20 @@ const ProjectCard = ({ project }) => {
                     {project.links?.live && (
                       <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-400 text-sm">Live Demo</span>
-                          <Button variant="ghost" size="sm" asChild className="text-blue-400 hover:text-white">
-                            <a href={project.links.live} target="_blank" rel="noopener noreferrer">
+                          <span className="text-zinc-400 text-sm">
+                            Live Demo
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className="text-blue-400 hover:text-white"
+                          >
+                            <a
+                              href={project.links.live}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               <MdOpenInNew className="w-4 h-4" />
                             </a>
                           </Button>
@@ -303,9 +384,20 @@ const ProjectCard = ({ project }) => {
                     {project.links?.video && (
                       <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-400 text-sm">Demo Video</span>
-                          <Button variant="ghost" size="sm" asChild className="text-blue-400 hover:text-white">
-                            <a href={project.links.video} target="_blank" rel="noopener noreferrer">
+                          <span className="text-zinc-400 text-sm">
+                            Demo Video
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className="text-blue-400 hover:text-white"
+                          >
+                            <a
+                              href={project.links.video}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               <MdOpenInNew className="w-4 h-4" />
                             </a>
                           </Button>
@@ -315,9 +407,20 @@ const ProjectCard = ({ project }) => {
                     {project.links?.presentation && (
                       <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800">
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-400 text-sm">Presentation</span>
-                          <Button variant="ghost" size="sm" asChild className="text-blue-400 hover:text-white">
-                            <a href={project.links.presentation} target="_blank" rel="noopener noreferrer">
+                          <span className="text-zinc-400 text-sm">
+                            Presentation
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            asChild
+                            className="text-blue-400 hover:text-white"
+                          >
+                            <a
+                              href={project.links.presentation}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
                               <MdOpenInNew className="w-4 h-4" />
                             </a>
                           </Button>
@@ -336,26 +439,35 @@ const ProjectCard = ({ project }) => {
                     </h4>
                     <div className="space-y-2">
                       {project.builders.map((builder, index) => (
-                        <div key={index} className="flex items-center gap-3 p-3 bg-zinc-900 rounded-lg border border-zinc-800">
+                        <div
+                          key={index}
+                          className="flex items-center gap-3 p-3 bg-zinc-900 rounded-lg border border-zinc-800"
+                        >
                           <Avatar className="w-8 h-8">
                             <AvatarImage src={builder.user?.photoURL} />
                             <AvatarFallback className="bg-purple-600 text-white text-sm">
-                              {builder.user?.displayName?.charAt(0) || builder.user?.email?.charAt(0) || 'U'}
+                              {builder.user?.displayName?.charAt(0) ||
+                                builder.user?.email?.charAt(0) ||
+                                "U"}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1">
                             <p className="text-white font-medium text-sm">
-                              {builder.user?.displayName || builder.user?.email || 'Anonymous'}
+                              {builder.user?.displayName ||
+                                builder.user?.email ||
+                                "Anonymous"}
                             </p>
                             <p className="text-zinc-400 text-xs">
-                              {builder.role === 'creator' ? 'Project Creator' : 'Collaborator'}
+                              {builder.role === "creator"
+                                ? "Project Creator"
+                                : "Collaborator"}
                             </p>
                           </div>
-                          <Badge 
+                          <Badge
                             className={`text-xs px-2 py-1 ${
-                              builder.role === 'creator' 
-                                ? 'bg-yellow-600 text-white border-yellow-500' 
-                                : 'bg-zinc-700 text-zinc-300 border-zinc-600'
+                              builder.role === "creator"
+                                ? "bg-yellow-600 text-white border-yellow-500"
+                                : "bg-zinc-700 text-zinc-300 border-zinc-600"
                             }`}
                           >
                             {builder.role}
@@ -383,7 +495,9 @@ const ProjectCard = ({ project }) => {
                           />
                           {image.caption && (
                             <div className="mt-2">
-                              <p className="text-zinc-400 text-xs">{image.caption}</p>
+                              <p className="text-zinc-400 text-xs">
+                                {image.caption}
+                              </p>
                             </div>
                           )}
                         </div>
@@ -398,23 +512,27 @@ const ProjectCard = ({ project }) => {
                     <TbStar className="w-4 h-4 text-yellow-400" />
                     Judge Evaluations
                   </h4>
-                  
+
                   {project.scores && project.scores.length > 0 ? (
                     <div className="space-y-4">
                       {/* Individual Judge Scores */}
                       {project.scores.map((score, index) => (
-                        <div key={index} className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                        <div
+                          key={index}
+                          className="p-4 bg-zinc-900 rounded-lg border border-zinc-800"
+                        >
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-3">
                               <Avatar className="w-8 h-8">
                                 <AvatarImage src={score.judge?.photoURL} />
                                 <AvatarFallback className="bg-purple-600 text-white text-sm">
-                                  {score.judge?.displayName?.charAt(0) || 'J'}
+                                  {score.judge?.displayName?.charAt(0) || "J"}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
                                 <p className="text-white font-medium text-sm">
-                                  {score.judge?.displayName || 'Anonymous Judge'}
+                                  {score.judge?.displayName ||
+                                    "Anonymous Judge"}
                                 </p>
                                 <p className="text-zinc-400 text-xs">
                                   Scored on {formatDate(score.submittedAt)}
@@ -426,7 +544,11 @@ const ProjectCard = ({ project }) => {
                                 {score.totalScore}
                               </div>
                               <div className="text-xs text-zinc-400">
-                                / {score.criteria?.reduce((sum, c) => sum + (c.maxScore || 10), 0) || 'N/A'}
+                                /{" "}
+                                {score.criteria?.reduce(
+                                  (sum, c) => sum + (c.maxScore || 10),
+                                  0
+                                ) || "N/A"}
                               </div>
                             </div>
                           </div>
@@ -435,17 +557,28 @@ const ProjectCard = ({ project }) => {
                           {score.criteria && score.criteria.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                               {score.criteria.map((criteria, idx) => (
-                                <div key={idx} className="p-2 bg-zinc-800 rounded border border-zinc-700">
+                                <div
+                                  key={idx}
+                                  className="p-2 bg-zinc-800 rounded border border-zinc-700"
+                                >
                                   <div className="flex items-center justify-between">
-                                    <span className="text-zinc-300 text-sm font-medium">{criteria.title}</span>
+                                    <span className="text-zinc-300 text-sm font-medium">
+                                      {criteria.title}
+                                    </span>
                                     <span className="text-white font-bold text-sm">
                                       {criteria.score}/{criteria.maxScore || 10}
                                     </span>
                                   </div>
                                   <div className="mt-1 h-1.5 bg-zinc-700 rounded-full overflow-hidden">
-                                    <div 
+                                    <div
                                       className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
-                                      style={{ width: `${((criteria.score / (criteria.maxScore || 10)) * 100)}%` }}
+                                      style={{
+                                        width: `${
+                                          (criteria.score /
+                                            (criteria.maxScore || 10)) *
+                                          100
+                                        }%`,
+                                      }}
                                     />
                                   </div>
                                 </div>
@@ -459,8 +592,12 @@ const ProjectCard = ({ project }) => {
                               <div className="flex items-start gap-2">
                                 <TbMessageCircle className="w-4 h-4 text-blue-400 mt-0.5" />
                                 <div>
-                                  <h5 className="text-white text-sm font-medium mb-1">Judge Feedback</h5>
-                                  <p className="text-zinc-300 text-sm leading-relaxed">{score.feedback}</p>
+                                  <h5 className="text-white text-sm font-medium mb-1">
+                                    Judge Feedback
+                                  </h5>
+                                  <p className="text-zinc-300 text-sm leading-relaxed">
+                                    {score.feedback}
+                                  </p>
                                 </div>
                               </div>
                             </div>
@@ -472,14 +609,17 @@ const ProjectCard = ({ project }) => {
                       <div className="p-4 bg-gradient-to-r from-blue-950/40 to-purple-950/40 rounded-lg border border-blue-800/50">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h5 className="text-white font-medium">Final Score</h5>
+                            <h5 className="text-white font-medium">
+                              Final Score
+                            </h5>
                             <p className="text-blue-300 text-sm">
-                              Average of {project.scores.length} judge{project.scores.length !== 1 ? 's' : ''}
+                              Average of {project.scores.length} judge
+                              {project.scores.length !== 1 ? "s" : ""}
                             </p>
                           </div>
                           <div className="text-right">
                             <div className="text-2xl font-bold text-white">
-                              {project.finalScore ? project.finalScore.toFixed(1) : 'N/A'}
+                              {finalScore ? finalScore.toFixed(1) : "N/A"}
                             </div>
                             <div className="text-zinc-400 text-sm">
                               {project.rank && `Rank: #${project.rank}`}
@@ -504,19 +644,18 @@ const ProjectCard = ({ project }) => {
         </AnimatePresence>
       </CardContent>
       {aiAnalysisOpen && (
-  <AIProjectAnalysis
-    project={selectedProjectForAI}
-    hackathon={hackathon}
-    isOpen={aiAnalysisOpen}
-    onClose={() => {
-      setAiAnalysisOpen(false);
-      setSelectedProjectForAI(null);
-    }}
-    userRole="organizer"
-  />
-)}
+        <AIProjectAnalysis
+          project={selectedProjectForAI}
+          hackathon={hackathon}
+          isOpen={aiAnalysisOpen}
+          onClose={() => {
+            setAiAnalysisOpen(false);
+            setSelectedProjectForAI(null);
+          }}
+          userRole="organizer"
+        />
+      )}
     </Card>
-    
   );
 };
 

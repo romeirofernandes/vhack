@@ -14,6 +14,7 @@ const uploadRoutes = require("./routes/uploadRoutes");
 const hackathonRoutes = require("./routes/hackathonRoutes");
 const adminRoutes = require('./routes/adminRoutes');
 const teamRoutes = require('./routes/teamRoutes');
+const resultRoutes = require("./routes/resultRoutes")
 const http = require('http');
 const { Server } = require('socket.io');
 const chatController = require('./controllers/chatController');
@@ -48,6 +49,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/hackathons", hackathonRoutes);
 app.use('/auth', authRoutes);
 app.use('/teams',teamRoutes);
+app.use('/results', resultRoutes)
 
 const server = http.createServer(app);
 const io = new Server(server, {

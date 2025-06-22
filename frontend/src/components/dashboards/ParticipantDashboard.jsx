@@ -34,12 +34,14 @@ import Hackathons from "./participants/HackathonDetailsPage";
 import ParticipantHackathons from "./participants/ParticipantHackathons";
 import MyHackathonsAndTeams from "./participants/MyHackathonsAndTeams";
 import ParticipantAnalytics from "./participants/Analytics";
+import ResultsChecker from "./participants/ResultsChecker";
 
 const ParticipantDashboard = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dashboardData, setDashboardData] = useState(null);
   const [hackathons, setHackathons] = useState([]);
+  const [userHackathons, setUserHackathons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -78,10 +80,10 @@ const ParticipantDashboard = () => {
       onClick: () => setActiveSection("achievements"),
     },
     {
-    label: "Analytics", // Add this new item
-    href: "#",
-    icon: <MdBarChart className="text-white/70 h-5 w-5 flex-shrink-0" />,
-    onClick: () => setActiveSection("analytics"),
+      label: "Analytics", // Add this new item
+      href: "#",
+      icon: <MdBarChart className="text-white/70 h-5 w-5 flex-shrink-0" />,
+      onClick: () => setActiveSection("analytics"),
     },
     {
       label: "Profile",
@@ -101,6 +103,35 @@ const ParticipantDashboard = () => {
     }
   }, [activeSection]);
 
+  useEffect(() => {
+    const fetchUserHackathons = async () => {
+      if (!user) return;
+
+      const idToken = await user.getIdToken();
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/participant/hackathons`,
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error("User hackathons fetch failed:", response.status);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        setUserHackathons(data.data.hackathons);
+      }
+    };
+
+    fetchUserHackathons();
+  }, [user]);
+
   const fetchDashboardData = async () => {
     try {
       if (!user) {
@@ -109,7 +140,10 @@ const ParticipantDashboard = () => {
       }
 
       const idToken = await user.getIdToken();
-      console.log("Fetching dashboard with token:", idToken ? "Token exists" : "No token");
+      console.log(
+        "Fetching dashboard with token:",
+        idToken ? "Token exists" : "No token"
+      );
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/participant/dashboard`,
@@ -209,7 +243,6 @@ const ParticipantDashboard = () => {
       console.error("Logout error:", error);
     }
   };
-
 
   const renderDashboardContent = () => {
     if (!dashboardData) return null;
@@ -385,7 +418,6 @@ const ParticipantDashboard = () => {
     );
   };
 
-
   const renderContent = () => {
     switch (activeSection) {
       case "dashboard":
@@ -399,7 +431,7 @@ const ParticipantDashboard = () => {
       case "achievements":
         return <Achievements />;
       case "analytics":
-        return <ParticipantAnalytics />
+        return <ParticipantAnalytics />;
       case "profile":
         return <Profile />;
       default:
@@ -503,6 +535,9 @@ const ParticipantDashboard = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Results Checker - automatically shows results when available */}
+      <ResultsChecker hackathons={userHackathons} />
     </div>
   );
 };

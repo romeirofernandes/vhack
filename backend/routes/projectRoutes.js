@@ -34,6 +34,6 @@ router.delete(
 router.get("/hackathon/:hackathonId/submitted", authMiddleware, projectController.getSubmittedProjects);
 
 // Submit judge score
-// router.post("/:projectId/score", authMiddleware, projectController.submitJudgeScore);
+router.post("/:projectId/score", authMiddleware, projectController.submitJudgeScore);
 
 module.exports = router;

@@ -90,8 +90,8 @@ const SubmittedProjects = ({ hackathon, onBack }) => {
           <div className="flex items-center space-x-4">
             <Button
               onClick={onBack}
-              variant="ghost"
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              variant="outline"
+              className="text-zinc-800 hover:bg-zinc-800 hover:text-white"
             >
               <TbArrowLeft className="w-4 h-4 mr-2" />
               Back to Hackathon
