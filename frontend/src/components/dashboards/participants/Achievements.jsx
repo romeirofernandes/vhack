@@ -5,9 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ArrowLeft, Trophy, Target, Award } from "lucide-react";
 import AchievementCard from "./AchievementCard";
 import { useAuth } from "../../../contexts/AuthContext";
+
+// React Icons
+import {
+  FiAward,
+  FiCheckCircle,
+  FiLock,
+  FiUser,
+  FiUsers,
+  FiSend,
+  FiTarget,
+  FiStar,
+  FiFlag,
+  FiZap,
+} from "react-icons/fi";
 
 const Achievements = () => {
   const [loading, setLoading] = useState(true);
@@ -22,6 +35,7 @@ const Achievements = () => {
 
   useEffect(() => {
     fetchAchievements();
+    // eslint-disable-next-line
   }, []);
 
   const fetchAchievements = async () => {
@@ -55,17 +69,18 @@ const Achievements = () => {
     }
   };
 
+  // All icons from react-icons/fi
   const categories = [
-    { id: "all", label: "All", icon: "🏆" },
-    { id: "unlocked", label: "Unlocked", icon: "✅" },
-    { id: "locked", label: "Locked", icon: "🔒" },
-    { id: "beginner", label: "Beginner", icon: "🌱" },
-    { id: "participation", label: "Participation", icon: "🚀" },
-    { id: "submission", label: "Submission", icon: "📤" },
-    { id: "collaboration", label: "Collaboration", icon: "🤝" },
-    { id: "expertise", label: "Expertise", icon: "🎯" },
-    { id: "milestone", label: "Milestone", icon: "🎖️" },
-    { id: "special", label: "Special", icon: "⭐" },
+    { id: "all", label: "All", icon: <FiAward /> },
+    { id: "unlocked", label: "Unlocked", icon: <FiCheckCircle /> },
+    { id: "locked", label: "Locked", icon: <FiLock /> },
+    { id: "beginner", label: "Beginner", icon: <FiUser /> },
+    { id: "participation", label: "Participation", icon: <FiZap /> },
+    { id: "submission", label: "Submission", icon: <FiSend /> },
+    { id: "collaboration", label: "Collaboration", icon: <FiUsers /> },
+    { id: "expertise", label: "Expertise", icon: <FiTarget /> },
+    { id: "milestone", label: "Milestone", icon: <FiFlag /> },
+    { id: "special", label: "Special", icon: <FiStar /> },
   ];
 
   const filteredAchievements =
@@ -78,21 +93,23 @@ const Achievements = () => {
       : achievements.filter((a) => a.category === selectedFilter);
 
   const getStatCard = (title, value, icon, description) => (
-    <Card className="bg-white/5 border-white/10">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-3">
-          <div className="text-2xl">{icon}</div>
-          <div>
-            <div className="text-2xl font-bold text-white">{value}</div>
-            <div className="text-sm text-white/70">{title}</div>
-            {description && (
-              <div className="text-xs text-white/50">{description}</div>
-            )}
-          </div>
+  <Card className="bg-zinc-900 border-zinc-800 shadow-sm">
+    <CardContent className="p-4">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center">
+          {icon}
         </div>
-      </CardContent>
-    </Card>
-  );
+        <div>
+          <div className="text-2xl font-bold text-white">{value}</div>
+          <div className="text-sm text-white/70">{title}</div>
+          {description && (
+            <div className="text-xs text-white/50">{description}</div>
+          )}
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
 
   if (loading) {
     return (
@@ -113,7 +130,7 @@ const Achievements = () => {
           <div className="flex items-center gap-4">
             <div>
               <h1 className="text-4xl font-bold flex items-center gap-3">
-                <Trophy className="w-8 h-8 text-yellow-400" />
+                <FiAward className="w-8 h-8 text-yellow-400" />
                 Achievements
               </h1>
               <p className="text-white/70 mt-2">
@@ -126,7 +143,7 @@ const Achievements = () => {
               {summary.unlocked || 0}/{summary.total || 0}
             </div>
             <div className="text-sm text-white/70">Achievements Unlocked</div>
-            <Badge className="bg-yellow-900/50 text-yellow-200 mt-2">
+            <Badge className="bg-yellow-900/70 text-yellow-200 mt-2 border border-yellow-700">
               {summary.percentage || 0}% Complete
             </Badge>
           </div>
@@ -146,34 +163,34 @@ const Achievements = () => {
           {getStatCard(
             "Hackathons Joined",
             stats.hackathonsJoined || 0,
-            "🚀",
+            <FiZap className="text-white w-8 h-8" />,
             "Total events participated"
           )}
           {getStatCard(
             "Projects Submitted",
             stats.projectsSubmitted || 0,
-            "📤",
+            <FiSend className="text-white w-8 h-8" />,
             "Completed submissions"
           )}
           {getStatCard(
             "Prizes Won",
             stats.prizesWon || 0,
-            "🏆",
+            <FiAward className="text-white w-8 h-8" />,
             "Top 3 finishes"
           )}
           {getStatCard(
             "Technologies Used",
             stats.technologiesUsed || 0,
-            "🔧",
+            <FiStar className="text-white w-8 h-8" />,
             "Different tech stack"
           )}
         </div>
 
         {/* Progress Bar */}
-        <Card className="bg-white/5 border-white/10 mb-8">
+        <Card className="bg-zinc-900 border-zinc-800 mb-8">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <Target className="w-5 h-5" />
+              <FiTarget className="w-5 h-5" />
               Your Progress
             </CardTitle>
           </CardHeader>
@@ -187,9 +204,10 @@ const Achievements = () => {
                   {summary.percentage || 0}%
                 </span>
               </div>
-              <div className="w-full bg-white/10 rounded-full h-4">
+              {/* Solid color progress bar, no gradient */}
+              <div className="w-full bg-zinc-800 rounded-full h-4 border border-zinc-700">
                 <motion.div
-                  className="bg-gradient-to-r from-blue-500 to-purple-500 h-4 rounded-full"
+                  className="bg-blue-500 h-4 rounded-full transition-all"
                   initial={{ width: 0 }}
                   animate={{ width: `${summary.percentage || 0}%` }}
                   transition={{ duration: 1, ease: "easeOut" }}
@@ -240,23 +258,23 @@ const Achievements = () => {
               <motion.button
                 key={category.id}
                 onClick={() => setSelectedFilter(category.id)}
-                className={`px-4 py-2 text-sm rounded-lg flex items-center gap-2 transition-all ${
+                className={`px-4 py-2 text-sm rounded-lg flex items-center gap-2 transition-all border ${
                   selectedFilter === category.id
-                    ? "bg-white text-zinc-950"
-                    : "bg-white/10 hover:bg-white/20 text-white/70 hover:text-white"
+                    ? "bg-white text-zinc-950 border-white shadow"
+                    : "bg-zinc-900 border-zinc-800 text-white/70 hover:bg-zinc-800 hover:text-white"
                 }`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span>{category.icon}</span>
+                <span className="text-lg">{category.icon}</span>
                 {category.label}
                 {category.id === "unlocked" && (
-                  <Badge className="bg-green-600 text-white text-xs">
+                  <Badge className="bg-green-600 text-white text-xs border border-green-700 ml-1">
                     {achievements.filter((a) => a.unlocked).length}
                   </Badge>
                 )}
                 {category.id === "locked" && (
-                  <Badge className="bg-red-600 text-white text-xs">
+                  <Badge className="bg-red-600 text-white text-xs border border-red-700 ml-1">
                     {achievements.filter((a) => !a.unlocked).length}
                   </Badge>
                 )}
@@ -274,7 +292,7 @@ const Achievements = () => {
 
         {filteredAchievements.length === 0 && (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏆</div>
+            <FiAward className="text-6xl mb-4 text-yellow-400 mx-auto" />
             <h3 className="text-xl font-semibold text-white mb-2">
               No achievements found
             </h3>
