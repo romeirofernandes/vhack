@@ -248,7 +248,7 @@ useEffect(() => {
                 value={[score.score]}
                 onValueChange={(value) => handleScoreChange(index, value)}
                 max={score.maxScore}
-                step={1}
+                step={0.1}
                 disabled={hasScored}
                 className="w-full"
               />
