@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Hackathon = require('./Hackathon'); // Assuming Hackathon model is in the same directory
 
 const projectSchema = new mongoose.Schema({
   title: {
@@ -92,6 +93,11 @@ const projectSchema = new mongoose.Schema({
     submittedAt: { type: Date, default: Date.now }
   }
 ],
+finalScore: {
+    type: Number,
+    default: 0,
+    min: 0,
+},
 // Add this to your existing Project schema
 aiAnalysis: {
   overallScore: { type: Number, min: 0, max: 100 },
@@ -131,28 +137,25 @@ aiAnalysis: {
 });
 
 // Calculate final score when scores are updated
-projectSchema.pre('save', function(next) {
+projectSchema.pre('save', async function(next) {
   console.log('Pre-save hook triggered. Scores:', this.scores?.length || 0);
-  
+
   if (this.scores && this.scores.length > 0) {
     // Calculate average score from all judges
     const totalScore = this.scores.reduce((sum, score) => {
       console.log('Judge score:', score.totalScore);
       return sum + (score.totalScore || 0);
     }, 0);
-    
+
     this.finalScore = Number((totalScore / this.scores.length).toFixed(2));
     console.log('Calculated final score:', this.finalScore);
-    
-    // Update status if all judges have scored
-    if (this.status !== 'judged') {
-      // You can add logic here to check if all assigned judges have scored
-      this.status = 'judging'; // Keep as judging until all judges complete
-    }
+
+    // Set status to 'judged' if at least one judge has scored
+    this.status = 'judged';
   } else {
     this.finalScore = 0;
+    this.status = 'judging';
   }
-  
   next();
 });
 
