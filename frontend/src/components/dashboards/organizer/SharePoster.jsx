@@ -174,7 +174,6 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div
               style={{
                 display: "flex",
@@ -255,7 +254,7 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                       width: "200px",
                       height: "200px",
                       background:
-                        "radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%)",
+                        "radial-gradient(circle, rgba(6, 182, 212, 0.15) 0%, rgba(14, 165, 233, 0.1) 50%, transparent 70%)",
                       borderRadius: "50%",
                       filter: "blur(40px)",
                     }}
@@ -268,7 +267,7 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                       width: "150px",
                       height: "150px",
                       background:
-                        "radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%)",
+                        "radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, rgba(16, 185, 129, 0.05) 50%, transparent 70%)",
                       borderRadius: "50%",
                       filter: "blur(30px)",
                     }}
@@ -280,7 +279,7 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                       position: "relative",
                       height: "240px",
                       background:
-                        "linear-gradient(135deg, #18181b 0%, #27272a 25%, #3f3f46 50%, #52525b 75%, #71717a 100%)",
+                        "linear-gradient(135deg, #0f172a 0%, #1e293b 20%, #0369a1 40%, #0891b2 60%, #059669 80%, #10b981 100%)",
                       overflow: "hidden",
                     }}
                   >
@@ -292,7 +291,7 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                           width: "100%",
                           height: "100%",
                           objectFit: "cover",
-                          opacity: 0.6,
+                          opacity: 0.4,
                           mixBlendMode: "overlay",
                         }}
                       />
@@ -305,11 +304,12 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                           position: "absolute",
                           top: "20px",
                           right: "20px",
-                          padding: "10px",
-                          background: "rgba(255, 255, 255, 0.95)",
-                          borderRadius: "16px",
-                          border: "2px solid rgba(255, 255, 255, 0.2)",
-                          boxShadow: "0 8px 25px rgba(0, 0, 0, 0.3)",
+                          padding: "12px",
+                          background: "rgba(255, 255, 255, 0.96)",
+                          borderRadius: "18px",
+                          border: "2px solid rgba(6, 182, 212, 0.2)",
+                          boxShadow:
+                            "0 8px 25px rgba(6, 182, 212, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3)",
                         }}
                       >
                         <img
@@ -318,7 +318,7 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                           style={{
                             width: "80px",
                             height: "80px",
-                            borderRadius: "8px",
+                            borderRadius: "10px",
                             display: "block",
                           }}
                         />
@@ -333,7 +333,7 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                         right: 0,
                         bottom: 0,
                         background:
-                          "linear-gradient(to bottom, rgba(24, 24, 27, 0.1) 0%, rgba(24, 24, 27, 0.8) 100%)",
+                          "linear-gradient(to bottom, rgba(15, 23, 42, 0.2) 0%, rgba(15, 23, 42, 0.7) 100%)",
                       }}
                     />
 
@@ -364,11 +364,13 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                             color: "white",
                             fontSize: "14px",
                             fontWeight: "700",
-                            backgroundColor: "rgba(255, 255, 255, 0.2)",
-                            backdropFilter: "blur(10px)",
+                            background:
+                              "linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(34, 197, 94, 0.3))",
+                            backdropFilter: "blur(12px)",
                             border: "1px solid rgba(255, 255, 255, 0.3)",
                             textTransform: "uppercase",
                             letterSpacing: "1px",
+                            boxShadow: "0 4px 15px rgba(6, 182, 212, 0.2)",
                           }}
                         >
                           {hackathon.status.charAt(0).toUpperCase() +
@@ -381,7 +383,10 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                           style={{
                             fontSize: "42px",
                             fontWeight: "900",
-                            color: "white",
+                            background:
+                              "linear-gradient(135deg, #ffffff 0%, #e0f2fe 50%, #b3f3ff 100%)",
+                            WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent",
                             lineHeight: "1.1",
                             margin: "0 0 12px 0",
                             textShadow: "0 4px 20px rgba(0,0,0,0.5)",
@@ -403,13 +408,17 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
                               width: "4px",
                               height: "24px",
                               background:
-                                "linear-gradient(to bottom, #fbbf24, #f59e0b)",
+                                "linear-gradient(to bottom, #06b6d4, #10b981)",
                               borderRadius: "2px",
+                              boxShadow: "0 0 10px rgba(6, 182, 212, 0.5)",
                             }}
                           />
                           <p
                             style={{
-                              color: "#fef3c7",
+                              background:
+                                "linear-gradient(135deg, #a7f3d0 0%, #bfdbfe 100%)",
+                              WebkitBackgroundClip: "text",
+                              WebkitTextFillColor: "transparent",
                               fontWeight: "600",
                               fontSize: "18px",
                               margin: 0,
