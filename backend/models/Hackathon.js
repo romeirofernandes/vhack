@@ -95,24 +95,24 @@ const hackathonSchema = new mongoose.Schema({
     },
   },
   judgingCriteria: [
-  {
-    title: { type: String, required: true },
-    description: { type: String },
-    weight: { type: Number, default: 1 },
-    maxScore: { type: Number, default: 10 }
-  }
-],
+    {
+      title: { type: String, required: true },
+      description: { type: String },
+      weight: { type: Number, default: 1 },
+      maxScore: { type: Number, default: 10 },
+    },
+  ],
   status: {
     type: String,
     enum: [
-    "draft",
-    "pending_approval",
-    "published",
-    "upcoming",
-    "ongoing",
-    "completed",
-    "cancelled"
-  ],
+      "draft",
+      "pending_approval",
+      "published",
+      "upcoming",
+      "ongoing",
+      "completed",
+      "cancelled",
+    ],
     default: "draft",
   },
   invitedJudges: [
@@ -130,6 +130,13 @@ const hackathonSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
+  resultsPublished: {
+    type: Boolean,
+    default: false,
+  },
+  resultsPublishedAt: {
+    type: Date,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import HackathonResults from "../../results/HackathonResults";
 
 const HackathonDetailsPage = () => {
   const { user } = useAuth();
@@ -251,101 +252,101 @@ const HackathonDetailsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <Card className="bg-zinc-950 border-neutral-800">
-                    {hackathon.bannerImageUrl ? (
-                      <div className="h-64 relative overflow-hidden rounded-t-lg">
-                      <img
-                        src={hackathon.bannerImageUrl}
-                        alt={hackathon.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/40 to-transparent" />
-                      <div className="absolute bottom-6 left-6 right-6">
-                        <Badge
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Card className="bg-zinc-950 border-neutral-800">
+                {hackathon.bannerImageUrl ? (
+                  <div className="h-64 relative overflow-hidden rounded-t-lg">
+                    <img
+                      src={hackathon.bannerImageUrl}
+                      alt={hackathon.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-zinc-950/40 to-transparent" />
+                    <div className="absolute bottom-6 left-6 right-6">
+                      <Badge
                         variant={getStatusVariant(status)}
                         className="mb-4"
-                        >
+                      >
                         {status.charAt(0).toUpperCase() + status.slice(1)}
-                        </Badge>
-                        <h1 className="text-4xl font-bold text-white mb-2">
+                      </Badge>
+                      <h1 className="text-4xl font-bold text-white mb-2">
                         {hackathon.title}
-                        </h1>
-                        <p className="text-neutral-300 text-lg">
+                      </h1>
+                      <p className="text-neutral-300 text-lg">
                         {hackathon.theme}
-                        </p>
-                      </div>
-                      </div>
-                    ) : (
-                      <CardHeader className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Badge variant={getStatusVariant(status)}>
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <CardHeader className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <Badge variant={getStatusVariant(status)}>
                         {status.charAt(0).toUpperCase() + status.slice(1)}
-                        </Badge>
-                      </div>
-                      <div>
-                        <CardTitle className="text-4xl font-bold text-white mb-3">
+                      </Badge>
+                    </div>
+                    <div>
+                      <CardTitle className="text-4xl font-bold text-white mb-3">
                         {hackathon.title}
-                        </CardTitle>
-                        <p className="text-neutral-300 text-lg">
+                      </CardTitle>
+                      <p className="text-neutral-300 text-lg">
                         {hackathon.theme}
-                        </p>
-                      </div>
-                      </CardHeader>
-                    )}
-                    </Card>
-                  </motion.div>
+                      </p>
+                    </div>
+                  </CardHeader>
+                )}
+              </Card>
+            </motion.div>
 
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    {team ? (
-                    <Card className="bg-zinc-950 border-green-600/30">
-                      <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              {team ? (
+                <Card className="bg-zinc-950 border-green-600/30">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
                         <CheckCircle className="h-6 w-6 text-green-500" />
-                        </div>
-                        <div className="flex-1">
+                      </div>
+                      <div className="flex-1">
                         <h3 className="font-semibold text-white mb-2">
                           You're registered for this hackathon!
                         </h3>
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 text-sm text-neutral-300">
-                          <span>Team:</span>
-                          <span className="font-medium text-white">
-                            {team.name}
-                          </span>
+                            <span>Team:</span>
+                            <span className="font-medium text-white">
+                              {team.name}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-neutral-300">
-                          <span>Join Code:</span>
-                          <span className="font-mono bg-neutral-800 px-2 py-1 rounded text-green-400 border border-neutral-700">
-                            {team.joinCode}
-                          </span>
+                            <span>Join Code:</span>
+                            <span className="font-mono bg-neutral-800 px-2 py-1 rounded text-green-400 border border-neutral-700">
+                              {team.joinCode}
+                            </span>
                           </div>
                         </div>
-                        </div>
                       </div>
-                      </CardContent>
-                    </Card>
-                    ) : (
-                    <Card className="bg-zinc-950 border-neutral-800">
-                      <CardContent className="px-8 py-4">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-white text-lg">
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="bg-zinc-950 border-neutral-800">
+                  <CardContent className="px-8 py-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-white text-lg">
                         Ready to participate?
-                        </h3>
-                        <div className="flex gap-4">
+                      </h3>
+                      <div className="flex gap-4">
                         <Button
                           onClick={() => {
-                          setShowCreate(!showCreate);
-                          setShowJoin(false);
+                            setShowCreate(!showCreate);
+                            setShowJoin(false);
                           }}
                           className="bg-green-600 hover:bg-green-700 text-white px-6"
                         >
@@ -354,8 +355,8 @@ const HackathonDetailsPage = () => {
                         </Button>
                         <Button
                           onClick={() => {
-                          setShowJoin(!showJoin);
-                          setShowCreate(false);
+                            setShowJoin(!showJoin);
+                            setShowCreate(false);
                           }}
                           variant="outline"
                           className="border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300 px-6"
@@ -363,14 +364,14 @@ const HackathonDetailsPage = () => {
                           <UserPlus className="w-4 h-4 mr-2" />
                           {showJoin ? "Cancel" : "Join Team"}
                         </Button>
-                        </div>
                       </div>
-                      </CardContent>
-                    </Card>
-                    )}
-                  </motion.div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </motion.div>
 
-                  {/* Create Team Form */}
+            {/* Create Team Form */}
             {showCreate && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
@@ -421,20 +422,20 @@ const HackathonDetailsPage = () => {
             )}
 
             {/* Join Team Form */}
-                  {showJoin && (
-                    <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ delay: 0.2 }}
-                    >
-                    <Card className="bg-zinc-950 border-neutral-800">
-                      <CardHeader>
-                      <CardTitle className="text-white">Join a Team</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                      <form onSubmit={handleJoinTeam} className="space-y-6">
-                        <div className="space-y-2">
+            {showJoin && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <Card className="bg-zinc-950 border-neutral-800">
+                  <CardHeader>
+                    <CardTitle className="text-white">Join a Team</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleJoinTeam} className="space-y-6">
+                      <div className="space-y-2">
                         <label className="text-sm font-medium text-white">
                           Team Join Code
                         </label>
@@ -448,19 +449,19 @@ const HackathonDetailsPage = () => {
                         <p className="text-xs text-neutral-400">
                           Ask your team leader for the join code
                         </p>
-                        </div>
-                        <Button
+                      </div>
+                      <Button
                         type="submit"
                         disabled={actionLoading}
                         className="w-full border-neutral-700 text-neutral-800 bg-white hover:bg-neutral-800 hover:text-white transition-all duration-300"
-                        >
+                      >
                         {actionLoading ? "Joining..." : "Join Team"}
-                        </Button>
-                      </form>
-                      </CardContent>
-                    </Card>
-                    </motion.div>
-                  )}
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -642,6 +643,18 @@ const HackathonDetailsPage = () => {
                 </Card>
               </motion.div>
             )}
+
+            {/* Results Section - Add this new section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <HackathonResults
+                hackathonId={hackathonId}
+                userRole="participant"
+              />
+            </motion.div>
           </div>
 
           {/* Right Column - Quick Info */}

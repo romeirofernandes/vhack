@@ -34,7 +34,7 @@ const getHackathonResults = async (req, res) => {
       finalScore: { $exists: true, $ne: null },
     })
       .populate("team", "name")
-      .populate("builders", "displayName photoURL")
+      .populate("builders.user", "displayName photoURL")
       .sort({ finalScore: -1, createdAt: 1 }); // Highest score first, then by submission time
 
     // Calculate rankings
@@ -62,7 +62,10 @@ const getHackathonResults = async (req, res) => {
         title: project.title,
         description: project.description,
         team: project.team,
-        builders: project.builders,
+        builders: project.builders.map((builder) => ({
+          displayName: builder.user?.displayName,
+          photoURL: builder.user?.photoURL,
+        })),
         finalScore: project.finalScore,
         rank: currentRank,
         technologies: project.technologies,
@@ -79,6 +82,8 @@ const getHackathonResults = async (req, res) => {
         theme: hackathon.theme,
         prizes: hackathon.prizes,
         resultsDate: hackathon.timelines.resultsDate,
+        resultsPublished: hackathon.resultsPublished,
+        resultsPublishedAt: hackathon.resultsPublishedAt,
       },
       isResultsTime,
       totalProjects: rankedResults.length,
@@ -89,16 +94,38 @@ const getHackathonResults = async (req, res) => {
   }
 };
 
-// Publish results (organizer only)
+// Publish results early (organizer only)
 const publishResults = async (req, res) => {
   try {
     const { hackathonId } = req.params;
+    const userId = req.user._id;
 
     const hackathon = await Hackathon.findById(hackathonId);
     if (!hackathon) {
       return res
         .status(404)
         .json({ success: false, error: "Hackathon not found" });
+    }
+
+    // Check if user is the organizer
+    if (hackathon.organizerId.toString() !== userId.toString()) {
+      return res.status(403).json({
+        success: false,
+        error: "Only the organizer can publish results",
+      });
+    }
+
+    // Check if there are any judged projects
+    const judgedProjects = await Project.find({
+      hackathon: hackathonId,
+      finalScore: { $exists: true, $ne: null },
+    });
+
+    if (judgedProjects.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No projects have been judged yet",
+      });
     }
 
     // Update hackathon to mark results as published
@@ -110,6 +137,7 @@ const publishResults = async (req, res) => {
       success: true,
       message: "Results published successfully",
       publishedAt: hackathon.resultsPublishedAt,
+      totalProjects: judgedProjects.length,
     });
   } catch (error) {
     console.error("Error publishing results:", error);

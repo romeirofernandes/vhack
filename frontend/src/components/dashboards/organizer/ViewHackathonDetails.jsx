@@ -45,6 +45,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import SubmittedProjects from "./SubmittedProjects";
 import { io } from "socket.io-client";
+import HackathonResults from "../../results/HackathonResults";
 
 const ViewHackathonDetails = () => {
   const [hackathon, setHackathon] = useState(null);
@@ -582,6 +583,11 @@ const ViewHackathonDetails = () => {
             { id: "timeline", label: "Timeline", icon: TbCalendar },
             { id: "settings", label: "Settings", icon: TbSettings },
             { id: "chat", label: "Chat", icon: TbSend },
+            {
+              id: "results",
+              label: "Results",
+              icon: TbTrophy,
+            },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1742,6 +1748,70 @@ const ViewHackathonDetails = () => {
                 </div>
               </CardContent>
             </Card>
+          )}
+
+          {/* Results Tab */}
+          {activeTab === "results" && (
+            <div>
+              <HackathonResults
+                hackathonId={hackathonId}
+                userRole="organizer"
+              />
+
+              {/* Organizer Actions */}
+              <Card className="bg-zinc-950 border-zinc-800 mt-6">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center gap-2">
+                    <TbSettings className="w-5 h-5 text-blue-400" />
+                    Results Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                      <h4 className="text-white font-medium mb-2">
+                        Publish Results Early
+                      </h4>
+                      <p className="text-zinc-400 text-sm mb-4">
+                        Publish results before the scheduled announcement date.
+                      </p>
+                      <Button
+                        onClick={async () => {
+                          try {
+                            const idToken = await user.getIdToken();
+                            const response = await fetch(
+                              `${
+                                import.meta.env.VITE_API_URL
+                              }/results/hackathon/${hackathonId}/publish`,
+                              {
+                                method: "POST",
+                                headers: {
+                                  Authorization: `Bearer ${idToken}`,
+                                },
+                              }
+                            );
+
+                            if (response.ok) {
+                              toast.success("Results published successfully!");
+                              // Refresh the page or update state
+                              window.location.reload();
+                            } else {
+                              toast.error("Failed to publish results");
+                            }
+                          } catch (error) {
+                            toast.error("Error publishing results");
+                          }
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <TbTrophy className="w-4 h-4 mr-2" />
+                        Publish Results Now
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           )}
         </motion.div>
       </div>
