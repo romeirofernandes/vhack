@@ -452,10 +452,10 @@ const ProjectView = ({
                         </div>
                       )}
 
-                      {score.overallFeedback && (
+                      {(score.overallFeedback || score.feedback) && (
                         <div className="pt-3 border-t border-white/10">
                           <p className="text-white/70 text-sm leading-relaxed">
-                            {score.overallFeedback}
+                            <span className="font-semibold text-white">Feedback:</span> {score.overallFeedback || score.feedback}
                           </p>
                         </div>
                       )}
