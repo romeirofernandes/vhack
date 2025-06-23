@@ -42,4 +42,7 @@ router.get('/judge/assigned', authMiddleware, hackathonController.getAssignedHac
 
 router.get('/:hackathonId/chat-messages', chatController.getChatHistory);
 
+router.get('/:hackathonId/announcements', hackathonController.getAnnouncements);
+router.post('/:hackathonId/announcements', authMiddleware, hackathonController.addAnnouncement);
+
 module.exports = router; 

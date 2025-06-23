@@ -295,4 +295,49 @@ exports.getAssignedHackathons = async (req, res) => {
   }
 };
 
+// Get all announcements for a hackathon
+exports.getAnnouncements = async (req, res) => {
+  try {
+    const { hackathonId } = req.params;
+    const hackathon = await Hackathon.findById(hackathonId).select('announcements');
+    if (!hackathon) {
+      return res.status(404).json({ success: false, message: 'Hackathon not found' });
+    }
+    res.status(200).json({ success: true, announcements: hackathon.announcements || [] });
+  } catch (error) {
+    console.error('Error fetching announcements:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch announcements' });
+  }
+};
+
+// Add a new announcement to a hackathon (organizer only)
+exports.addAnnouncement = async (req, res) => {
+  try {
+    const { hackathonId } = req.params;
+    const { message } = req.body;
+    if (!message || !message.trim()) {
+      return res.status(400).json({ success: false, message: 'Announcement message is required' });
+    }
+    const hackathon = await Hackathon.findById(hackathonId);
+    if (!hackathon) {
+      return res.status(404).json({ success: false, message: 'Hackathon not found' });
+    }
+    // Only organizer can post
+    if (hackathon.organizerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Only the organizer can post announcements' });
+    }
+    const announcement = {
+      message: message.trim(),
+      createdAt: new Date(),
+      author: req.user.displayName || 'Organizer',
+    };
+    hackathon.announcements.unshift(announcement); // Add to start for latest first
+    await hackathon.save();
+    res.status(201).json({ success: true, announcement });
+  } catch (error) {
+    console.error('Error adding announcement:', error);
+    res.status(500).json({ success: false, message: 'Failed to add announcement' });
+  }
+};
+
 

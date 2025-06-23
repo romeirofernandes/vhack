@@ -39,6 +39,7 @@ const HackathonDetailsPage = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
+  const [announcements, setAnnouncements] = useState([]);
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -73,6 +74,11 @@ const HackathonDetailsPage = () => {
         if (teamData.success && teamData.data) {
           setTeam(teamData.data);
         }
+
+        // Fetch announcements
+        const annRes = await fetch(`${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}/announcements`);
+        const annData = await annRes.json();
+        if (annData.success) setAnnouncements(annData.announcements || []);
       } catch (err) {
         toast.error("Failed to load hackathon details");
       } finally {
@@ -248,6 +254,32 @@ const HackathonDetailsPage = () => {
             </Button>
           )}
         </motion.div>
+
+        {/* Announcements Section */}
+        <Card className="bg-zinc-950 border-neutral-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-yellow-400" />
+              Announcements
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 max-h-64 overflow-y-auto">
+            <Separator className="bg-neutral-800" />
+            {announcements.length === 0 ? (
+              <p className="text-zinc-400">No announcements yet.</p>
+            ) : (
+              announcements.map((a, idx) => (
+                <div key={idx} className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white font-medium">{a.author || "Organizer"}</span>
+                    <span className="text-zinc-400 text-xs">{new Date(a.createdAt).toLocaleString()}</span>
+                  </div>
+                  <div className="text-zinc-200 text-sm whitespace-pre-line">{a.message}</div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Main Content */}

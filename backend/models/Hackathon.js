@@ -162,6 +162,14 @@ const hackathonSchema = new mongoose.Schema({
   rejectionReason: {
     type: String,
   },
+  // Add announcements array
+  announcements: [
+    {
+      message: { type: String, required: true },
+      createdAt: { type: Date, default: Date.now },
+      author: { type: String, default: 'Organizer' },
+    }
+  ]
 });
 
 // Update the updatedAt timestamp before saving

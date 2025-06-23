@@ -46,6 +46,8 @@ import { toast } from "react-hot-toast";
 import SubmittedProjects from "./SubmittedProjects";
 import { io } from "socket.io-client";
 import HackathonResults from "../../results/HackathonResults";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 
 const ViewHackathonDetails = () => {
   const [hackathon, setHackathon] = useState(null);
@@ -59,17 +61,22 @@ const ViewHackathonDetails = () => {
   const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
   const [selectedProjectForAI, setSelectedProjectForAI] = useState(null);
   const [submittedProjects, setSubmittedProjects] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [announcementInput, setAnnouncementInput] = useState("");
+  const [annLoading, setAnnLoading] = useState(false);
   const { hackathonId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const socketRef = useRef(null);
+  const [showAnnForm, setShowAnnForm] = useState(false);
 
   useEffect(() => {
     fetchHackathonDetails();
     fetchTeamsAndParticipants();
     fetchSubmittedProjects();
+    fetchAnnouncements();
     if (!hackathonId || !user) return;
 
     // Fetch chat history immediately when component mounts
@@ -208,6 +215,44 @@ const ViewHackathonDetails = () => {
       }
     } catch (err) {
       console.error("Error fetching teams:", err);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}/announcements`);
+      const data = await res.json();
+      if (data.success) setAnnouncements(data.announcements || []);
+    } catch (err) {
+      console.error("Error fetching announcements:", err);
+    }
+  };
+
+  const handlePostAnnouncement = async () => {
+    if (!announcementInput.trim()) return;
+    setAnnLoading(true);
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/hackathons/${hackathonId}/announcements`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: announcementInput }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAnnouncementInput("");
+        setAnnouncements((prev) => [data.announcement, ...prev]);
+        toast.success("Announcement posted!");
+      } else {
+        toast.error(data.message || "Failed to post announcement");
+      }
+    } catch (err) {
+      toast.error("Failed to post announcement");
+    } finally {
+      setAnnLoading(false);
     }
   };
 
@@ -483,6 +528,69 @@ const ViewHackathonDetails = () => {
           </div>
         </motion.div>
 
+        {/* Announcements Section */}
+        <Card className="bg-zinc-950 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <TbAlertTriangle className="w-5 h-5 text-yellow-400" />
+              Announcements
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {!showAnnForm ? (
+              <Button
+                onClick={() => setShowAnnForm(true)}
+                className="bg-yellow-500 hover:bg-yellow-600 text-zinc-950 font-bold"
+              >
+                Post an Announcement
+              </Button>
+            ) : (
+              <div className="flex flex-col md:flex-row gap-4 items-start">
+                <Textarea
+                  value={announcementInput}
+                  onChange={e => setAnnouncementInput(e.target.value)}
+                  placeholder="Write a new announcement..."
+                  className="flex-1 bg-zinc-900 border-zinc-700 text-white min-h-[60px]"
+                  disabled={annLoading}
+                />
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={handlePostAnnouncement}
+                    disabled={annLoading || !announcementInput.trim()}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-zinc-950 font-bold"
+                  >
+                    {annLoading ? "Posting..." : "Post"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => { setShowAnnForm(false); setAnnouncementInput(""); }}
+                    className="border-zinc-700 text-zinc-400"
+                    disabled={annLoading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+            <Separator className="bg-zinc-800" />
+            <div className="space-y-4 max-h-64 overflow-y-auto">
+              {announcements.length === 0 ? (
+                <p className="text-zinc-400">No announcements yet.</p>
+              ) : (
+                announcements.map((a, idx) => (
+                  <div key={idx} className="p-4 bg-zinc-900 rounded-lg border border-zinc-800">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-white font-medium">{a.author || "Organizer"}</span>
+                      <span className="text-zinc-400 text-xs">{new Date(a.createdAt).toLocaleString()}</span>
+          </div>
+                    <div className="text-zinc-200 text-sm whitespace-pre-line">{a.message}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Hero Section with Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -739,13 +847,13 @@ const ViewHackathonDetails = () => {
                 {/* Submitted Projects Section */}
                 {(hackathon.status === "ongoing" ||
                   hackathon.status === "completed") && (
-                  <Card className="bg-zinc-950 border-zinc-800">
-                    <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
+        <Card className="bg-zinc-950 border-zinc-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
                         <MdAssignment className="w-5 h-5" />
                         Submitted Projects
-                      </CardTitle>
-                    </CardHeader>
+            </CardTitle>
+          </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         <p className="text-zinc-400">
