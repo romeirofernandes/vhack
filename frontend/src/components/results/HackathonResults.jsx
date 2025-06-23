@@ -610,14 +610,14 @@ const HackathonResults = ({ hackathonId, userRole = "participant" }) => {
                                   .map((tech, idx) => (
                                     <Badge
                                       key={idx}
-                                      variant="outline"
+                                      variant="secondary"
                                       className="text-xs"
                                     >
                                       {tech}
                                     </Badge>
                                   ))}
                                 {project.technologies.length > 3 && (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="secondary" className="text-xs">
                                     +{project.technologies.length - 3} more
                                   </Badge>
                                 )}
