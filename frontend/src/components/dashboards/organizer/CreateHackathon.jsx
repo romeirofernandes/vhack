@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
@@ -23,6 +23,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
+import { Switch } from "@/components/ui/switch";
 
 const CreateHackathon = () => {
   const navigate = useNavigate();
@@ -90,6 +91,12 @@ const CreateHackathon = () => {
       weight: 1,
       maxScore: 10,
     },
+  ]);
+
+  // Multi-Stage Hackathon State
+  const [multiStage, setMultiStage] = useState(false);
+  const [rounds, setRounds] = useState([
+    { name: "Round 1", description: "", teamsToShortlist: 0, startTime: "", endTime: "", resultTime: "" },
   ]);
 
   // Helper function to combine date and time
@@ -223,7 +230,9 @@ const CreateHackathon = () => {
       // Include ALL judging criteria in the payload (not filtered)
       const payload = {
         ...formData,
-        judgingCriteria: judgingCriteria, // Don't filter here
+        judgingCriteria,
+        multiStage,
+        rounds: multiStage ? rounds : [],
       };
 
       console.log("Submitting payload:", payload); // Debug log
@@ -251,100 +260,103 @@ const CreateHackathon = () => {
     }
   };
 
-const DateTimePicker = ({ field, label, required = false, tooltip }) => {
+  const DateTimePicker = ({ field, label, required = false, tooltip, readOnly = false }) => {
     const state = datePickerStates[field];
 
     return (
-        <div className="space-y-2">
-            <div className="flex items-center gap-2">
-                <Label className="text-white/80 text-sm font-medium">
-                    {label} {required && "*"}
-                </Label>
-                {tooltip && (
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p className="text-sm">{tooltip}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                )}
-            </div>
-            <div className="flex gap-4">
-                <div className="flex flex-col gap-3 flex-1">
-                    <Label htmlFor={`date-picker-${field}`} className="px-1 text-white/60 text-xs">
-                        Date
-                    </Label>
-                    <Popover
-                        open={state.open}
-                        onOpenChange={(open) =>
-                            setDatePickerStates((prev) => ({
-                                ...prev,
-                                [field]: { ...prev[field], open },
-                            }))
-                        }
-                    >
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                id={`date-picker-${field}`}
-                                className="w-full justify-between font-normal bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white h-10"
-                            >
-                                {state.date ? state.date.toLocaleDateString() : "Select date"}
-                                <ChevronDownIcon className="w-4 h-4" />
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-                            <Calendar
-                                mode="single"
-                                selected={state.date}
-                                captionLayout="dropdown"
-                                onSelect={(date) => updateDateTime(field, "date", date)}
-                                className="bg-zinc-950 border-0"
-                            />
-                        </PopoverContent>
-                    </Popover>
-                </div>
-                <div className="flex flex-col gap-3 w-40">
-                    <Label htmlFor={`time-picker-${field}`} className="px-1 text-white/60 text-xs">
-                        Time
-                    </Label>
-                    <div className="flex gap-2">
-                        <Input
-                            type="time"
-                            id={`time-picker-${field}`}
-                            value={state.time}
-                            onChange={(e) => updateDateTime(field, "time", e.target.value)}
-                            className="bg-white/5 border-white/10 text-white h-10 flex-1 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-                            step="300" // 5 minute increments
-                        />
-                        <select
-                            value={state.time >= "12:00" ? "PM" : "AM"}
-                            onChange={(e) => {
-                                const [hours, minutes] = state.time.split(":");
-                                let newHours = parseInt(hours);
-                                
-                                if (e.target.value === "PM" && newHours < 12) {
-                                    newHours += 12;
-                                } else if (e.target.value === "AM" && newHours >= 12) {
-                                    newHours -= 12;
-                                }
-                                
-                                const newTime = `${newHours.toString().padStart(2, '0')}:${minutes}`;
-                                updateDateTime(field, "time", newTime);
-                            }}
-                            className="w-16 h-10 px-2 rounded-md bg-white/5 border border-white/10 text-white text-sm focus:border-white/20 focus:outline-none"
-                        >
-                            <option value="AM" className="bg-zinc-900 text-white">AM</option>
-                            <option value="PM" className="bg-zinc-900 text-white">PM</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Label className="text-white/80 text-sm font-medium">
+            {label} {required && "*"}
+          </Label>
+          {tooltip && (
+            <Tooltip>
+              <TooltipTrigger>
+                <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-sm">{tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
+        <div className="flex gap-4">
+          <div className="flex flex-col gap-3 flex-1">
+            <Label htmlFor={`date-picker-${field}`} className="px-1 text-white/60 text-xs">
+              Date
+            </Label>
+            <Popover
+              open={state.open}
+              onOpenChange={(open) =>
+                setDatePickerStates((prev) => ({
+                  ...prev,
+                  [field]: { ...prev[field], open },
+                }))
+              }
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  id={`date-picker-${field}`}
+                  className="w-full justify-between font-normal bg-white/5 border-white/10 text-white hover:bg-white/10 hover:text-white h-10"
+                  readOnly={readOnly}
+                >
+                  {state.date ? state.date.toLocaleDateString() : "Select date"}
+                  <ChevronDownIcon className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={state.date}
+                  captionLayout="dropdown"
+                  onSelect={(date) => updateDateTime(field, "date", date)}
+                  className="bg-zinc-950 border-0"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="flex flex-col gap-3 w-40">
+            <Label htmlFor={`time-picker-${field}`} className="px-1 text-white/60 text-xs">
+              Time
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                type="time"
+                id={`time-picker-${field}`}
+                value={state.time}
+                onChange={(e) => updateDateTime(field, "time", e.target.value)}
+                className="bg-white/5 border-white/10 text-white h-10 flex-1 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                step="300" // 5 minute increments
+                readOnly={readOnly}
+              />
+              <select
+                value={state.time >= "12:00" ? "PM" : "AM"}
+                onChange={(e) => {
+                  const [hours, minutes] = state.time.split(":");
+                  let newHours = parseInt(hours);
+                  
+                  if (e.target.value === "PM" && newHours < 12) {
+                    newHours += 12;
+                  } else if (e.target.value === "AM" && newHours >= 12) {
+                    newHours -= 12;
+                  }
+                  
+                  const newTime = `${newHours.toString().padStart(2, '0')}:${minutes}`;
+                  updateDateTime(field, "time", newTime);
+                }}
+                className="w-16 h-10 px-2 rounded-md bg-white/5 border border-white/10 text-white text-sm focus:border-white/20 focus:outline-none"
+                readOnly={readOnly}
+              >
+                <option value="AM" className="bg-zinc-900 text-white">AM</option>
+                <option value="PM" className="bg-zinc-900 text-white">PM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
     );
-};
+  };
 
   return (
     <TooltipProvider>
@@ -821,6 +833,145 @@ const DateTimePicker = ({ field, label, required = false, tooltip }) => {
                   <MdAdd className="w-4 h-4 mr-2" />
                   Add Criteria
                 </Button>
+              </CardContent>
+            </Card>
+
+            {/* Multi-Stage Hackathon Toggle */}
+            <Card className="bg-zinc-950 border-white/10">
+              <CardHeader className="pb-6">
+                <CardTitle className="text-white text-xl">Multi-Stage Hackathon</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Switch checked={multiStage} onCheckedChange={setMultiStage} />
+                  <span className="text-white/80 text-sm font-medium">
+                    Enable Multi-Stage (Multiple Rounds)
+                  </span>
+                </div>
+                {multiStage && (
+                  <div className="space-y-6 mt-4">
+                    {rounds.map((round, idx) => (
+                      <Card key={idx} className="bg-white/5 border-white/10">
+                        <CardContent className="p-4 space-y-2">
+                          <div className="flex gap-4">
+                            <Input
+                              type="text"
+                              value={round.name}
+                              onChange={e => {
+                                const newRounds = [...rounds];
+                                newRounds[idx].name = e.target.value;
+                                setRounds(newRounds);
+                              }}
+                              placeholder="Round Name"
+                              className="bg-white/5 border-white/10 text-white h-10"
+                            />
+                            {/* For rounds after round 1, show a dropdown for teamsToShortlist */}
+                            {idx > 0 ? (
+                              <select
+                                value={round.teamsToShortlist}
+                                onChange={e => {
+                                  const newRounds = [...rounds];
+                                  newRounds[idx].teamsToShortlist = parseInt(e.target.value) || 0;
+                                  setRounds(newRounds);
+                                }}
+                                className="bg-white/5 border-white/10 text-white h-10 w-40 rounded-md"
+                              >
+                                <option value={0}>Select teams to shortlist</option>
+                                {Array.from({ length: rounds[idx - 1].teamsToShortlist || 100 }, (_, i) => i + 1).map(n => (
+                                  <option key={n} value={n}>{n}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <Input
+                                type="number"
+                                value={round.teamsToShortlist}
+                                onChange={e => {
+                                  const newRounds = [...rounds];
+                                  newRounds[idx].teamsToShortlist = parseInt(e.target.value) || 0;
+                                  setRounds(newRounds);
+                                }}
+                                placeholder="Teams to Shortlist"
+                                className="bg-white/5 border-white/10 text-white h-10 w-40"
+                              />
+                            )}
+                          </div>
+                          <Textarea
+                            value={round.description}
+                            onChange={e => {
+                              const newRounds = [...rounds];
+                              newRounds[idx].description = e.target.value;
+                              setRounds(newRounds);
+                            }}
+                            placeholder="Round Description"
+                            className="bg-white/5 border-white/10 text-white min-h-[60px]"
+                          />
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                            <div>
+                              <label className="text-white/70 text-xs">Start Time</label>
+                              <Input
+                                type="datetime-local"
+                                value={round.startTime}
+                                onChange={e => {
+                                  const newRounds = [...rounds];
+                                  newRounds[idx].startTime = e.target.value;
+                                  setRounds(newRounds);
+                                }}
+                                className="bg-white/5 border-white/10 text-white h-10"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-white/70 text-xs">End Time</label>
+                              <Input
+                                type="datetime-local"
+                                value={round.endTime}
+                                onChange={e => {
+                                  const newRounds = [...rounds];
+                                  newRounds[idx].endTime = e.target.value;
+                                  setRounds(newRounds);
+                                }}
+                                className="bg-white/5 border-white/10 text-white h-10"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-white/70 text-xs">Result Time</label>
+                              <Input
+                                type="datetime-local"
+                                value={round.resultTime}
+                                onChange={e => {
+                                  const newRounds = [...rounds];
+                                  newRounds[idx].resultTime = e.target.value;
+                                  setRounds(newRounds);
+                                }}
+                                className="bg-white/5 border-white/10 text-white h-10"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setRounds(rounds.filter((_, i) => i !== idx))}
+                              disabled={rounds.length === 1}
+                            >
+                              Remove
+                            </Button>
+                            {idx === rounds.length - 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setRounds([...rounds, { name: `Round ${rounds.length + 1}`, description: "", teamsToShortlist: 0, startTime: "", endTime: "", resultTime: "" }])}
+                              >
+                                Add Round
+                              </Button>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
 

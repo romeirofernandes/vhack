@@ -169,7 +169,22 @@ const hackathonSchema = new mongoose.Schema({
       createdAt: { type: Date, default: Date.now },
       author: { type: String, default: 'Organizer' },
     }
-  ]
+  ],
+  // Add multi-stage hackathon fields
+  multiStage: {
+    type: Boolean,
+    default: false,
+  },
+  rounds: [
+    {
+      name: { type: String, required: true },
+      description: { type: String },
+      teamsToShortlist: { type: Number, required: true },
+      startTime: { type: Date },
+      endTime: { type: Date },
+      resultTime: { type: Date },
+    },
+  ],
 });
 
 // Update the updatedAt timestamp before saving

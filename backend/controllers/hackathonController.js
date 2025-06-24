@@ -68,6 +68,8 @@ exports.createHackathon = async (req, res) => {
             teamSettings,
             prizes,
             judgingCriteria,
+            multiStage,
+            rounds,
         } = req.body;
 
         // Get organizer ID from authenticated user
@@ -86,7 +88,9 @@ exports.createHackathon = async (req, res) => {
             teamSettings,
             prizes,
             judgingCriteria,
-            status: 'draft' // Set initial status as draft
+            status: 'draft',
+            multiStage: !!multiStage,
+            rounds: multiStage ? rounds : [],
         });
 
         // Save the hackathon
@@ -182,7 +186,12 @@ exports.getHackathonById = async (req, res) => {
 exports.updateHackathon = async (req, res) => {
     try {
         const { hackathonId } = req.params;
-        const updateData = req.body;
+        const updateData = {
+            ...req.body,
+            multiStage: !!req.body.multiStage,
+            rounds: req.body.multiStage ? req.body.rounds : [],
+            updatedAt: new Date(),
+        };
 
         if (!hackathonId) {
             return res.status(400).json({
@@ -215,10 +224,7 @@ exports.updateHackathon = async (req, res) => {
         // Find and update the hackathon
         const updatedHackathon = await Hackathon.findByIdAndUpdate(
             hackathonId,
-            {
-                ...updateData,
-                updatedAt: new Date()
-            },
+            updateData,
             { 
                 new: true, // Return the updated document
                 runValidators: true // Run schema validations
@@ -339,5 +345,7 @@ exports.addAnnouncement = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to add announcement' });
   }
 };
+
+// Note: rounds array now supports startTime, endTime, and resultTime (as Date strings)
 
 

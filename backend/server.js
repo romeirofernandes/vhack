@@ -63,6 +63,8 @@ const io = new Server(server, {
 // Move all socket logic to chatController
 chatController.initSocket(io);
 
+// Multi-stage hackathon support enabled via Hackathon model and controller
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

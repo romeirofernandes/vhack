@@ -33,6 +33,7 @@ router.get('/', hackathonController.getAllHackathons);
 router.get('/:hackathonId', hackathonController.getHackathonById);
 
 // Protected routes
+// Supports multi-stage hackathons (multiStage, rounds)
 router.post('/create', authMiddleware, hackathonController.createHackathon);
 router.get('/my/hackathons', authMiddleware, hackathonController.getOrganizerHackathons);
 router.put('/:hackathonId', authMiddleware, hackathonController.updateHackathon);
