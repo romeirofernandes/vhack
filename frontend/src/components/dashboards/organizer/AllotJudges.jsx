@@ -49,7 +49,6 @@ const AllotJudges = () => {
             },
           }
         );
-        console.log("Hackathon response:", response.data);
         if (response.data.success) {
           const filteredData = response.data.data.hackathons.find(
             (hackathon) => hackathon._id === hackathonId
@@ -76,7 +75,6 @@ const AllotJudges = () => {
           toast.error("Failed to fetch hackathon data");
         }
       } catch (error) {
-        console.error("Error fetching hackathon:", error);
         toast.error("Error fetching hackathon data");
       }
     };
@@ -145,7 +143,6 @@ const AllotJudges = () => {
         setFilteredJudges([]);
       }
     } catch (error) {
-      console.error("Error searching users:", error.response?.data || error);
       toast.error(error.response?.data?.error || "Error searching users");
       setFilteredJudges([]);
     } finally {
@@ -202,7 +199,6 @@ const AllotJudges = () => {
         toast.error(response.data.error || "Failed to invite judge");
       }
     } catch (error) {
-      console.error("Error inviting judge:", error);
       toast.error(error.response?.data?.error || "Error inviting judge");
     } finally {
       setIsInviting(false);
@@ -238,7 +234,6 @@ const AllotJudges = () => {
           toast.error(response.data.error || "Failed to fetch judges");
         }
       } catch (error) {
-        console.error("Error fetching judges:", error.response?.data || error);
         toast.error(error.response?.data?.error || "Error fetching judges");
       } finally {
         setIsLoading(false);
