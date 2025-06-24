@@ -25,6 +25,25 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { Switch } from "@/components/ui/switch";
 
+function toUTCISOStringFromIST(date, time) {
+  if (!date || !time) return "";
+  // date is a Date object (local), time is "HH:mm"
+  const [hours, minutes] = time.split(":");
+  // Create a new Date in IST
+  const istDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    parseInt(hours),
+    parseInt(minutes),
+    0,
+    0
+  );
+  // IST offset in minutes is +330
+  const utcDate = new Date(istDate.getTime() - (330 * 60 * 1000));
+  return utcDate.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
+}
+
 const CreateHackathon = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -125,7 +144,7 @@ const CreateHackathon = () => {
     }));
 
     // Update form data
-    const combinedDateTime = combineDateAndTime(
+    const combinedDateTime = toUTCISOStringFromIST(
       type === "date" ? value : datePickerStates[field].date,
       type === "time" ? value : datePickerStates[field].time
     );
