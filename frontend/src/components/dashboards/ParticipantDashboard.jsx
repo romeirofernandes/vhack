@@ -42,6 +42,8 @@ const ParticipantDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [hackathons, setHackathons] = useState([]);
   const [userHackathons, setUserHackathons] = useState([]);
+  const [myTeams, setMyTeams] = useState([]);
+  const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -80,7 +82,7 @@ const ParticipantDashboard = () => {
       onClick: () => setActiveSection("achievements"),
     },
     {
-      label: "Analytics", // Add this new item
+      label: "Analytics",
       href: "#",
       icon: <MdBarChart className="text-white/70 h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("analytics"),
@@ -95,6 +97,8 @@ const ParticipantDashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchMyTeams();
+    fetchAchievements();
   }, []);
 
   useEffect(() => {
@@ -131,6 +135,53 @@ const ParticipantDashboard = () => {
 
     fetchUserHackathons();
   }, [user]);
+
+  const fetchMyTeams = async () => {
+    try {
+      if (!user) return;
+
+      const idToken = await user.getIdToken();
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/teams/my`, {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMyTeams(data.data || []);
+      }
+    } catch (error) {
+      console.error("Teams fetch error:", error);
+    }
+  };
+
+  const fetchAchievements = async () => {
+    try {
+      if (!user) return;
+
+      const idToken = await user.getIdToken();
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/achievements`,
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setAchievements(data.data.achievements || []);
+        }
+      }
+    } catch (error) {
+      console.error("Achievements fetch error:", error);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -244,16 +295,43 @@ const ParticipantDashboard = () => {
     }
   };
 
+  // Calculate real stats from actual data
+  const calculateRealStats = () => {
+    const hackathonsJoined = myTeams.length; // Each team represents a hackathon joined
+    const achievementsEarned = achievements.filter((a) => a.unlocked).length;
+
+    // Get unique hackathons from teams
+    const uniqueHackathons = new Set(
+      myTeams.map((team) => team.hackathon?._id).filter(Boolean)
+    );
+    const uniqueHackathonsCount = uniqueHackathons.size;
+
+    // Count ongoing hackathons
+    const ongoingHackathons = myTeams.filter(
+      (team) =>
+        team.hackathon?.status === "ongoing" ||
+        team.hackathon?.status === "published"
+    ).length;
+
+    // Count teams
+    const teamsJoined = myTeams.length;
+
+    return {
+      hackathonsJoined: uniqueHackathonsCount || hackathonsJoined,
+      achievementsEarned,
+      teamsJoined,
+      ongoingHackathons,
+      projectsSubmitted: dashboardData?.stats?.projectsSubmitted || 0,
+      draftProjects: dashboardData?.quickStats?.draftProjects || 0,
+    };
+  };
+
   const renderDashboardContent = () => {
     if (!dashboardData) return null;
 
-    const {
-      user: userData,
-      stats,
-      recentActivity,
-      upcomingDeadlines,
-      quickStats,
-    } = dashboardData;
+    const { user: userData, recentActivity, upcomingDeadlines } = dashboardData;
+
+    const realStats = calculateRealStats();
 
     return (
       <div className="space-y-6">
@@ -290,28 +368,28 @@ const ParticipantDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatsCard
             title="Hackathons Joined"
-            value={stats.hackathonsJoined}
+            value={realStats.hackathonsJoined}
             icon={MdCode}
             color="blue"
-            trend={`+${quickStats.ongoingHackathons} ongoing`}
+            trend={`+${realStats.ongoingHackathons} ongoing`}
           />
           <StatsCard
             title="Projects Submitted"
-            value={stats.projectsSubmitted}
+            value={realStats.projectsSubmitted}
             icon={MdAssignment}
             color="green"
-            trend={`${quickStats.draftProjects} drafts`}
+            trend={`${realStats.draftProjects} drafts`}
           />
           <StatsCard
             title="Teams Joined"
-            value={stats.teamsJoined}
+            value={realStats.teamsJoined}
             icon={MdGroup}
             color="purple"
-            trend={`${quickStats.teamsCount} total`}
+            trend={`${realStats.teamsJoined} total`}
           />
           <StatsCard
             title="Achievements"
-            value={stats.achievementsEarned}
+            value={realStats.achievementsEarned}
             icon={MdEmojiEvents}
             color="yellow"
             trend="🏆"
@@ -329,7 +407,7 @@ const ParticipantDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {recentActivity.length > 0 ? (
+              {recentActivity && recentActivity.length > 0 ? (
                 recentActivity.map((activity, index) => (
                   <motion.div
                     key={index}
@@ -377,7 +455,7 @@ const ParticipantDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {upcomingDeadlines.length > 0 ? (
+              {upcomingDeadlines && upcomingDeadlines.length > 0 ? (
                 upcomingDeadlines.map((deadline, index) => (
                   <div
                     key={index}
@@ -414,6 +492,31 @@ const ParticipantDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Quick Actions for getting started */}
+        {realStats.hackathonsJoined === 0 && (
+          <Card className="bg-blue-900/20 border-blue-600/30">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-white font-semibold mb-2">
+                    🚀 Ready to start your hackathon journey?
+                  </h3>
+                  <p className="text-blue-200 text-sm">
+                    Join your first hackathon and start building amazing
+                    projects!
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setActiveSection("hackathons")}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Browse Hackathons
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     );
   };
