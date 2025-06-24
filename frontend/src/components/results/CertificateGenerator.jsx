@@ -134,7 +134,7 @@ const CertificateGenerator = ({ hackathonId }) => {
     }
   };
 
-  const generatePDFCertificate = () => {
+const generatePDFCertificate = () => {
   if (!certificateData) return;
 
   try {
@@ -165,7 +165,7 @@ const CertificateGenerator = ({ hackathonId }) => {
     pdf.circle(pageWidth - 30, pageHeight - 30, 5, 'F');
     
     // Title
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('times', 'bold');
     pdf.setFontSize(32);
     pdf.setTextColor(...secondaryColor);
     const certificateTitle = certificateData.position && certificateData.position <= 3 
@@ -179,27 +179,27 @@ const CertificateGenerator = ({ hackathonId }) => {
     pdf.line(60, 55, pageWidth - 60, 55);
     
     // "This is to certify that"
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont('times', 'normal');
     pdf.setFontSize(16);
     pdf.setTextColor(...textColor);
     pdf.text('This is to certify that', pageWidth / 2, 75, { align: 'center' });
     
     // Participant name (highlighted)
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('times', 'bolditalic');
     pdf.setFontSize(28);
     pdf.setTextColor(...secondaryColor);
     pdf.text(certificateData.participantName, pageWidth / 2, 95, { align: 'center' });
     
     // Team info
     if (certificateData.teamName) {
-      pdf.setFont('helvetica', 'normal');
+      pdf.setFont('times', 'normal');
       pdf.setFontSize(14);
       pdf.setTextColor(...textColor);
       pdf.text(`as a member of team "${certificateData.teamName}"`, pageWidth / 2, 110, { align: 'center' });
     }
     
     // Achievement/Position
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('times', 'bold');
     pdf.setFontSize(20);
     const positionColor = certificateData.position === 1 ? [255, 215, 0] : 
                          certificateData.position === 2 ? [192, 192, 192] :
@@ -209,13 +209,13 @@ const CertificateGenerator = ({ hackathonId }) => {
     pdf.text(`has achieved ${getPositionText(certificateData.position)}`, pageWidth / 2, 130, { align: 'center' });
     
     // "in" text
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont('times', 'normal');
     pdf.setFontSize(16);
     pdf.setTextColor(...textColor);
     pdf.text('in', pageWidth / 2, 145, { align: 'center' });
     
     // Hackathon name (highlighted)
-    pdf.setFont('helvetica', 'bold');
+    pdf.setFont('times', 'bold');
     pdf.setFontSize(24);
     pdf.setTextColor(...secondaryColor);
     pdf.text(certificateData.hackathonName, pageWidth / 2, 165, { align: 'center' });
@@ -227,13 +227,13 @@ const CertificateGenerator = ({ hackathonId }) => {
       day: 'numeric'
     });
     
-    pdf.setFont('helvetica', 'normal');
+    pdf.setFont('times', 'normal');
     pdf.setFontSize(12);
     pdf.setTextColor(...textColor);
     pdf.text(`Date: ${currentDate}`, pageWidth / 2, pageHeight - 40, { align: 'center' });
     
     // Footer branding
-    pdf.setFont('helvetica', 'italic');
+    pdf.setFont('times', 'italic');
     pdf.setFontSize(14);
     pdf.setTextColor(...primaryColor);
     pdf.text('vHack Platform', pageWidth / 2, pageHeight - 20, { align: 'center' });
