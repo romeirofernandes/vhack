@@ -26,6 +26,18 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   const shareUrl = hackathon
     ? `${window.location.origin}/participant/hackathon/${hackathon._id}`
     : "";
