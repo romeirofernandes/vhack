@@ -27,21 +27,21 @@ Organizing virtual hackathons requires a robust platform to manage team registra
 ---
 
 ## Screenshots
-![[Screenshot 2025-06-25 104010.png]]
+![Screenshot 2025-06-25 104010](screenshots/Screenshot%202025-06-25%20104010.png)
 
-![[Screenshot 2025-06-25 103023.png]]
+![Screenshot 2025-06-25 103023](screenshots/Screenshot%202025-06-25%20103023.png)
 
-![[Screenshot 2025-06-25 103045.png]]
+![Screenshot 2025-06-25 103045](screenshots/Screenshot%202025-06-25%20103045.png)
 
-![[Screenshot 2025-06-25 103111.png]]
+![Screenshot 2025-06-25 103111](screenshots/Screenshot%202025-06-25%20103111.png)
 
-![[Screenshot 2025-06-25 103152.png]]
+![Screenshot 2025-06-25 103152](screenshots/Screenshot%202025-06-25%20103152.png)
 
-![[Screenshot 2025-06-25 103216.png]]
+![Screenshot 2025-06-25 103216](screenshots/Screenshot%202025-06-25%20103216.png)
 
-![[Screenshot 2025-06-25 103245.png]]
+![Screenshot 2025-06-25 103245](screenshots/Screenshot%202025-06-25%20103245.png)
 
-![[Screenshot 2025-06-25 103301.png]]
+![Screenshot 2025-06-25 103301](screenshots/Screenshot%202025-06-25%20103301.png)
 
 ---
 
