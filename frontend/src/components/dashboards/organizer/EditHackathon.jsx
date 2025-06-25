@@ -502,41 +502,42 @@ const EditHackathon = () => {
 
   return (
     <TooltipProvider>
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 sm:mb-8">
           <Button
             variant="ghost"
-            className="bg-zinc-900 text-white hover:bg-zinc-800 border border-neutral-700 hover:text-white"
+            className="bg-zinc-900 text-white hover:bg-zinc-800 border border-neutral-700 hover:text-white text-sm sm:text-base"
             onClick={() => navigate(`/organizer/hackathon/${hackathonId}`)}
           >
-            <MdArrowBack className="w-5 h-5 mr-2" />
-            Back to Details
+            <MdArrowBack className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+            <span className="hidden sm:inline">Back to Details</span>
+            <span className="sm:hidden">Back</span>
           </Button>
         </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="space-y-8"
+          className="space-y-6 sm:space-y-8"
         >
           {/* Page Title */}
-          <div className="text-center space-y-3 mb-12">
-            <h1 className="text-4xl font-bold text-white">Edit Hackathon</h1>
-            <p className="text-white/70 text-lg max-w-2xl mx-auto">
+          <div className="text-center space-y-3 mb-8 sm:mb-12">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">Edit Hackathon</h1>
+            <p className="text-white/70 text-base sm:text-lg max-w-2xl mx-auto px-4">
               Update your hackathon details and settings
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-10">
+          <form onSubmit={handleSubmit} className="space-y-8 sm:space-y-10">
             {/* Basic Details */}
             <Card className="bg-zinc-950 border-white/10">
-              <CardHeader className="pb-6">
-                <CardTitle className="text-white text-xl">
+              <CardHeader className="pb-4 sm:pb-6">
+                <CardTitle className="text-white text-lg sm:text-xl">
                   Basic Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Label className="text-white/80 text-sm font-medium">
@@ -561,7 +562,7 @@ const EditHackathon = () => {
                     onChange={handleChange}
                     required
                     placeholder="Enter hackathon title"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-10 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
 
@@ -575,7 +576,7 @@ const EditHackathon = () => {
                     value={formData.organizerName}
                     onChange={handleChange}
                     required
-                    className="bg-white/5 border-white/10 text-white h-12"
+                    className="bg-white/5 border-white/10 text-white h-10 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
 
@@ -603,11 +604,11 @@ const EditHackathon = () => {
                     required
                     rows="4"
                     placeholder="Describe your hackathon..."
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 min-h-[120px]"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 min-h-[100px] sm:min-h-[120px] text-sm sm:text-base"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label className="text-white/80 text-sm font-medium">
                       Theme
@@ -616,7 +617,7 @@ const EditHackathon = () => {
                       name="theme"
                       value={formData.theme}
                       onChange={handleChange}
-                      className="w-full h-12 px-4 rounded-md bg-zinc-900 border border-white/10 text-white focus:border-white/20 focus:outline-none"
+                      className="w-full h-10 sm:h-12 px-3 sm:px-4 rounded-md bg-zinc-900 border border-white/10 text-white focus:border-white/20 focus:outline-none text-sm sm:text-base"
                     >
                       <option value="AI" className="bg-zinc-900 text-white">
                         AI
@@ -659,7 +660,7 @@ const EditHackathon = () => {
                       name="status"
                       value={formData.status}
                       onChange={handleChange}
-                      className="w-full h-12 px-4 rounded-md bg-zinc-900 border border-white/10 text-white focus:border-white/20 focus:outline-none"
+                      className="w-full h-10 sm:h-12 px-3 sm:px-4 rounded-md bg-zinc-900 border border-white/10 text-white focus:border-white/20 focus:outline-none text-sm sm:text-base"
                     >
                       <option value="draft" className="bg-zinc-900 text-white">
                         Draft
@@ -696,7 +697,7 @@ const EditHackathon = () => {
                     value={formData.bannerImageUrl}
                     onChange={handleChange}
                     placeholder="https://example.com/banner.jpg"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-10 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
               </CardContent>
@@ -704,9 +705,9 @@ const EditHackathon = () => {
 
             {/* Timelines */}
             <Card className="bg-zinc-950 border-white/10">
-              <CardHeader className="pb-6">
+              <CardHeader className="pb-4 sm:pb-6">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-white text-xl">Timeline</CardTitle>
+                  <CardTitle className="text-white text-lg sm:text-xl">Timeline</CardTitle>
                   <Tooltip>
                     <TooltipTrigger>
                       <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
@@ -720,7 +721,7 @@ const EditHackathon = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <DateTimePicker
                     field="registrationStart"
                     label="Registration Start"
@@ -756,9 +757,9 @@ const EditHackathon = () => {
 
             {/* Team Settings */}
             <Card className="bg-zinc-950 border-white/10">
-              <CardHeader className="pb-6">
+              <CardHeader className="pb-4 sm:pb-6">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-white text-xl">
+                  <CardTitle className="text-white text-lg sm:text-xl">
                     Team Settings
                   </CardTitle>
                   <Tooltip>
@@ -773,8 +774,8 @@ const EditHackathon = () => {
                   </Tooltip>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div className="space-y-2">
                     <Label className="text-white/80 text-sm font-medium">
                       Minimum Team Size *
@@ -786,7 +787,7 @@ const EditHackathon = () => {
                       onChange={handleChange}
                       min="1"
                       required
-                      className="bg-white/5 border-white/10 text-white h-12"
+                      className="bg-white/5 border-white/10 text-white h-10 sm:h-12 text-sm sm:text-base"
                     />
                   </div>
 
@@ -801,7 +802,7 @@ const EditHackathon = () => {
                       onChange={handleChange}
                       min="1"
                       required
-                      className="bg-white/5 border-white/10 text-white h-12"
+                      className="bg-white/5 border-white/10 text-white h-10 sm:h-12 text-sm sm:text-base"
                     />
                   </div>
                 </div>
@@ -836,9 +837,9 @@ const EditHackathon = () => {
 
             {/* Problem Statements */}
             <Card className="bg-zinc-950 border-white/10">
-              <CardHeader className="pb-6">
+              <CardHeader className="pb-4 sm:pb-6">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-white text-xl">
+                  <CardTitle className="text-white text-lg sm:text-xl">
                     Problem Statements
                   </CardTitle>
                   <Tooltip>
@@ -864,16 +865,16 @@ const EditHackathon = () => {
                   required
                   rows="6"
                   placeholder="Describe the problem statements for participants..."
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/50 min-h-[160px]"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/50 min-h-[140px] sm:min-h-[160px] text-sm sm:text-base"
                 />
               </CardContent>
             </Card>
 
             {/* Judging Criteria */}
             <Card className="bg-zinc-950 border-white/10">
-              <CardHeader className="pb-6">
+              <CardHeader className="pb-4 sm:pb-6">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-white text-xl">
+                  <CardTitle className="text-white text-lg sm:text-xl">
                     Judging Criteria
                   </CardTitle>
                   <Tooltip>
@@ -891,11 +892,11 @@ const EditHackathon = () => {
                   Define how projects will be evaluated
                 </p>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 {judgingCriteria.map((criteria, index) => (
                   <Card key={index} className="bg-white/5 border-white/10">
-                    <CardContent className="p-6 space-y-4">
-                      <div className="flex gap-4">
+                    <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         <div className="flex-1 space-y-2">
                           <Label className="text-white/80 text-sm font-medium">
                             Criteria Title *
@@ -906,7 +907,7 @@ const EditHackathon = () => {
                               updateCriteria(index, "title", e.target.value)
                             }
                             placeholder="e.g., Innovation"
-                            className={`bg-white/5 border-white/10 text-white h-12 ${
+                            className={`bg-white/5 border-white/10 text-white h-10 sm:h-12 text-sm sm:text-base ${
                               criteria.title.trim() === ""
                                 ? "border-red-500/50"
                                 : ""
@@ -915,7 +916,7 @@ const EditHackathon = () => {
                           />
                         </div>
 
-                        <div className="w-28 space-y-2">
+                        <div className="w-full sm:w-28 space-y-2">
                           <div className="flex items-center gap-2">
                             <Label className="text-white/80 text-sm font-medium">
                               Max Score
@@ -943,7 +944,7 @@ const EditHackathon = () => {
                             }
                             min={1}
                             max={100}
-                            className="bg-white/5 border-white/10 text-white h-12"
+                            className="bg-white/5 border-white/10 text-white h-10 sm:h-12 text-sm sm:text-base"
                           />
                         </div>
 
@@ -956,7 +957,7 @@ const EditHackathon = () => {
                                 size="sm"
                                 onClick={() => removeCriteria(index)}
                                 disabled={judgingCriteria.length <= 1}
-                                className="bg-red-600/20 text-red-400 hover:bg-red-600/30 border-red-600/30 h-12 w-12"
+                                className="bg-red-600/20 text-red-400 hover:bg-red-600/30 border-red-600/30 h-10 sm:h-12 w-full sm:w-12"
                               >
                                 <MdRemove className="w-4 h-4" />
                               </Button>
@@ -978,7 +979,7 @@ const EditHackathon = () => {
                             updateCriteria(index, "description", e.target.value)
                           }
                           placeholder="Describe what judges should look for..."
-                          className="bg-white/5 border-white/10 text-white placeholder:text-white/50 min-h-[80px]"
+                          className="bg-white/5 border-white/10 text-white placeholder:text-white/50 min-h-[70px] sm:min-h-[80px] text-sm sm:text-base"
                           rows={2}
                         />
                       </div>
@@ -990,7 +991,7 @@ const EditHackathon = () => {
                   type="button"
                   onClick={addCriteria}
                   variant="outline"
-                  className="w-full h-12 border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300"
+                  className="w-full h-10 sm:h-12 border-neutral-700 text-neutral-800 hover:bg-neutral-800 hover:text-white transition-all duration-300 text-sm sm:text-base"
                 >
                   <MdAdd className="w-4 h-4 mr-2" />
                   Add Criteria
@@ -1000,9 +1001,9 @@ const EditHackathon = () => {
 
             {/* Prizes */}
             <Card className="bg-zinc-950 border-white/10">
-              <CardHeader className="pb-6">
+              <CardHeader className="pb-4 sm:pb-6">
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-white text-xl">Prizes</CardTitle>
+                  <CardTitle className="text-white text-lg sm:text-xl">Prizes</CardTitle>
                   <Tooltip>
                     <TooltipTrigger>
                       <MdInfo className="w-4 h-4 text-white/50 hover:text-white/80" />
@@ -1015,7 +1016,7 @@ const EditHackathon = () => {
                   </Tooltip>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 <div className="space-y-2">
                   <Label className="text-white/80 text-sm font-medium">
                     First Prize *
@@ -1027,7 +1028,7 @@ const EditHackathon = () => {
                     onChange={handleChange}
                     required
                     placeholder="Enter first prize details"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-10 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
 
@@ -1042,7 +1043,7 @@ const EditHackathon = () => {
                     onChange={handleChange}
                     required
                     placeholder="Enter second prize details"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-10 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
 
@@ -1057,7 +1058,7 @@ const EditHackathon = () => {
                     onChange={handleChange}
                     required
                     placeholder="Enter third prize details"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-10 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
 
@@ -1072,7 +1073,7 @@ const EditHackathon = () => {
                     onChange={handleChange}
                     required
                     placeholder="Enter participant prize details"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-12"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/50 h-10 sm:h-12 text-sm sm:text-base"
                   />
                 </div>
               </CardContent>
@@ -1082,7 +1083,7 @@ const EditHackathon = () => {
             {judgingCriteria.some(
               (criteria) => criteria.title.trim() === ""
             ) && (
-              <div className="bg-red-950/40 border border-red-800/50 rounded-lg p-6">
+              <div className="bg-red-950/40 border border-red-800/50 rounded-lg p-4 sm:p-6">
                 <p className="text-red-300 text-sm">
                   Please fill in all criteria titles or remove empty criteria
                   before submitting.
@@ -1091,19 +1092,19 @@ const EditHackathon = () => {
             )}
 
             {/* Submit Button */}
-            <div className="flex justify-end gap-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => navigate(`/organizer/hackathon/${hackathonId}`)}
-                className="text-white bg-white/40 hover:bg-white/20 hover:text-white h-12 px-8"
+                className="text-white bg-white/40 hover:bg-white/20 hover:text-white h-10 sm:h-12 px-6 sm:px-8 text-sm sm:text-base order-2 sm:order-1"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={saving}
-                className="bg-blue-600 text-white hover:bg-blue-700 h-12 px-8"
+                className="bg-blue-600 text-white hover:bg-blue-700 h-10 sm:h-12 px-6 sm:px-8 text-sm sm:text-base order-1 sm:order-2"
               >
                 {saving ? "Updating..." : "Update Hackathon"}
               </Button>

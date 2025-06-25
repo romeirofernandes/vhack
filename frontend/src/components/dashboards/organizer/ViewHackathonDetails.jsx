@@ -416,42 +416,41 @@ const ViewHackathonDetails = () => {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
         >
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Button
               onClick={() => navigate("/organizer/dashboard")}
               variant="ghost"
-              className="text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all duration-200 p-2"
+              className="text-zinc-300 hover:bg-zinc-800 hover:text-white transition-all duration-200 p-2 text-xs sm:text-sm"
             >
-              <TbArrowLeft className="w-5 h-5" />
+              <TbArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-white mb-1">
+              <h1 className="text-xl sm:text-3xl font-bold text-white mb-1">
                 {hackathon.title}
               </h1>
-              <p className="text-zinc-400">
+              <p className="text-zinc-400 text-xs sm:text-base">
                 Organized by {hackathon.organizerName || "You"}
               </p>
             </div>
           </div>
-
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
             <Button
               onClick={() =>
                 navigate(`/organizer/hackathon/${hackathonId}/allot-judges`)
               }
-              className="relative overflow-hidden bg-zinc-900 border border-blue-500/20 text-blue-400 hover:text-white transition-all duration-300 group"
+              className="relative overflow-hidden bg-zinc-900 border border-blue-500/20 text-blue-400 hover:text-white transition-all duration-300 group text-xs sm:text-sm"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-blue-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <div className="relative flex items-center">
-                <TbUserPlus className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110" />
+                <TbUserPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 transition-transform duration-300 group-hover:scale-110" />
                 Manage Judges
               </div>
             </Button>
@@ -459,27 +458,26 @@ const ViewHackathonDetails = () => {
               onClick={() =>
                 navigate(`/organizer/hackathon/${hackathonId}/edit`)
               }
-              className="relative overflow-hidden bg-zinc-900 border border-purple-500/20 text-purple-400 hover:text-white transition-all duration-300 group"
+              className="relative overflow-hidden bg-zinc-900 border border-purple-500/20 text-purple-400 hover:text-white transition-all duration-300 group text-xs sm:text-sm"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-purple-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-purple-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <div className="relative flex items-center">
-                <TbEdit className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110" />
+                <TbEdit className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 transition-transform duration-300 group-hover:scale-110" />
                 Edit
               </div>
             </Button>
-
             {/* Delete Button with AlertDialog */}
             <AlertDialog
               open={deleteDialogOpen}
               onOpenChange={setDeleteDialogOpen}
             >
               <AlertDialogTrigger asChild>
-                <Button className="relative overflow-hidden bg-zinc-900 border border-red-500/20 text-red-400 hover:text-white transition-all duration-300 group">
+                <Button className="relative overflow-hidden bg-zinc-900 border border-red-500/20 text-red-400 hover:text-white transition-all duration-300 group text-xs sm:text-sm">
                   <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-red-700/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                   <div className="relative flex items-center">
-                    <TbTrash className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:scale-110" />
+                    <TbTrash className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 transition-transform duration-300 group-hover:scale-110" />
                     Delete
                   </div>
                 </Button>

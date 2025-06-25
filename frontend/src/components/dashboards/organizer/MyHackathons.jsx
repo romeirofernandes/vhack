@@ -249,15 +249,15 @@ const MyHackathons = ({ navigate }) => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">My Hackathons</h1>
-          <p className="text-zinc-400">Manage your hackathon events</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">My Hackathons</h1>
+          <p className="text-zinc-400 text-sm sm:text-base">Manage your hackathon events</p>
         </div>
         <Button
-          className="bg-white text-zinc-950 hover:bg-zinc-200"
+          className="bg-white text-zinc-950 hover:bg-zinc-200 text-sm sm:text-base w-full sm:w-auto"
           onClick={() => navigate("/organizer/create-hackathon")}
         >
           <MdAdd className="w-4 h-4 mr-2" />
@@ -266,82 +266,82 @@ const MyHackathons = ({ navigate }) => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
         <Card className="bg-zinc-900/50 border-zinc-800">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-xl sm:text-2xl font-bold text-white">
                   {hackathons.length}
                 </p>
-                <p className="text-zinc-400 text-sm">Total Events</p>
+                <p className="text-zinc-400 text-xs sm:text-sm">Total Events</p>
               </div>
-              <MdCalendarToday className="w-8 h-8 text-blue-400" />
+              <MdCalendarToday className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
             </div>
           </CardContent>
         </Card>
         <Card className="bg-zinc-900/50 border-zinc-800">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-xl sm:text-2xl font-bold text-white">
                   {hackathons.filter((h) => h.status === "ongoing").length}
                 </p>
-                <p className="text-zinc-400 text-sm">Active Now</p>
+                <p className="text-zinc-400 text-xs sm:text-sm">Active Now</p>
               </div>
-              <MdTimer className="w-8 h-8 text-green-400" />
+              <MdTimer className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-zinc-900/50 border-zinc-800">
-          <CardContent className="p-4">
+        <Card className="bg-zinc-900/50 border-zinc-800 sm:col-span-2 lg:col-span-1">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-2xl font-bold text-white">
+                <p className="text-xl sm:text-2xl font-bold text-white">
                   {totalParticipants}
                 </p>
-                <p className="text-zinc-400 text-sm">Total Participants</p>
+                <p className="text-zinc-400 text-xs sm:text-sm">Total Participants</p>
               </div>
-              <MdGroup className="w-8 h-8 text-purple-400" />
+              <MdGroup className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Main Content */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Custom Calendar */}
         <Card className="bg-zinc-900/50 border-zinc-800">
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4">
             {/* Calendar Header */}
             <div className="flex items-center justify-between">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={goToPrevMonth}
-                className="text-white hover:bg-zinc-800 hover:text-white p-2"
+                className="text-white hover:bg-zinc-800 hover:text-white p-1.5 sm:p-2"
               >
-                <MdChevronLeft className="w-5 h-5" />
+                <MdChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
-              <h3 className="text-lg font-semibold text-white">{monthYear}</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-white">{monthYear}</h3>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={goToNextMonth}
-                className="text-white hover:bg-zinc-800 hover:text-white p-2"
+                className="text-white hover:bg-zinc-800 hover:text-white p-1.5 sm:p-2"
               >
-                <MdChevronRight className="w-5 h-5" />
+                <MdChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
             </div>
 
             {/* Calendar Grid */}
             <div>
               {/* Week Days Header */}
-              <div className="grid grid-cols-7 gap-1 mb-2">
+              <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2">
                 {weekDays.map((day) => (
                   <div
                     key={day}
-                    className="text-center text-zinc-400 text-sm font-medium py-2"
+                    className="text-center text-zinc-400 text-xs sm:text-sm font-medium py-1 sm:py-2"
                   >
                     {day}
                   </div>
@@ -349,8 +349,8 @@ const MyHackathons = ({ navigate }) => {
               </div>
 
               {/* Calendar Days */}
-              <div className="grid grid-cols-7 gap-1">
-                <AnimatePresence mode="wait">
+              <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
+                <AnimatePresence>
                   {days.map((date, index) => {
                     const dayHackathons = getHackathonsForDate(date);
                     const isSelected =
@@ -365,7 +365,7 @@ const MyHackathons = ({ navigate }) => {
                         transition={{ delay: index * 0.01 }}
                         onClick={() => setSelectedDate(date)}
                         className={`
-                          relative aspect-square p-1 rounded-lg text-sm font-medium transition-all duration-200
+                          relative aspect-square p-0.5 sm:p-1 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-200
                           ${
                             isSelected
                               ? "bg-blue-600 text-white ring-2 ring-blue-400"
@@ -380,16 +380,16 @@ const MyHackathons = ({ navigate }) => {
                       >
                         <span className="block">{date.getDate()}</span>
                         {hasHackathons(date) && (
-                          <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2">
+                          <div className="absolute bottom-0.5 sm:bottom-1 left-1/2 transform -translate-x-1/2">
                             <div className="flex gap-0.5">
                               {dayHackathons.slice(0, 3).map((_, i) => (
                                 <div
                                   key={i}
-                                  className="w-1 h-1 bg-green-400 rounded-full"
+                                  className="w-0.5 h-0.5 sm:w-1 sm:h-1 bg-green-400 rounded-full"
                                 />
                               ))}
                               {dayHackathons.length > 3 && (
-                                <div className="w-1 h-1 bg-zinc-400 rounded-full" />
+                                <div className="w-0.5 h-0.5 sm:w-1 sm:h-1 bg-zinc-400 rounded-full" />
                               )}
                             </div>
                           </div>
@@ -402,13 +402,13 @@ const MyHackathons = ({ navigate }) => {
             </div>
 
             {/* Legend */}
-            <div className="flex items-center gap-4 text-xs text-zinc-400">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-blue-500/30 rounded border border-blue-400/50"></div>
+            <div className="flex items-center gap-2 sm:gap-4 text-xs text-zinc-400">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-blue-500/30 rounded border border-blue-400/50"></div>
                 <span>Today</span>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded border border-green-400"></div>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 rounded border border-green-400"></div>
                 <span>Has Events</span>
               </div>
             </div>
@@ -417,8 +417,8 @@ const MyHackathons = ({ navigate }) => {
 
         {/* Selected Date Events */}
         <Card className="lg:col-span-2 bg-zinc-900/50 border-zinc-800">
-          <CardHeader>
-            <CardTitle className="text-white text-lg">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="text-white text-base sm:text-lg">
               {selectedDate
                 ? `Events on ${selectedDate.toLocaleDateString("en-US", {
                     weekday: "long",
@@ -429,12 +429,12 @@ const MyHackathons = ({ navigate }) => {
                 : "Select a date to view events"}
             </CardTitle>
             {selectedDate && isToday(selectedDate) && (
-              <p className="text-zinc-500 text-sm">
+              <p className="text-zinc-500 text-xs sm:text-sm">
                 Showing today's events • Click on any date in the calendar to view events for that day
               </p>
             )}
             {selectedDate && !isToday(selectedDate) && (
-              <p className="text-zinc-500 text-sm">
+              <p className="text-zinc-500 text-xs sm:text-sm">
                 Click on any date in the calendar to view events for that day
               </p>
             )}
@@ -442,20 +442,20 @@ const MyHackathons = ({ navigate }) => {
           <CardContent>
             {selectedDate ? (
               selectedDateHackathons.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {selectedDateHackathons.map((hackathon) => (
                     <motion.div
                       key={hackathon._id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-4 bg-zinc-800/50 rounded-lg border border-zinc-700"
+                      className="p-3 sm:p-4 bg-zinc-800/50 rounded-lg border border-zinc-700"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="font-medium text-white">
+                      <div className="flex items-start justify-between mb-2 sm:mb-3">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-medium text-white text-sm sm:text-base truncate">
                             {hackathon.title}
                           </h4>
-                          <p className="text-zinc-400 text-sm mt-1">
+                          <p className="text-zinc-400 text-xs sm:text-sm mt-1 line-clamp-2">
                             {hackathon.description.substring(0, 80)}...
                           </p>
                         </div>
@@ -467,16 +467,16 @@ const MyHackathons = ({ navigate }) => {
                               : hackathon.status === "draft"
                               ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
                               : "bg-zinc-500/20 text-zinc-300 border-zinc-500/30"
-                          }`}
+                          } text-xs sm:text-sm flex-shrink-0 ml-2`}
                         >
                           {hackathon.status}
                         </Badge>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Button
                           size="sm"
                           variant="outline"
-                          className="bg-white text-zinc-950 hover:bg-zinc-200"
+                          className="bg-white text-zinc-950 hover:bg-zinc-200 text-xs sm:text-sm"
                           onClick={() =>
                             navigate(`/organizer/hackathon/${hackathon._id}`)
                           }
@@ -488,10 +488,10 @@ const MyHackathons = ({ navigate }) => {
                         ) && (
                           <Button
                             size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            className="bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm"
                             onClick={() => handleShare(hackathon)}
                           >
-                            <TbShare className="w-4 h-4 mr-1" />
+                            <TbShare className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                             Share
                           </Button>
                         )}
@@ -500,22 +500,22 @@ const MyHackathons = ({ navigate }) => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-zinc-800/50 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <MdCalendarToday className="w-8 h-8 text-zinc-400" />
+                <div className="text-center py-6 sm:py-8">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-zinc-800/50 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <MdCalendarToday className="w-6 h-6 sm:w-8 sm:h-8 text-zinc-400" />
                   </div>
-                  <p className="text-zinc-400">No events on this date</p>
-                  <p className="text-zinc-500 text-sm mt-2">
+                  <p className="text-zinc-400 text-sm sm:text-base">No events on this date</p>
+                  <p className="text-zinc-500 text-xs sm:text-sm mt-2">
                     Click on a date with green indicators to view events
                   </p>
                 </div>
               )
             ) : (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-zinc-800/50 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <MdCalendarToday className="w-8 h-8 text-zinc-400" />
+              <div className="text-center py-6 sm:py-8">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-zinc-800/50 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <MdCalendarToday className="w-6 h-6 sm:w-8 sm:h-8 text-zinc-400" />
                 </div>
-                <p className="text-zinc-400">Click on a date to view events</p>
+                <p className="text-zinc-400 text-sm sm:text-base">Click on a date to view events</p>
               </div>
             )}
           </CardContent>
@@ -524,30 +524,30 @@ const MyHackathons = ({ navigate }) => {
 
       {/* All Hackathons List */}
       <Card className="bg-zinc-900/50 border-zinc-800">
-        <CardHeader>
-          <CardTitle className="text-white text-lg">All Hackathons</CardTitle>
+        <CardHeader className="pb-3 sm:pb-4">
+          <CardTitle className="text-white text-base sm:text-lg">All Hackathons</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-400 mx-auto mb-4"></div>
-              <p className="text-zinc-400">Loading hackathons...</p>
+            <div className="text-center py-6 sm:py-8">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-zinc-400 mx-auto mb-3 sm:mb-4"></div>
+              <p className="text-zinc-400 text-sm sm:text-base">Loading hackathons...</p>
             </div>
           ) : hackathons.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-zinc-800/50 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <MdAdd className="w-8 h-8 text-zinc-400" />
+            <div className="text-center py-6 sm:py-8">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-zinc-800/50 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                <MdAdd className="w-6 h-6 sm:w-8 sm:h-8 text-zinc-400" />
               </div>
-              <p className="text-zinc-400 mb-4">No hackathons created yet</p>
+              <p className="text-zinc-400 mb-3 sm:mb-4 text-sm sm:text-base">No hackathons created yet</p>
               <Button
-                className="bg-white text-zinc-950 hover:bg-zinc-200"
+                className="bg-white text-zinc-950 hover:bg-zinc-200 text-sm sm:text-base"
                 onClick={() => navigate("/organizer/create-hackathon")}
               >
                 Create Your First Hackathon
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {hackathons.map((hackathon) => {
                 const stats = hackathonStats[hackathon._id] || { teamCount: 0, participantCount: 0 };
                 
@@ -556,12 +556,12 @@ const MyHackathons = ({ navigate }) => {
                     key={hackathon._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 bg-zinc-800/50 rounded-lg border border-zinc-700 hover:bg-zinc-800/70 transition-colors"
+                    className="p-3 sm:p-4 bg-zinc-800/50 rounded-lg border border-zinc-700 hover:bg-zinc-800/70 transition-colors"
                   >
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                       {/* Header Section */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <h3 className="font-semibold text-white text-lg">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
+                        <h3 className="font-semibold text-white text-base sm:text-lg truncate">
                           {hackathon.title}
                         </h3>
                         <Badge
@@ -572,7 +572,7 @@ const MyHackathons = ({ navigate }) => {
                               : hackathon.status === "draft"
                               ? "bg-blue-500/20 text-blue-300 border-blue-500/30"
                               : "bg-zinc-500/20 text-zinc-300 border-zinc-500/30"
-                          }`}
+                          } text-xs sm:text-sm`}
                         >
                           {hackathon.status.charAt(0).toUpperCase() +
                             hackathon.status.slice(1)}
@@ -580,15 +580,15 @@ const MyHackathons = ({ navigate }) => {
                       </div>
 
                       {/* Description */}
-                      <p className="text-zinc-400 text-sm">
+                      <p className="text-zinc-400 text-xs sm:text-sm line-clamp-2">
                         {hackathon.description.length > 120
                           ? `${hackathon.description.substring(0, 120)}...`
                           : hackathon.description}
                       </p>
 
                       {/* Info Grid */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-                        <div className="bg-zinc-900/50 p-3 rounded-lg border border-zinc-700">
+                      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 text-xs sm:text-sm">
+                        <div className="bg-zinc-900/50 p-2 sm:p-3 rounded-lg border border-zinc-700">
                           <p className="text-zinc-500 font-medium mb-1">
                             Timeline
                           </p>
@@ -608,7 +608,7 @@ const MyHackathons = ({ navigate }) => {
                             })}
                           </p>
                         </div>
-                        <div className="bg-zinc-900/50 p-3 rounded-lg border border-zinc-700">
+                        <div className="bg-zinc-900/50 p-2 sm:p-3 rounded-lg border border-zinc-700">
                           <p className="text-zinc-500 font-medium mb-1">
                             Team Size
                           </p>
@@ -618,13 +618,13 @@ const MyHackathons = ({ navigate }) => {
                             {hackathon.teamSettings.allowSolo && " (Solo)"}
                           </p>
                         </div>
-                        <div className="bg-zinc-900/50 p-3 rounded-lg border border-zinc-700">
+                        <div className="bg-zinc-900/50 p-2 sm:p-3 rounded-lg border border-zinc-700">
                           <p className="text-zinc-500 font-medium mb-1">Teams</p>
                           <p className="text-zinc-300">
                             {stats.teamCount}
                           </p>
                         </div>
-                        <div className="bg-zinc-900/50 p-3 rounded-lg border border-zinc-700">
+                        <div className="bg-zinc-900/50 p-2 sm:p-3 rounded-lg border border-zinc-700">
                           <p className="text-zinc-500 font-medium mb-1">
                             Participants
                           </p>
@@ -639,17 +639,17 @@ const MyHackathons = ({ navigate }) => {
                         {["published", "upcoming"].includes(hackathon.status) && (
                           <Button
                             size="sm"
-                            className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1"
+                            className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-1 text-xs sm:text-sm"
                             onClick={() => handleShare(hackathon)}
                           >
-                            <TbShare className="w-4 h-4" />
+                            <TbShare className="w-3 h-3 sm:w-4 sm:h-4" />
                             <span className="hidden sm:inline">Share</span>
                           </Button>
                         )}
                         <Button
                           size="sm"
                           variant="outline"
-                          className="bg-white text-zinc-950 hover:bg-zinc-200"
+                          className="bg-white text-zinc-950 hover:bg-zinc-200 text-xs sm:text-sm"
                           onClick={() =>
                             navigate(`/organizer/hackathon/${hackathon._id}`)
                           }
@@ -658,7 +658,7 @@ const MyHackathons = ({ navigate }) => {
                         </Button>
                         <Button
                           size="sm"
-                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                          className="bg-purple-600 hover:bg-purple-700 text-white text-xs sm:text-sm"
                           onClick={() =>
                             navigate(
                               `/organizer/hackathon/${hackathon._id}/allot-judges`

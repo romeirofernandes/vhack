@@ -130,7 +130,7 @@ export const MobileSidebar = ({ className, children, ...props }) => {
 };
 
 export const SidebarLink = ({ link, className, onClick, ...props }) => {
-  const { open, animate } = useSidebar();
+  const { open, animate, setOpen } = useSidebar();
 
   const handleClick = (e) => {
     if (onClick) {
@@ -142,7 +142,6 @@ export const SidebarLink = ({ link, className, onClick, ...props }) => {
     }
     // For mobile, close the sidebar after clicking a link
     if (window.innerWidth < 768) {
-      const { setOpen } = useSidebar();
       setOpen(false);
     }
   };

@@ -201,27 +201,27 @@ const Analytics = () => {
 
   return (
   <div className="min-h-screen bg-zinc-950 text-white">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6 lg:space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-6"
+        className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 lg:gap-6"
       >
         <div className="text-center lg:text-left">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2 lg:mb-3">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-white mb-1 sm:mb-2 lg:mb-3">
             Analytics Dashboard
           </h1>
-          <p className="text-zinc-400 text-sm sm:text-base lg:text-lg">
+          <p className="text-zinc-400 text-xs sm:text-sm lg:text-base xl:text-lg">
             Insights into your hackathon performance
           </p>
         </div>
-        <div className="flex items-center justify-center lg:justify-end space-x-2">
+        <div className="flex items-center justify-center lg:justify-end space-x-1 sm:space-x-2">
           {["3months", "6months", "1year"].map((range) => (
             <button
               key={range}
               onClick={() => setTimeRange(range)}
-              className={`px-3 sm:px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+              className={`px-2 sm:px-3 lg:px-4 xl:px-5 py-1.5 sm:py-2 lg:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                 timeRange === range
                   ? "bg-zinc-700 text-white border border-zinc-600"
                   : "text-zinc-400 hover:text-white hover:bg-zinc-800"
@@ -238,7 +238,7 @@ const Analytics = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 xl:gap-6"
       >
         <StatCard
           title="Total Hackathons"
@@ -268,7 +268,7 @@ const Analytics = () => {
       </motion.div>
 
       {/* Charts Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
         {/* Monthly Activity */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -276,30 +276,30 @@ const Analytics = () => {
           transition={{ delay: 0.2 }}
         >
           <Card className="bg-zinc-950 border-zinc-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-white flex items-center gap-2 text-lg lg:text-xl">
-                <TbChartBar className="w-5 h-5 lg:w-6 lg:h-6" />
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+                <TbChartBar className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                 Monthly Activity
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-3 sm:px-6">
-              <div className="h-64 sm:h-72 lg:h-80">
+            <CardContent className="px-2 sm:px-3 lg:px-6">
+              <div className="h-48 sm:h-56 lg:h-64 xl:h-72 2xl:h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={monthlyData}
-                    margin={{ top: 20, right: 15, left: 5, bottom: 20 }}
+                    margin={{ top: 15, right: 10, left: 5, bottom: 15 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#a1a1aa', fontSize: 11 }} 
+                      tick={{ fill: '#a1a1aa', fontSize: 10 }} 
                     />
                     <YAxis 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#a1a1aa', fontSize: 11 }} 
+                      tick={{ fill: '#a1a1aa', fontSize: 10 }} 
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="participants" fill="#7dd3fc" radius={[2, 2, 0, 0]} name="Participants" />
@@ -318,30 +318,30 @@ const Analytics = () => {
           transition={{ delay: 0.3 }}
         >
           <Card className="bg-zinc-950 border-zinc-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-white flex items-center gap-2 text-lg lg:text-xl">
-                <TbTrendingUp className="w-5 h-5 lg:w-6 lg:h-6" />
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+                <TbTrendingUp className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                 Participant Growth
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-3 sm:px-6">
-              <div className="h-64 sm:h-72 lg:h-80">
+            <CardContent className="px-2 sm:px-3 lg:px-6">
+              <div className="h-48 sm:h-56 lg:h-64 xl:h-72 2xl:h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart 
                     data={participantGrowth}
-                    margin={{ top: 20, right: 15, left: 5, bottom: 20 }}
+                    margin={{ top: 15, right: 10, left: 5, bottom: 15 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
                     <XAxis 
                       dataKey="month" 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#a1a1aa', fontSize: 11 }} 
+                      tick={{ fill: '#a1a1aa', fontSize: 10 }} 
                     />
                     <YAxis 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#a1a1aa', fontSize: 11 }} 
+                      tick={{ fill: '#a1a1aa', fontSize: 10 }} 
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Area
@@ -366,22 +366,22 @@ const Analytics = () => {
           transition={{ delay: 0.4 }}
         >
           <Card className="bg-zinc-950 border-zinc-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-white flex items-center gap-2 text-lg lg:text-xl">
-                <TbTargetArrow className="w-5 h-5 lg:w-6 lg:h-6" />
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+                <TbTargetArrow className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                 Hackathon Status
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-3 sm:px-6">
-              <div className="h-64 sm:h-72 lg:h-80">
+            <CardContent className="px-2 sm:px-3 lg:px-6">
+              <div className="h-48 sm:h-56 lg:h-64 xl:h-72 2xl:h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
                     <Pie
                       data={hackathonStatus}
                       cx="50%"
                       cy="50%"
-                      innerRadius={40}
-                      outerRadius={80}
+                      innerRadius={30}
+                      outerRadius={60}
                       paddingAngle={5}
                       dataKey="value"
                     >
@@ -393,11 +393,11 @@ const Analytics = () => {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div className="flex flex-wrap justify-center gap-3 lg:gap-4 mt-4">
+              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4 mt-3 sm:mt-4">
                 {hackathonStatus.map((entry, index) => (
-                  <div key={index} className="flex items-center space-x-2">
+                  <div key={index} className="flex items-center space-x-1 sm:space-x-2">
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="w-2 h-2 sm:w-3 sm:h-3 rounded-full"
                       style={{ backgroundColor: entry.color }}
                     />
                     <span className="text-zinc-400 text-xs sm:text-sm">{entry.name}</span>
@@ -416,30 +416,30 @@ const Analytics = () => {
           transition={{ delay: 0.5 }}
         >
           <Card className="bg-zinc-950 border-zinc-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-white flex items-center gap-2 text-lg lg:text-xl">
-                <TbUsers className="w-5 h-5 lg:w-6 lg:h-6" />
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+                <TbUsers className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                 Team Size Distribution
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-3 sm:px-6">
-              <div className="h-64 sm:h-72 lg:h-80">
+            <CardContent className="px-2 sm:px-3 lg:px-6">
+              <div className="h-48 sm:h-56 lg:h-64 xl:h-72 2xl:h-80">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={teamSizeDistribution}
-                    margin={{ top: 20, right: 15, left: 5, bottom: 20 }}
+                    margin={{ top: 15, right: 10, left: 5, bottom: 15 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" />
                     <XAxis 
                       dataKey="size" 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#a1a1aa', fontSize: 11 }}
+                      tick={{ fill: '#a1a1aa', fontSize: 10 }}
                     />
                     <YAxis 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fill: '#a1a1aa', fontSize: 11 }}
+                      tick={{ fill: '#a1a1aa', fontSize: 10 }}
                       domain={[0, 'dataMax + 1']}
                     />
                     <Tooltip content={<CustomTooltip />} />
@@ -457,14 +457,14 @@ const Analytics = () => {
               </div>
               
               {/* Summary */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 sm:gap-2 lg:gap-3 xl:gap-4 mt-3 sm:mt-4">
                 {teamSizeDistribution.map((entry, index) => (
                   <div key={index} className="text-center p-2 sm:p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
                     <div 
-                      className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 rounded-full mx-auto mb-1 sm:mb-2"
+                      className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 rounded-full mx-auto mb-1 sm:mb-2"
                       style={{ backgroundColor: entry.color }}
                     />
-                    <div className="text-white font-bold text-sm sm:text-base lg:text-lg">{entry.count}</div>
+                    <div className="text-white font-bold text-xs sm:text-sm lg:text-base xl:text-lg">{entry.count}</div>
                     <div className="text-zinc-400 text-xs">
                       {entry.size} member{entry.size !== "1" ? "s" : ""}
                     </div>
@@ -477,7 +477,7 @@ const Analytics = () => {
       </div>
 
       {/* Bottom Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
         {/* Top Performing Hackathons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -485,30 +485,30 @@ const Analytics = () => {
           transition={{ delay: 0.6 }}
         >
           <Card className="bg-zinc-950 border-zinc-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-white flex items-center gap-2 text-lg lg:text-xl">
-                <TbTrophy className="w-5 h-5 lg:w-6 lg:h-6" />
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+                <TbTrophy className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                 Top Performing Hackathons
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
+            <CardContent className="space-y-2 sm:space-y-3 lg:space-y-4">
               {topPerformingHackathons.map((hackathon, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 sm:p-4 bg-zinc-900 border border-zinc-800 rounded-lg"
+                  className="flex items-center justify-between p-2 sm:p-3 lg:p-4 bg-zinc-900 border border-zinc-800 rounded-lg"
                 >
-                  <div className="flex items-center space-x-3 min-w-0 flex-1">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 bg-zinc-700 border border-zinc-600 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold text-white flex-shrink-0">
+                  <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 bg-zinc-700 border border-zinc-600 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold text-white flex-shrink-0">
                       {index + 1}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-white text-sm sm:text-base truncate">{hackathon.name}</p>
+                      <p className="font-semibold text-white text-xs sm:text-sm lg:text-base truncate">{hackathon.name}</p>
                       <p className="text-xs sm:text-sm text-zinc-400">
                         {hackathon.participants} participants • {hackathon.teams} teams
                       </p>
                     </div>
                   </div>
-                  <Badge className="bg-yellow-600 text-white border border-yellow-500 px-2 py-1 text-xs sm:text-sm flex-shrink-0 ml-2">
+                  <Badge className="bg-yellow-600 text-white border border-yellow-500 px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm flex-shrink-0 ml-2">
                     ⭐ {hackathon.rating}
                   </Badge>
                 </div>
@@ -524,20 +524,20 @@ const Analytics = () => {
           transition={{ delay: 0.7 }}
         >
           <Card className="bg-zinc-950 border-zinc-800">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-white flex items-center gap-2 text-lg lg:text-xl">
-                <TbEye className="w-5 h-5 lg:w-6 lg:h-6" />
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-white flex items-center gap-2 text-base sm:text-lg lg:text-xl">
+                <TbEye className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6" />
                 Engagement Metrics
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4">
+            <CardContent className="space-y-2 sm:space-y-3 lg:space-y-4">
               {engagementMetrics.map((metric, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 sm:p-4 bg-zinc-900 border border-zinc-800 rounded-lg"
+                  className="flex items-center justify-between p-2 sm:p-3 lg:p-4 bg-zinc-900 border border-zinc-800 rounded-lg"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-white text-sm sm:text-base">{metric.metric}</p>
+                    <p className="font-semibold text-white text-xs sm:text-sm lg:text-base">{metric.metric}</p>
                     <div className="flex items-center mt-1">
                       {metric.trend > 0 ? (
                         <TbTrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 mr-1" />
@@ -553,8 +553,8 @@ const Analytics = () => {
                       </span>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0 ml-4">
-                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">{metric.value}%</p>
+                  <div className="text-right flex-shrink-0 ml-2 sm:ml-4">
+                    <p className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white">{metric.value}%</p>
                   </div>
                 </div>
               ))}
