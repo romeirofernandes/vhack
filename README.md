@@ -86,7 +86,7 @@ vHack is a world-class, full-stack virtual hackathon platform designed for seaml
 - **ChatMessage:** hackathonId, sender, message, createdAt
 - **Achievement/UserAchievement:** For gamification and engagement
 
-See [`documentation.txt`](./documentation.txt) for full schema details.
+See [`documentation.md`](./documentation.md) for full schema details.
 
 ---
 
@@ -122,7 +122,7 @@ See [`documentation.txt`](./documentation.txt) for full schema details.
 
 ## 📝 Documentation
 
-- **API Reference:** See [`documentation.txt`](./documentation.txt) for all endpoints, request/response formats, and DB schema.
+- **API Reference:** See [`documentation.md`](./documentation.md) for all endpoints, request/response formats, and DB schema.
 - **Architecture:** Modern microservices-inspired, scalable, and real-time ready.
 - **Deployment:** Easily deployable to Vercel/Netlify (frontend) and Render/Heroku/AWS (backend).
 
