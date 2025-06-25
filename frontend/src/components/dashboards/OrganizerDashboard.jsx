@@ -433,7 +433,7 @@ const OrganizerDashboard = () => {
   }
 
   return (
-    <div className="rounded-md flex flex-col md:flex-row bg-zinc-950 w-full flex-1 mx-auto border border-white/10 h-screen overflow-hidden">
+    <div className="rounded-md flex flex-col md:flex-row bg-zinc-950 w-full flex-1 mx-auto border border-white/10">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">

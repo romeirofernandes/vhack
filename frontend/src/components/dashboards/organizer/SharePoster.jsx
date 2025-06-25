@@ -26,6 +26,18 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   const shareUrl = hackathon
     ? `${window.location.origin}/participant/hackathon/${hackathon._id}`
     : "";
@@ -162,88 +174,36 @@ const SharePoster = ({ hackathon, isOpen, onClose }) => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            style={{
-              backgroundColor: "#09090b",
-              borderRadius: "24px",
-              maxWidth: "1400px",
-              width: "100%",
-              maxHeight: "95vh",
-              overflowY: "auto",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8)",
-            }}
+            className="bg-zinc-950 rounded-2xl max-w-[1400px] w-full max-h-[95vh] overflow-y-auto border border-white/10 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "32px",
-                borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                background: "rgba(255, 255, 255, 0.02)",
-              }}
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-4 sm:px-8 py-6 border-b border-white/10 bg-white/5"
             >
               <div>
                 <h2
-                  style={{
-                    fontSize: "32px",
-                    fontWeight: "800",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "white",
-                    margin: 0,
-                  }}
+                  className="text-2xl sm:text-3xl font-extrabold text-white mb-2"
                 >
                   Share Your Hackathon
                 </h2>
               </div>
               <button
                 onClick={onClose}
-                style={{
-                  background: "rgba(255, 255, 255, 0.05)",
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  color: "white",
-                  cursor: "pointer",
-                  padding: "12px",
-                  borderRadius: "12px",
-                  transition: "all 0.3s ease",
-                }}
+                className="bg-white/10 border border-white/20 text-white cursor-pointer p-3 rounded-lg hover:bg-white/20 transition"
               >
                 <TbX style={{ width: "24px", height: "24px" }} />
               </button>
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 350px",
-                gap: "32px",
-                padding: "32px",
-              }}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-8 px-4 sm:px-8 py-6"
             >
               {/* Poster Preview */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "24px",
-                }}
+              <div className="flex flex-col items-center gap-6"
               >
                 {/* Poster */}
                 <div
                   ref={posterRef}
-                  style={{
-                    width: "500px",
-                    height: "auto",
-                    backgroundColor: "#09090b",
-                    borderRadius: "24px",
-                    overflow: "hidden",
-                    boxShadow:
-                      "0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)",
-                    fontFamily: "system-ui, -apple-system, sans-serif",
-                    position: "relative",
-                  }}
+                  className="w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl relative"
                 >
                   {/* Decorative Elements */}
                   <div

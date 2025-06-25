@@ -234,30 +234,30 @@ const Profile = () => {
   return (
     <div className="h-[calc(100vh-120px)] flex flex-col space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-white/10 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-white/10 flex-shrink-0 gap-4 sm:gap-0">
         <div>
-          <h1 className="text-2xl font-semibold text-white">Organizer Profile</h1>
-          <p className="text-white/60 text-sm">
+          <h1 className="text-xl sm:text-2xl font-semibold text-white">Organizer Profile</h1>
+          <p className="text-white/60 text-xs sm:text-sm">
             Manage your hackathon organizer profile
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {!isEditing ? (
             <Button
               onClick={() => setIsEditing(true)}
-              className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-4 text-sm"
+              className="bg-white text-zinc-950 hover:bg-white/90 h-9 px-3 sm:px-4 text-xs sm:text-sm w-full sm:w-auto"
             >
-              <MdEdit className="w-4 h-4 mr-2" />
+              <MdEdit className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               Edit
             </Button>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <Button
                 onClick={saveProfile}
                 disabled={saving}
-                className="bg-emerald-700 hover:bg-emerald-600 text-white h-9 px-4 text-sm"
+                className="bg-emerald-700 hover:bg-emerald-600 text-white h-9 px-3 sm:px-4 text-xs sm:text-sm flex-1 sm:flex-none"
               >
-                <MdSave className="w-4 h-4 mr-1" />
+                <MdSave className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 {saving ? "Saving..." : "Save"}
               </Button>
               <Button
@@ -266,9 +266,9 @@ const Profile = () => {
                   fetchProfile(); // Reset data
                 }}
                 variant="outline"
-                className="bg-transparent border-white/40 text-white hover:bg-white/10 hover:text-white hover:border-white/60 h-9 px-4 text-sm"
+                className="bg-transparent border-white/40 text-white hover:bg-white/10 hover:text-white hover:border-white/60 h-9 px-3 sm:px-4 text-xs sm:text-sm flex-1 sm:flex-none"
               >
-                <MdCancel className="w-4 h-4 mr-1" />
+                <MdCancel className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 Cancel
               </Button>
             </div>
@@ -281,14 +281,14 @@ const Profile = () => {
         <div className="space-y-2 flex-shrink-0">
           {error && (
             <Alert className="bg-red-950/40 border-red-800/50 py-2">
-              <AlertDescription className="text-red-300 text-sm">
+              <AlertDescription className="text-red-300 text-xs sm:text-sm">
                 {error}
               </AlertDescription>
             </Alert>
           )}
           {success && (
             <Alert className="bg-emerald-950/40 border-emerald-800/50 py-2">
-              <AlertDescription className="text-emerald-300 text-sm">
+              <AlertDescription className="text-emerald-300 text-xs sm:text-sm">
                 {success}
               </AlertDescription>
             </Alert>
@@ -298,7 +298,7 @@ const Profile = () => {
 
       {/* Tab Navigation */}
       <div className="flex justify-center flex-shrink-0">
-        <div className="flex space-x-1 bg-white/5 p-1 rounded-lg w-auto">
+        <div className="flex space-x-1 bg-white/5 p-1 rounded-lg w-full sm:w-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -307,10 +307,10 @@ const Profile = () => {
                 activeTab === tab.id
                   ? "bg-white text-zinc-950 font-medium"
                   : "text-white/70 hover:text-white hover:bg-white/10"
-              } rounded-md sm:space-x-2 sm:px-3 sm:py-2 px-3 py-2`}
+              } rounded-md space-x-1 sm:space-x-2 px-2 sm:px-3 py-2 flex-1 sm:flex-none`}
             >
-              <tab.icon className="w-4 h-4" />
-              <span className="hidden sm:inline text-sm">{tab.label}</span>
+              <tab.icon className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="text-xs sm:text-sm">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -357,23 +357,23 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
     <Card className="bg-white/5 border-white/10">
       <CardHeader className="pb-3">
-        <CardTitle className="text-white text-lg">
+        <CardTitle className="text-white text-base sm:text-lg">
           Personal Information
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <Label className="text-white/80 text-sm">First Name</Label>
+            <Label className="text-white/80 text-xs sm:text-sm">First Name</Label>
             {isEditing ? (
               <Input
                 value={data.firstName || ""}
                 onChange={(e) => onChange("firstName", e.target.value)}
-                className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
                 placeholder="Enter first name"
               />
             ) : (
-              <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+              <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
                 {data.firstName || (
                   <span className="text-white/50">Not set</span>
                 )}
@@ -381,16 +381,16 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
             )}
           </div>
           <div>
-            <Label className="text-white/80 text-sm">Last Name</Label>
+            <Label className="text-white/80 text-xs sm:text-sm">Last Name</Label>
             {isEditing ? (
               <Input
                 value={data.lastName || ""}
                 onChange={(e) => onChange("lastName", e.target.value)}
-                className="bg-white/5 border-white/20 text-white h-9 text-sm"
+                className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
                 placeholder="Enter last name"
               />
             ) : (
-              <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+              <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
                 {data.lastName || (
                   <span className="text-white/50">Not set</span>
                 )}
@@ -399,31 +399,31 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
           </div>
         </div>
         <div>
-          <Label className="text-white/80 text-sm">Bio</Label>
+          <Label className="text-white/80 text-xs sm:text-sm">Bio</Label>
           {isEditing ? (
             <Textarea
               value={data.bio || ""}
               onChange={(e) => onChange("bio", e.target.value)}
-              className="bg-white/5 border-white/20 text-white text-sm h-20 resize-none"
+              className="bg-white/5 border-white/20 text-white text-xs sm:text-sm h-20 resize-none"
               placeholder="Tell us about yourself..."
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 h-20 overflow-auto">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 h-20 overflow-auto">
               {data.bio || <span className="text-white/50">Not set</span>}
             </p>
           )}
         </div>
         <div>
-          <Label className="text-white/80 text-sm">Location</Label>
+          <Label className="text-white/80 text-xs sm:text-sm">Location</Label>
           {isEditing ? (
             <Input
               value={data.location || ""}
               onChange={(e) => onChange("location", e.target.value)}
-              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
               placeholder="City, Country"
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
               {data.location || <span className="text-white/50">Not set</span>}
             </p>
           )}
@@ -433,11 +433,11 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
 
     <Card className="bg-white/5 border-white/10">
       <CardHeader className="pb-3">
-        <CardTitle className="text-white text-lg">Social Links</CardTitle>
+        <CardTitle className="text-white text-base sm:text-lg">Social Links</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <Label className="text-white/80 flex items-center gap-2 text-sm">
+          <Label className="text-white/80 flex items-center gap-2 text-xs sm:text-sm">
             <FaGithub className="w-3 h-3" />
             GitHub
           </Label>
@@ -445,11 +445,11 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
             <Input
               value={data.socialLinks?.github || ""}
               onChange={(e) => onChange("socialLinks.github", e.target.value)}
-              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
               placeholder="https://github.com/username"
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
               {data.socialLinks?.github ? (
                 <a
                   href={data.socialLinks.github}
@@ -466,7 +466,7 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
           )}
         </div>
         <div>
-          <Label className="text-white/80 flex items-center gap-2 text-sm">
+          <Label className="text-white/80 flex items-center gap-2 text-xs sm:text-sm">
             <FaLinkedin className="w-3 h-3" />
             LinkedIn
           </Label>
@@ -474,11 +474,11 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
             <Input
               value={data.socialLinks?.linkedin || ""}
               onChange={(e) => onChange("socialLinks.linkedin", e.target.value)}
-              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
               placeholder="https://linkedin.com/in/username"
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
               {data.socialLinks?.linkedin ? (
                 <a
                   href={data.socialLinks.linkedin}
@@ -495,7 +495,7 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
           )}
         </div>
         <div>
-          <Label className="text-white/80 flex items-center gap-2 text-sm">
+          <Label className="text-white/80 flex items-center gap-2 text-xs sm:text-sm">
             <FaGlobe className="w-3 h-3" />
             Portfolio
           </Label>
@@ -505,11 +505,11 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
               onChange={(e) =>
                 onChange("socialLinks.portfolio", e.target.value)
               }
-              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
               placeholder="https://yourportfolio.com"
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
               {data.socialLinks?.portfolio ? (
                 <a
                   href={data.socialLinks.portfolio}
@@ -526,7 +526,7 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
           )}
         </div>
         <div>
-          <Label className="text-white/80 flex items-center gap-2 text-sm">
+          <Label className="text-white/80 flex items-center gap-2 text-xs sm:text-sm">
             <FaTwitter className="w-3 h-3" />
             Twitter
           </Label>
@@ -534,11 +534,11 @@ const BasicInfoTab = ({ data, isEditing, onChange }) => (
             <Input
               value={data.socialLinks?.twitter || ""}
               onChange={(e) => onChange("socialLinks.twitter", e.target.value)}
-              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
               placeholder="https://twitter.com/username"
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
               {data.socialLinks?.twitter ? (
                 <a
                   href={data.socialLinks.twitter}
@@ -576,46 +576,46 @@ const OrganizationTab = ({
     {/* Card 1: Organization Details */}
     <Card className="bg-white/5 border-white/10">
       <CardHeader className="pb-3">
-        <CardTitle className="text-white text-lg">Organization Details</CardTitle>
+        <CardTitle className="text-white text-base sm:text-lg">Organization Details</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <Label className="text-white/80 text-sm">Company/Organization</Label>
+          <Label className="text-white/80 text-xs sm:text-sm">Company/Organization</Label>
           {isEditing ? (
             <Input
               value={data.company || ""}
               onChange={(e) => onChange("company", e.target.value)}
-              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
               placeholder="Company or organization"
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
               {data.company || <span className="text-white/50">Not set</span>}
             </p>
           )}
         </div>
         <div>
-          <Label className="text-white/80 text-sm">Your Role</Label>
+          <Label className="text-white/80 text-xs sm:text-sm">Your Role</Label>
           {isEditing ? (
             <Input
               value={data.position || ""}
               onChange={(e) => onChange("position", e.target.value)}
-              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
               placeholder="Your role (e.g. Organizer, Community Lead)"
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
               {data.position || <span className="text-white/50">Not set</span>}
             </p>
           )}
         </div>
         <div>
-          <Label className="text-white/80 text-sm">Website</Label>
+          <Label className="text-white/80 text-xs sm:text-sm">Website</Label>
           {isEditing ? (
             <Input
               value={data.website || ""}
               onChange={(e) => onChange("website", e.target.value)}
-              className="bg-white/5 border-white/20 text-white h-9 text-sm"
+              className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm"
               placeholder="https://yourcompany.com"
             />
           ) : data.website ? (
@@ -623,22 +623,22 @@ const OrganizationTab = ({
               href={data.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-400 hover:text-blue-300"
+              className="text-blue-400 hover:text-blue-300 text-xs sm:text-sm"
             >
               {data.website}
             </a>
           ) : (
-            <span className="text-white/50">Not set</span>
+            <span className="text-white/50 text-xs sm:text-sm">Not set</span>
           )}
         </div>
         <div>
-          <Label className="text-white/80 text-sm">Years of Experience</Label>
+          <Label className="text-white/80 text-xs sm:text-sm">Years of Experience</Label>
           {isEditing ? (
             <Select
               value={data.yearsOfExperience || ""}
               onValueChange={(value) => onChange("yearsOfExperience", value)}
             >
-              <SelectTrigger className="bg-white/5 border-white/20 text-white h-9 text-sm">
+              <SelectTrigger className="bg-white/5 border-white/20 text-white h-9 text-xs sm:text-sm">
                 <SelectValue placeholder="Select experience" />
               </SelectTrigger>
               <SelectContent className="bg-zinc-900 border-white/20">
@@ -650,7 +650,7 @@ const OrganizationTab = ({
               </SelectContent>
             </Select>
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10">
                 {data.yearsOfExperience
                     ? getYearsLabel(data.yearsOfExperience)
                     : <span className="text-white/50">Not set</span>}
@@ -663,11 +663,11 @@ const OrganizationTab = ({
     {/* Card 2: Expertise & About */}
     <Card className="bg-white/5 border-white/10">
       <CardHeader className="pb-3">
-        <CardTitle className="text-white text-lg">Expertise & About</CardTitle>
+        <CardTitle className="text-white text-base sm:text-lg">Expertise & About</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <Label className="text-white/80 text-sm">Expertise</Label>
+          <Label className="text-white/80 text-xs sm:text-sm">Expertise</Label>
           {isEditing ? (
             <>
               {data.expertise.length > 0 && (
@@ -675,7 +675,7 @@ const OrganizationTab = ({
                   {data.expertise.map((area) => (
                     <Badge
                       key={area}
-                      className="bg-white/10 text-white hover:bg-white/20 cursor-pointer group"
+                      className="bg-white/10 text-white hover:bg-white/20 cursor-pointer group text-xs"
                       onClick={() => removeExpertise(area)}
                     >
                       {area}
@@ -694,14 +694,14 @@ const OrganizationTab = ({
                     expertiseInput &&
                     setShowDropdown(filteredExpertise.length > 0)
                   }
-                  className="bg-white/5 border-white/20 text-white placeholder:text-white/40 h-10 pl-3"
+                  className="bg-white/5 border-white/20 text-white placeholder:text-white/40 h-10 pl-3 text-xs sm:text-sm"
                 />
                 {showDropdown && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-white/20 rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
                     {filteredExpertise.map((area) => (
                       <div
                         key={area}
-                        className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white border-b border-white/10 last:border-b-0"
+                        className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white border-b border-white/10 last:border-b-0 text-xs sm:text-sm"
                         onClick={() => addExpertise(area)}
                       >
                         {area}
@@ -714,7 +714,7 @@ const OrganizationTab = ({
                           expertiseInput.toLowerCase()
                       ) && (
                         <div
-                          className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white/80 border-b border-white/10 last:border-b-0 italic"
+                          className="px-3 py-2 hover:bg-white/10 cursor-pointer text-white/80 border-b border-white/10 last:border-b-0 italic text-xs sm:text-sm"
                           onClick={() => addExpertise(expertiseInput.trim())}
                         >
                           Add "{expertiseInput}" as custom expertise
@@ -723,33 +723,33 @@ const OrganizationTab = ({
                   </div>
                 )}
               </div>
-              <p className="text-white/50 text-sm">
+              <p className="text-white/50 text-xs sm:text-sm">
                 Start typing to search or add custom expertise. Press Enter to add.
               </p>
             </>
           ) : data.expertise.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {data.expertise.map((area) => (
-                <Badge key={area} className="bg-white/10 text-white">
+                <Badge key={area} className="bg-white/10 text-white text-xs">
                   {area}
                 </Badge>
               ))}
             </div>
           ) : (
-            <span className="text-white/50">Not set</span>
+            <span className="text-white/50 text-xs sm:text-sm">Not set</span>
           )}
         </div>
         <div>
-          <Label className="text-white/80 text-sm">About Organization & Goals</Label>
+          <Label className="text-white/80 text-xs sm:text-sm">About Organization & Goals</Label>
           {isEditing ? (
             <Textarea
               value={data.about || ""}
               onChange={(e) => onChange("about", e.target.value)}
-              className="bg-white/5 border-white/20 text-white text-sm h-20 resize-none"
+              className="bg-white/5 border-white/20 text-white text-xs sm:text-sm h-20 resize-none"
               placeholder="Tell us about your organization, goals, and hackathon vision..."
             />
           ) : (
-            <p className="text-white text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 h-20 overflow-auto">
+            <p className="text-white text-xs sm:text-sm mt-1 py-2 px-3 bg-white/5 rounded border border-white/10 h-20 overflow-auto">
               {data.about || <span className="text-white/50">Not set</span>}
             </p>
           )}
