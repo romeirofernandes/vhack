@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
+import { TbCode } from "react-icons/tb"; // Add this import
 
 const SidebarContext = createContext(undefined);
 
@@ -86,10 +87,10 @@ export const MobileSidebar = ({ className, children, ...props }) => {
         {...props}
       >
         <div className="flex justify-between items-center w-full">
-          {/* Logo for mobile */}
+          {/* Logo for mobile - Updated to use TbCode */}
           <div className="font-normal flex space-x-2 items-center text-sm text-white">
-            <div className="h-5 w-6 bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
-            <span className="font-medium text-white">VHack</span>
+            <TbCode className="w-6 h-6 text-white flex-shrink-0" />
+            <span className="font-medium text-white">vHack</span>
           </div>
 
           <Menu
@@ -130,7 +131,7 @@ export const MobileSidebar = ({ className, children, ...props }) => {
 };
 
 export const SidebarLink = ({ link, className, onClick, ...props }) => {
-  const { open, animate } = useSidebar();
+  const { open, animate, setOpen } = useSidebar(); // Get setOpen here
 
   const handleClick = (e) => {
     if (onClick) {
@@ -140,9 +141,9 @@ export const SidebarLink = ({ link, className, onClick, ...props }) => {
       e.preventDefault();
       link.onClick();
     }
+
     // For mobile, close the sidebar after clicking a link
     if (window.innerWidth < 768) {
-      const { setOpen } = useSidebar();
       setOpen(false);
     }
   };

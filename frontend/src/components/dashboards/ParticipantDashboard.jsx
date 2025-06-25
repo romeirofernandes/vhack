@@ -554,19 +554,19 @@ const ParticipantDashboard = () => {
   }
 
   return (
-    <div className="rounded-md flex flex-col md:flex-row bg-zinc-950 w-full flex-1 mx-auto border border-white/10 h-screen overflow-hidden">
+    <div className="rounded-md flex flex-col md:flex-row bg-zinc-950 w-full flex-1 mx-auto border border-white/10 min-h-screen">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
         <SidebarBody className="justify-between gap-10">
           <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
             <motion.div
-              className="font-normal flex items-center text-sm text-white py-1 relative z-20 "
+              className="font-normal flex items-center text-sm text-white py-1 relative z-20"
               animate={{
                 justifyContent: sidebarOpen ? "flex-start" : "center",
               }}
               transition={{ duration: 0.2 }}
             >
               <div className="flex items-center space-x-2">
-                <TbCode className="ml-4 w-5 h-5 text-white flex-shrink-0" />
+                <TbCode className="ml-4 w-6 h-6 sm:w-5 sm:h-5 text-white flex-shrink-0" />
                 <motion.span
                   animate={{
                     width: sidebarOpen ? "auto" : 0,
@@ -619,7 +619,7 @@ const ParticipantDashboard = () => {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
-        <div className="p-2 md:p-10 border border-white/10 bg-zinc-950 flex flex-col gap-2 flex-1 w-full h-full overflow-y-auto">
+        <div className="p-2 md:p-10 border border-white/10 bg-zinc-950 flex flex-col gap-2 flex-1 w-full overflow-y-auto">
           {error && (
             <Alert className="mb-6 bg-red-900/20 border-red-800/50">
               <AlertDescription className="text-red-200">
