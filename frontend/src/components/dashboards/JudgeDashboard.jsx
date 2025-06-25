@@ -186,46 +186,24 @@ const JudgeDashboard = () => {
       onClick: () => setActiveSection("invitations"),
     },
     {
-      label: "Projects",
+      label: "Hackathons",
       href: "#",
       icon: <MdAssignment className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("projects"),
     },
-    {
-      label: "Judging Queue",
-      href: "#",
-      icon: <MdBalance className="text-white h-5 w-5 flex-shrink-0" />,
-      onClick: () => setActiveSection("queue"),
-    },
-    {
-      label: "My Reviews",
-      href: "#",
-      icon: <MdGavel className="text-white h-5 w-5 flex-shrink-0" />,
-      onClick: () => setActiveSection("reviews"),
-    },
+
     {
       label: "Analytics",
       href: "#",
       icon: <MdBarChart className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("analytics"),
     },
-    {
-      label: "Hackathons",
-      href: "#",
-      icon: <MdCalendarToday className="text-white h-5 w-5 flex-shrink-0" />,
-      onClick: () => setActiveSection("hackathons"),
-    },
+
     {
       label: "Profile",
       href: "#",
       icon: <MdPerson className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("profile"),
-    },
-    {
-      label: "Settings",
-      href: "#",
-      icon: <MdSettings className="text-white h-5 w-5 flex-shrink-0" />,
-      onClick: () => setActiveSection("settings"),
     },
   ];
 
@@ -549,52 +527,53 @@ const JudgeDashboard = () => {
         // If no hackathon is selected, show a list to pick from
         if (!selectedHackathon) {
           return (
-        <div>
-          <h2 className="text-2xl font-bold text-white mb-6">
-            Select a Hackathon
-          </h2>
-          {hackathons.length === 0 ? (
-            <div className="text-zinc-400 text-center py-8">
-          No assigned hackathons.
+            <div>
+              <h2 className="text-2xl font-bold text-white mb-6">
+                Select a Hackathon
+              </h2>
+              {hackathons.length === 0 ? (
+                <div className="text-zinc-400 text-center py-8">
+                  No assigned hackathons.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {hackathons.map((h) => (
+                    <Card
+                      key={h._id}
+                      className="bg-zinc-950 border-zinc-800 hover:border-blue-600 cursor-pointer transition-all duration-300 transform hover:scale-[1.02]"
+                      onClick={() => setSelectedHackathon(h)}
+                    >
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-white text-lg font-semibold truncate">
+                            {h.title}
+                          </CardTitle>
+                          <Badge className="bg-blue-600 text-white border-blue-600 ml-2">
+                            {h.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-zinc-400 text-sm mb-4">{h.theme}</p>
+                        <div className="flex items-center justify-between text-xs text-zinc-500">
+                          <span>
+                            {h.timelines?.hackathonStart
+                              ? new Date(
+                                  h.timelines.hackathonStart
+                                ).toLocaleDateString()
+                              : "Date TBD"}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <MdAssignment className="w-3 h-3" />
+                            Projects
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hackathons.map((h) => (
-            <Card
-              key={h._id}
-              className="bg-zinc-950 border-zinc-800 hover:border-blue-600 cursor-pointer transition-all duration-300 transform hover:scale-[1.02]"
-              onClick={() => setSelectedHackathon(h)}
-            >
-              <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-white text-lg font-semibold truncate">
-                {h.title}
-              </CardTitle>
-              <Badge className="bg-blue-600 text-white border-blue-600 ml-2">
-                {h.status}
-              </Badge>
-            </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-            <p className="text-zinc-400 text-sm mb-4">{h.theme}</p>
-            <div className="flex items-center justify-between text-xs text-zinc-500">
-              <span>
-                {h.timelines?.hackathonStart ? 
-              new Date(h.timelines.hackathonStart).toLocaleDateString() : 
-              'Date TBD'
-                }
-              </span>
-              <span className="flex items-center gap-1">
-                <MdAssignment className="w-3 h-3" />
-                Projects
-              </span>
-            </div>
-              </CardContent>
-            </Card>
-          ))}
-            </div>
-          )}
-        </div>
           );
         }
         // If no hackathon is selected, show a list to pick from

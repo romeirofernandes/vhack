@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import HackathonResults from "../../results/HackathonResults";
+import CertificateGenerator from "../../results/CertificateGenerator";
 
 const HackathonDetailsPage = () => {
   const { user } = useAuth();
@@ -40,6 +41,7 @@ const HackathonDetailsPage = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
+  
 
   useEffect(() => {
     const fetchDetails = async () => {
@@ -126,6 +128,7 @@ const HackathonDetailsPage = () => {
       setActionLoading(false);
     }
   };
+
 
   // Join Team
   const handleJoinTeam = async (e) => {
@@ -687,6 +690,17 @@ const HackathonDetailsPage = () => {
                 userRole="participant"
               />
             </motion.div>
+            {/* Certificate Section - CLEAN AND SIMPLE */}
+            {hackathon?.resultsPublished && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
+                className="flex justify-center"
+              >
+                <CertificateGenerator hackathonId={hackathonId} />
+              </motion.div>
+            )}
           </div>
 
           {/* Right Column - Quick Info */}

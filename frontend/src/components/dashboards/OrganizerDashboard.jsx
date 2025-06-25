@@ -41,67 +41,6 @@ import { auth } from "@/config/firebase";
 import MyHackathons from "./organizer/MyHackathons";
 import Analytics from "./organizer/Analytics";
 
-const CreateEvent = () => (
-  <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-    <div className="w-24 h-24 bg-zinc-800/50 border border-zinc-700 rounded-lg flex items-center justify-center mb-6">
-      <TbRocket className="w-12 h-12 text-zinc-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-white mb-4">
-      Launch Your Next Hackathon
-    </h2>
-    <p className="text-zinc-400 max-w-md mb-6">
-      Create engaging hackathons and bring together the brightest minds to solve
-      real-world challenges.
-    </p>
-    <Button
-      onClick={() => (window.location.href = "/organizer/create-hackathon")}
-      className="bg-white text-zinc-950 hover:bg-zinc-200"
-    >
-      <MdAdd className="w-4 h-4 mr-2" />
-      Create Hackathon
-    </Button>
-  </div>
-);
-
-const Participants = () => (
-  <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-    <div className="w-24 h-24 bg-zinc-800/50 border border-zinc-700 rounded-lg flex items-center justify-center mb-6">
-      <MdGroup className="w-12 h-12 text-zinc-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-white mb-4">Participant Hub</h2>
-    <p className="text-zinc-400 max-w-md mb-6">
-      Manage participants, track engagement, and foster collaboration across all
-      your events.
-    </p>
-    <Button
-      variant="outline"
-      className="border-zinc-700 text-zinc-400 hover:bg-zinc-800"
-    >
-      Coming Soon
-    </Button>
-  </div>
-);
-
-const Settings = () => (
-  <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-    <div className="w-24 h-24 bg-zinc-800/50 border border-zinc-700 rounded-lg flex items-center justify-center mb-6">
-      <MdSettings className="w-12 h-12 text-zinc-400" />
-    </div>
-    <h2 className="text-2xl font-bold text-white mb-4">
-      Organization Settings
-    </h2>
-    <p className="text-zinc-400 max-w-md mb-6">
-      Customize your organization profile, set defaults, and configure
-      preferences.
-    </p>
-    <Button
-      variant="outline"
-      className="border-zinc-700 text-zinc-400 hover:bg-zinc-800"
-    >
-      Coming Soon
-    </Button>
-  </div>
-);
 
 const OrganizerDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -196,18 +135,6 @@ const OrganizerDashboard = () => {
       onClick: () => setActiveSection("hackathons"),
     },
     {
-      label: "Create Event",
-      href: "#",
-      icon: <MdAdd className="text-white h-5 w-5 flex-shrink-0" />,
-      onClick: () => setActiveSection("create-event"),
-    },
-    {
-      label: "Participants",
-      href: "#",
-      icon: <MdGroup className="text-white h-5 w-5 flex-shrink-0" />,
-      onClick: () => setActiveSection("participants"),
-    },
-    {
       label: "Analytics",
       href: "#",
       icon: <MdBarChart className="text-white h-5 w-5 flex-shrink-0" />,
@@ -218,12 +145,6 @@ const OrganizerDashboard = () => {
       href: "#",
       icon: <MdPerson className="text-white h-5 w-5 flex-shrink-0" />,
       onClick: () => setActiveSection("profile"),
-    },
-    {
-      label: "Settings",
-      href: "#",
-      icon: <MdSettings className="text-white h-5 w-5 flex-shrink-0" />,
-      onClick: () => setActiveSection("settings"),
     },
   ];
 
@@ -279,10 +200,10 @@ const OrganizerDashboard = () => {
           <Button
             variant="outline"
             className="flex-1 h-14 bg-white text-zinc-950 hover:bg-zinc-100 font-medium hover:scale-[0.97] transition-all duration-300 justify-center"
-            onClick={() => setActiveSection("participants")}
+            onClick={() => setActiveSection("profile")}
           >
             <MdGroup className="w-5 h-5" />
-            Manage Participants
+            View Profile
           </Button>
 
           <Button
