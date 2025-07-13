@@ -14,7 +14,7 @@ const initializeOctokit = async () => {
 };
 
 const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEy // Note: Fix the typo in your .env (GROQ_API_KEy should be GROQ_API_KEY)
+  apiKey: process.env.GROQ_API_KEY
 });
 
 const analyzeGitHubRepository = async (repoUrl) => {
